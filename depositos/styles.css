@@ -1,0 +1,500 @@
+/* Reset y configuración base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--tg-theme-bg-color, #ffffff);
+  color: var(--tg-theme-text-color, #000000);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Variables CSS para tema de Telegram */
+:root {
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #999999;
+  --tg-theme-link-color: #2481cc;
+  --tg-theme-button-color: #2481cc;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f1f1f1;
+}
+
+/* Contenedor principal */
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pantallas */
+.screen {
+  display: none;
+  flex-direction: column;
+  min-height: 100vh;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.screen.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+  padding-top: 20px;
+}
+
+.header h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--tg-theme-text-color);
+}
+
+.subtitle {
+  color: var(--tg-theme-hint-color);
+  font-size: 14px;
+}
+
+/* Información de saldo */
+.balance-info {
+  margin-bottom: 30px;
+}
+
+.balance-card {
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.balance-label {
+  display: block;
+  font-size: 14px;
+  color: var(--tg-theme-hint-color);
+  margin-bottom: 8px;
+}
+
+.balance-amount {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--tg-theme-button-color);
+}
+
+/* Formularios */
+.form-container {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--tg-theme-text-color);
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  background: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--tg-theme-button-color);
+  box-shadow: 0 0 0 3px rgba(36, 129, 204, 0.1);
+}
+
+.form-group input.readonly {
+  background: var(--tg-theme-secondary-bg-color);
+  color: var(--tg-theme-hint-color);
+  cursor: not-allowed;
+}
+
+.form-help {
+  display: block;
+  font-size: 12px;
+  color: var(--tg-theme-hint-color);
+  margin-top: 4px;
+}
+
+/* Botones */
+.btn {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.btn-primary {
+  background: var(--tg-theme-button-color);
+  color: var(--tg-theme-button-text-color);
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--tg-theme-secondary-bg-color);
+  color: var(--tg-theme-text-color);
+  border: 1px solid #e0e0e0;
+}
+
+.btn-secondary:hover {
+  background: #e8e8e8;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-success:hover {
+  background: #218838;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Form actions */
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.form-actions .btn {
+  flex: 1;
+}
+
+/* Información de transacción */
+.transaction-info,
+.bank-info,
+.confirmation-info {
+  flex: 1;
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.info-card {
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.info-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tg-theme-text-color);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-row span:first-child {
+  color: var(--tg-theme-hint-color);
+  font-size: 14px;
+}
+
+.info-row span:last-child {
+  font-weight: 500;
+  color: var(--tg-theme-text-color);
+}
+
+/* Estados */
+.status-pending {
+  color: #ffc107;
+  font-weight: 600;
+}
+
+.status-processing {
+  color: #17a2b8;
+  font-weight: 600;
+}
+
+.status-completed {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.status-rejected {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+/* Información bancaria */
+.bank-card {
+  background: var(--tg-theme-secondary-bg-color);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.bank-card h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--tg-theme-text-color);
+}
+
+.bank-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.detail-row .label {
+  color: var(--tg-theme-hint-color);
+  font-size: 14px;
+}
+
+.detail-row .value {
+  font-weight: 500;
+  color: var(--tg-theme-text-color);
+}
+
+.detail-row .value.amount {
+  color: var(--tg-theme-button-color);
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Instrucciones */
+.instructions {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-left: 4px solid var(--tg-theme-button-color);
+}
+
+.instructions h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tg-theme-text-color);
+}
+
+.instructions ol,
+.instructions ul {
+  margin-left: 20px;
+}
+
+.instructions li {
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: var(--tg-theme-text-color);
+}
+
+/* Loading */
+.loading-container {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--tg-theme-secondary-bg-color);
+  border-top: 3px solid var(--tg-theme-button-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loading-container p {
+  color: var(--tg-theme-hint-color);
+  font-size: 14px;
+}
+
+/* Iconos de estado */
+.success-icon,
+.error-icon {
+  font-size: 48px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* Error screen */
+.error-info {
+  text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.error-info h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--tg-theme-text-color);
+}
+
+.error-info p {
+  color: var(--tg-theme-hint-color);
+  margin-bottom: 30px;
+  font-size: 14px;
+}
+
+.error-info .btn {
+  margin-bottom: 12px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .screen {
+    padding: 16px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .balance-amount {
+    font-size: 24px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+  }
+}
+
+/* Tema oscuro de Telegram */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --tg-theme-bg-color: #17212b;
+    --tg-theme-text-color: #ffffff;
+    --tg-theme-hint-color: #708499;
+    --tg-theme-link-color: #6ab7ff;
+    --tg-theme-button-color: #5288c1;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-secondary-bg-color: #232e3c;
+  }
+
+  .form-group input,
+  .form-group select {
+    border-color: #3e546a;
+    background: var(--tg-theme-bg-color);
+  }
+
+  .instructions {
+    background: #2b3a4a;
+    border-left-color: var(--tg-theme-button-color);
+  }
+}
+
+/* Animaciones adicionales */
+.btn:active {
+  transform: translateY(1px);
+}
+
+.info-card,
+.bank-card {
+  transition: transform 0.2s ease;
+}
+
+.info-card:hover,
+.bank-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Utilidades */
+.text-center {
+  text-align: center;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.hidden {
+  display: none !important;
+}
