@@ -5,7 +5,8 @@
   "main": "index.html",
   "scripts": {
     "dev": "vercel dev",
-    "deploy": "vercel --prod"
+    "build": "echo 'No build needed for static files'",
+    "vercel-build": "echo 'No build needed for static files'"
   },
   "keywords": [
     "telegram",
@@ -13,6 +14,6 @@
     "depositos",
     "retiros"
   ],
-  "author": "Tu Nombre",
+  "author": "Igor Martinez",
   "license": "MIT"
 }
