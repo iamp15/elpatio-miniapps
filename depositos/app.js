@@ -1,4 +1,5 @@
 // Configuración de la Mini App
+// Actualizado: 2024-01-24 - Integración con Railway backend
 class DepositApp {
   constructor() {
     this.tg = window.Telegram.WebApp;
