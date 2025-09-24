@@ -4,9 +4,30 @@ class DepositApp {
     this.tg = window.Telegram.WebApp;
     this.currentTransaction = null;
     this.userData = null;
-    this.backendUrl = "http://localhost:3000/api"; // Cambiar por tu URL del backend
+    // Configuración del backend basada en el ambiente
+    this.backendUrl = this.getBackendUrl();
 
     this.init();
+  }
+
+  // Obtener URL del backend basada en el ambiente
+  getBackendUrl() {
+    // En desarrollo local
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return "http://localhost:3001/api";
+    }
+
+    // En Vercel (desarrollo), usar Railway backend
+    if (window.location.hostname.includes("vercel.app")) {
+      // URL del backend en Railway (actualizar con tu URL real)
+      return "https://elpatio-backend-production.up.railway.app/api";
+    }
+
+    // En producción real
+    return "https://elpatio-backend-production.up.railway.app/api";
   }
 
   // Inicialización de la app
@@ -152,19 +173,111 @@ class DepositApp {
   // Cargar saldo del usuario
   async loadUserBalance() {
     try {
-      // Simular carga de saldo (reemplazar con llamada real al backend)
+      // Mostrar estado de carga
+      document.getElementById("current-balance").textContent = "Cargando...";
+
+      // Obtener saldo real del backend
       const balance = await this.getUserBalance();
-      document.getElementById("current-balance").textContent = `${balance} Bs`;
+
+      // Formatear saldo con separadores de miles
+      const formattedBalance = this.formatCurrency(balance);
+      document.getElementById(
+        "current-balance"
+      ).textContent = `${formattedBalance} Bs`;
+      
+      console.log("✅ Saldo cargado exitosamente:", formattedBalance, "Bs");
     } catch (error) {
-      console.error("Error cargando saldo:", error);
-      document.getElementById("current-balance").textContent = "Error";
+      console.error("❌ Error cargando saldo:", error);
+      
+      // Mostrar mensaje de error más específico
+      let errorMessage = "No disponible temporalmente";
+      
+      if (error.message.includes("404")) {
+        errorMessage = "Usuario no encontrado";
+      } else if (error.message.includes("Backend no disponible")) {
+        errorMessage = "Backend no disponible";
+      } else if (error.message.includes("fetch")) {
+        errorMessage = "Error de conexión";
+      }
+      
+      document.getElementById("current-balance").textContent = errorMessage;
+      
+      // Mostrar mensaje de error en la consola para debugging
+      console.warn("⚠️ No se pudo cargar el saldo:", error.message);
     }
   }
 
-  // Obtener saldo del usuario (simulado)
+  // Obtener saldo del usuario desde el backend
   async getUserBalance() {
-    // TODO: Implementar llamada real al backend
-    return 150.5; // Simulado
+    try {
+      console.log("🔍 Iniciando obtención de saldo...");
+      console.log("🔗 Backend URL:", this.backendUrl);
+      console.log("👤 Usuario ID:", this.userData?.id);
+
+      // Si no hay backend disponible, lanzar error
+      if (!this.backendUrl) {
+        console.error("❌ Backend no disponible");
+        throw new Error("Backend no disponible");
+      }
+
+      // Obtener el ID del jugador desde los datos de Telegram
+      const telegramId = this.userData.id.toString();
+      const fullUrl = `${this.backendUrl}/webapp/jugadores/${telegramId}/saldo`;
+
+      console.log("📡 Haciendo petición a:", fullUrl);
+
+      // Hacer llamada al endpoint del backend con autenticación de Telegram
+      const response = await fetch(fullUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Telegram-ID": telegramId,
+        },
+      });
+
+      console.log(
+        "📊 Respuesta recibida:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message || `Error del servidor: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("📊 Datos recibidos:", data);
+
+      if (data.success && data.saldo !== undefined) {
+        // Convertir centavos a bolívares
+        const balanceInBs = data.saldo / 100;
+        console.log(
+          "✅ Saldo obtenido:",
+          data.saldo,
+          "centavos =",
+          balanceInBs,
+          "Bs"
+        );
+        return balanceInBs;
+      } else {
+        throw new Error(data.message || "Error obteniendo saldo");
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo saldo:", error.message);
+      // Lanzar el error para que se muestre el mensaje de error
+      throw error;
+    }
+  }
+
+  // Formatear moneda venezolana
+  formatCurrency(amount) {
+    return new Intl.NumberFormat("es-VE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
   }
 
   // Calcular centavos automáticamente
