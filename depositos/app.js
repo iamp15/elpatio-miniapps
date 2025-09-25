@@ -321,28 +321,149 @@ class DepositApp {
 
   // Crear solicitud de depósito
   async createDepositRequest(amountCents) {
-    const payload = {
-      telegramId: this.userData.id.toString(),
-      monto: amountCents,
-    };
+    try {
+      // Obtener token de autenticación
+      const token = await this.getBotToken();
+      
+      // Primero necesitamos obtener o crear el jugador
+      const jugador = await this.getOrCreateJugador(token);
+      
+      // Crear la transacción de depósito
+      const payload = {
+        jugadorId: jugador._id,
+        telegramId: this.userData.id.toString(),
+        tipo: "credito",
+        categoria: "deposito",
+        monto: amountCents,
+        descripcion: `Depósito de ${(amountCents / 100).toLocaleString('es-VE')} Bs`,
+        saldoAnterior: jugador.saldo || 0,
+        referencia: `DEP_${this.userData.id}_${Date.now()}`,
+        estado: "pendiente",
+        infoPago: {
+          metodoPago: "pago_movil"
+        },
+        creadoPor: jugador._id
+      };
 
-    // TODO: Implementar llamada real al backend del bot
-    // const response = await fetch(`${this.backendUrl}/depositos/solicitud`, {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify(payload)
-    // });
+      console.log("Creando transacción de depósito:", payload);
 
-    // Simular respuesta
-    return {
-      _id: "64f1a2b3c4d5e6f7g8h9i0j1",
-      referencia: `DEP_${this.userData.id}_${Date.now()}`,
-      monto: amountCents,
-      estado: "pendiente",
-      fechaCreacion: new Date().toISOString(),
-    };
+      const response = await fetch(`${this.backendUrl}/transacciones/solicitud`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensaje || 'Error al crear la transacción');
+      }
+
+      const transactionData = await response.json();
+      console.log("Transacción creada exitosamente:", transactionData);
+
+      return transactionData.transaccion || transactionData;
+
+    } catch (error) {
+      console.error("Error creando transacción:", error);
+      throw error;
+    }
+  }
+
+  // Obtener o crear jugador
+  async getOrCreateJugador(token) {
+    try {
+      // Intentar obtener el jugador existente
+      const response = await fetch(`${this.backendUrl}/jugadores/${this.userData.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+
+      if (response.ok) {
+        const jugadorData = await response.json();
+        return jugadorData.jugador;
+      }
+
+      // Si no existe, crear el jugador
+      const newJugador = {
+        telegramId: this.userData.id.toString(),
+        username: this.userData.username,
+        firstName: this.userData.first_name,
+        nickname: this.userData.username || `user_${this.userData.id}`,
+        saldo: 0
+      };
+
+      const createResponse = await fetch(`${this.backendUrl}/jugadores`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(newJugador)
+      });
+
+      if (!createResponse.ok) {
+        const errorData = await createResponse.json();
+        throw new Error(errorData.mensaje || 'Error al crear el jugador');
+      }
+
+      const jugadorData = await createResponse.json();
+      return jugadorData.jugador;
+
+    } catch (error) {
+      console.error("Error obteniendo/creando jugador:", error);
+      throw error;
+    }
+  }
+
+  // Obtener token del bot
+  async getBotToken() {
+    // En una implementación real, esto vendría del bot de Telegram
+    // Por ahora usamos un token temporal obtenido del backend
+    try {
+      const response = await fetch(`${this.backendUrl}/admin/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: "bot@elpatio.games",
+          password: "bot123456"
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.token;
+      } else {
+        // Fallback: usar token de cajero si el bot no está disponible
+        const fallbackResponse = await fetch(`${this.backendUrl}/cajeros/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: "luis@ejemplo.com",
+            password: "clave123"
+          })
+        });
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          return fallbackData.token;
+        }
+      }
+    } catch (error) {
+      console.error("Error obteniendo token:", error);
+    }
+
+    // Si todo falla, usar token placeholder
+    return "bot_token_placeholder";
   }
 
   // Mostrar pantalla de espera
