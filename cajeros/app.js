@@ -289,7 +289,8 @@ function createTransactionCard(transaccion) {
   card.className = "transaction-card";
   card.dataset.transactionId = transaccion._id;
 
-  const tipoClass = transaccion.categoria === "deposito" ? "deposito" : "retiro";
+  const tipoClass =
+    transaccion.categoria === "deposito" ? "deposito" : "retiro";
   const tipoText = transaccion.categoria === "deposito" ? "Depósito" : "Retiro";
   const icon = transaccion.categoria === "deposito" ? "💰" : "💸";
 
@@ -299,7 +300,7 @@ function createTransactionCard(transaccion) {
         ${icon} ${tipoText}
       </div>
       <div class="transaction-amount">
-        ${transaccion.monto.toLocaleString()} Bs
+        ${(transaccion.monto / 100).toLocaleString()} Bs
       </div>
     </div>
     
@@ -360,7 +361,11 @@ function createTransactionCard(transaccion) {
  * Aceptar transacción (tomar la transacción)
  */
 async function aceptarTransaccion(transaccionId) {
-  if (!confirm("¿Estás seguro de aceptar esta transacción? Esto enviará los datos bancarios al jugador.")) {
+  if (
+    !confirm(
+      "¿Estás seguro de aceptar esta transacción? Esto enviará los datos bancarios al jugador."
+    )
+  ) {
     return;
   }
 
@@ -371,20 +376,19 @@ async function aceptarTransaccion(transaccionId) {
     );
 
     if (response.ok) {
-      alert("✅ Transacción aceptada exitosamente. Los datos bancarios han sido enviados al jugador.");
+      alert(
+        "✅ Transacción aceptada exitosamente. Los datos bancarios han sido enviados al jugador."
+      );
       loadTransactions(); // Recargar la lista
     } else {
       const errorData = await response.json();
-      alert(
-        `❌ Error: ${errorData.mensaje || "Error al aceptar transacción"}`
-      );
+      alert(`❌ Error: ${errorData.mensaje || "Error al aceptar transacción"}`);
     }
   } catch (error) {
     console.error("Error aceptando transacción:", error);
     alert("❌ Error de conexión al aceptar transacción");
   }
 }
-
 
 /**
  * Mostrar estado de carga de transacciones
