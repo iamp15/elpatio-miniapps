@@ -55,31 +55,57 @@
         </div>
       </div>
 
-      <!-- Pantalla de Login Exitoso -->
-      <div id="success-screen" class="screen">
+      <!-- Dashboard de Transacciones -->
+      <div id="dashboard-screen" class="screen">
         <div class="container">
           <div class="header">
-            <h1>✅ Login Exitoso</h1>
-            <p>Bienvenido al Portal de Cajeros</p>
+            <h1>🏦 Portal de Cajeros</h1>
+            <p>Bienvenido, <span id="cajero-name">-</span></p>
           </div>
 
-          <div class="success-content">
-            <div class="success-icon">🎉</div>
-            <h2>¡Autenticación exitosa!</h2>
-            <p>Has iniciado sesión correctamente en el sistema.</p>
-
-            <div class="user-info">
-              <h3>Información del Cajero:</h3>
-              <div id="cajero-info" class="info-display">
-                <p><strong>ID:</strong> <span id="cajero-id">-</span></p>
-                <p><strong>Email:</strong> <span id="cajero-email">-</span></p>
-                <p><strong>Rol:</strong> <span id="cajero-rol">-</span></p>
+          <div class="dashboard-content">
+            <!-- Información del cajero -->
+            <div class="cajero-info-card">
+              <h3>👤 Información del Cajero</h3>
+              <div class="info-grid">
+                <div><strong>Email:</strong> <span id="cajero-email-display">-</span></div>
+                <div><strong>Banco:</strong> <span id="cajero-banco">-</span></div>
+                <div><strong>Teléfono:</strong> <span id="cajero-telefono">-</span></div>
               </div>
             </div>
 
-            <button id="logout-btn" class="btn btn-secondary">
-              Cerrar Sesión
-            </button>
+            <!-- Sección de transacciones pendientes -->
+            <div class="transactions-section">
+              <div class="section-header">
+                <h3>📋 Solicitudes Pendientes</h3>
+                <button id="refresh-btn" class="btn btn-small">🔄 Actualizar</button>
+              </div>
+
+              <!-- Estado de carga -->
+              <div id="loading-transactions" class="loading-state" style="display: none;">
+                <div class="spinner"></div>
+                <p>Cargando solicitudes...</p>
+              </div>
+
+              <!-- Lista de transacciones -->
+              <div id="transactions-list" class="transactions-list">
+                <!-- Las transacciones se cargarán dinámicamente aquí -->
+              </div>
+
+              <!-- Mensaje cuando no hay transacciones -->
+              <div id="no-transactions" class="no-transactions" style="display: none;">
+                <div class="no-data-icon">📭</div>
+                <h4>No hay solicitudes pendientes</h4>
+                <p>Todas las solicitudes están procesadas o no hay nuevas solicitudes.</p>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="action-buttons">
+              <button id="logout-btn" class="btn btn-secondary">
+                🚪 Cerrar Sesión
+              </button>
+            </div>
           </div>
         </div>
       </div>

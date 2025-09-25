@@ -146,51 +146,210 @@ body {
   text-align: center;
 }
 
-.success-content {
-  text-align: center;
-}
-
-.success-icon {
-  font-size: 60px;
-  margin-bottom: 20px;
-}
-
-.success-content h2 {
-  color: #28a745;
-  margin-bottom: 15px;
-  font-size: 24px;
-}
-
-.success-content p {
-  color: #666;
-  margin-bottom: 30px;
-  font-size: 16px;
-}
-
-.user-info {
-  background: #f8f9fa;
-  padding: 20px;
-  border-radius: 10px;
-  margin: 20px 0;
+/* Dashboard Styles */
+.dashboard-content {
   text-align: left;
 }
 
-.user-info h3 {
+.cajero-info-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 25px;
+  border-left: 4px solid #667eea;
+}
+
+.cajero-info-card h3 {
   color: #333;
   margin-bottom: 15px;
   font-size: 18px;
   text-align: center;
 }
 
-.info-display p {
-  margin-bottom: 10px;
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.info-grid div {
   color: #555;
   font-size: 14px;
 }
 
-.info-display strong {
+.info-grid strong {
   color: #333;
   font-weight: 600;
+}
+
+.transactions-section {
+  margin-bottom: 25px;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  color: #333;
+  margin: 0;
+  font-size: 18px;
+}
+
+.btn-small {
+  padding: 8px 15px;
+  font-size: 14px;
+  width: auto;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.btn-small:hover {
+  background: #218838;
+}
+
+.loading-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 15px;
+}
+
+.transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.transaction-card {
+  background: white;
+  border: 2px solid #e1e5e9;
+  border-radius: 10px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.transaction-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.transaction-type {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.transaction-type.deposito {
+  background: #d4edda;
+  color: #155724;
+}
+
+.transaction-type.retiro {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.transaction-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: #333;
+}
+
+.transaction-details {
+  margin-bottom: 15px;
+}
+
+.transaction-details p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.transaction-details strong {
+  color: #333;
+  font-weight: 600;
+}
+
+.transaction-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-confirm {
+  background: #28a745;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #218838;
+}
+
+.btn-reject {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-reject:hover {
+  background: #c82333;
+}
+
+.no-transactions {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-data-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-transactions h4 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.action-buttons {
+  margin-top: 30px;
+  text-align: center;
 }
 
 /* Responsive */
