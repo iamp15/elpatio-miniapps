@@ -322,11 +322,37 @@ class DepositApp {
   // Crear solicitud de depósito
   async createDepositRequest(amountCents) {
     try {
+      console.log("🚀 Iniciando creación de solicitud de depósito...");
+      console.log("💰 Monto en centavos:", amountCents);
+      console.log("👤 Usuario:", this.userData);
+
       // Obtener token de autenticación
+      console.log("🔐 Obteniendo token de autenticación...");
       const token = await this.getBotToken();
+      
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener un token válido para la autenticación");
+      }
+      
+      console.log("✅ Token obtenido:", token.substring(0, 20) + "...");
 
       // Primero necesitamos obtener o crear el jugador
+      console.log("👥 Obteniendo/creando jugador...");
       const jugador = await this.getOrCreateJugador(token);
+      
+      if (!jugador) {
+        throw new Error("No se pudo obtener o crear el jugador");
+      }
+      
+      if (!jugador._id) {
+        throw new Error("El jugador no tiene un ID válido");
+      }
+      
+      console.log("✅ Jugador obtenido:", {
+        id: jugador._id,
+        username: jugador.username,
+        saldo: jugador.saldo
+      });
 
       // Crear la transacción de depósito
       const payload = {
@@ -347,7 +373,7 @@ class DepositApp {
         creadoPor: jugador._id,
       };
 
-      console.log("Creando transacción de depósito:", payload);
+      console.log("📝 Creando transacción de depósito:", payload);
 
       const response = await fetch(
         `${this.backendUrl}/transacciones/solicitud`,
@@ -361,24 +387,32 @@ class DepositApp {
         }
       );
 
+      console.log("📡 Respuesta del servidor:", response.status, response.statusText);
+
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.mensaje || "Error al crear la transacción");
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Error del servidor:", errorData);
+        throw new Error(errorData.mensaje || `Error del servidor: ${response.status} - ${response.statusText}`);
       }
 
       const transactionData = await response.json();
-      console.log("Transacción creada exitosamente:", transactionData);
+      console.log("✅ Transacción creada exitosamente:", transactionData);
 
       return transactionData.transaccion || transactionData;
     } catch (error) {
-      console.error("Error creando transacción:", error);
-      throw error;
+      console.error("❌ Error creando transacción:", error);
+      // Agregar información adicional al error para debugging
+      const errorMessage = error.message + `\n\nDetalles técnicos:\n- Usuario ID: ${this.userData?.id}\n- Backend URL: ${this.backendUrl}\n- Timestamp: ${new Date().toISOString()}`;
+      throw new Error(errorMessage);
     }
   }
 
   // Obtener o crear jugador
   async getOrCreateJugador(token) {
     try {
+      console.log("🔍 Buscando jugador existente...");
+      console.log("👤 Telegram ID:", this.userData.id);
+      
       // Intentar obtener el jugador existente
       const response = await fetch(
         `${this.backendUrl}/jugadores/${this.userData.id}`,
@@ -391,9 +425,23 @@ class DepositApp {
         }
       );
 
+      console.log("📡 Respuesta de búsqueda de jugador:", response.status, response.statusText);
+
       if (response.ok) {
         const jugadorData = await response.json();
-        return jugadorData.jugador;
+        console.log("✅ Jugador encontrado:", jugadorData);
+        
+        if (jugadorData.jugador && jugadorData.jugador._id) {
+          return jugadorData.jugador;
+        } else {
+          console.warn("⚠️ Respuesta sin jugador válido:", jugadorData);
+        }
+      } else if (response.status === 404) {
+        console.log("👤 Jugador no encontrado, creando nuevo...");
+      } else {
+        console.error("❌ Error buscando jugador:", response.status, response.statusText);
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Detalles del error:", errorData);
       }
 
       // Si no existe, crear el jugador
@@ -405,6 +453,8 @@ class DepositApp {
         saldo: 0,
       };
 
+      console.log("📝 Creando nuevo jugador:", newJugador);
+
       const createResponse = await fetch(`${this.backendUrl}/jugadores`, {
         method: "POST",
         headers: {
@@ -414,15 +464,24 @@ class DepositApp {
         body: JSON.stringify(newJugador),
       });
 
+      console.log("📡 Respuesta de creación de jugador:", createResponse.status, createResponse.statusText);
+
       if (!createResponse.ok) {
-        const errorData = await createResponse.json();
-        throw new Error(errorData.mensaje || "Error al crear el jugador");
+        const errorData = await createResponse.json().catch(() => ({}));
+        console.error("❌ Error creando jugador:", errorData);
+        throw new Error(errorData.mensaje || `Error al crear el jugador: ${createResponse.status} - ${createResponse.statusText}`);
       }
 
       const jugadorData = await createResponse.json();
-      return jugadorData.jugador;
+      console.log("✅ Jugador creado exitosamente:", jugadorData);
+      
+      if (jugadorData.jugador && jugadorData.jugador._id) {
+        return jugadorData.jugador;
+      } else {
+        throw new Error("La respuesta del servidor no contiene un jugador válido");
+      }
     } catch (error) {
-      console.error("Error obteniendo/creando jugador:", error);
+      console.error("❌ Error obteniendo/creando jugador:", error);
       throw error;
     }
   }
@@ -432,10 +491,10 @@ class DepositApp {
     // Credenciales del bot (en producción estas vendrían del build)
     const BOT_EMAIL = "bot@elpatio.games";
     const BOT_PASSWORD = "BotCl4ve#Sup3rS3gur4!2025";
-    
+
     try {
       console.log("🔐 Obteniendo token del bot...");
-      
+
       const response = await fetch(`${this.backendUrl}/admin/login`, {
         method: "POST",
         headers: {
@@ -452,8 +511,12 @@ class DepositApp {
         console.log("✅ Token del bot obtenido exitosamente");
         return data.token;
       } else {
-        console.error("❌ Error en login del bot:", response.status, response.statusText);
-        
+        console.error(
+          "❌ Error en login del bot:",
+          response.status,
+          response.statusText
+        );
+
         // Fallback: usar token de cajero si el bot no está disponible
         console.log("🔄 Intentando fallback con cajero...");
         const fallbackResponse = await fetch(
