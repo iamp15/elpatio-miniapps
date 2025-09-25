@@ -300,7 +300,7 @@ function createTransactionCard(transaccion) {
         ${icon} ${tipoText}
       </div>
       <div class="transaction-amount">
-        ${(transaccion.monto / 100).toLocaleString()} Bs
+        ${(transaccion.monto / 100).toLocaleString('es-VE')} Bs
       </div>
     </div>
     
