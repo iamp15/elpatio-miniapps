@@ -185,14 +185,14 @@ class DepositApp {
       document.getElementById(
         "current-balance"
       ).textContent = `${formattedBalance} Bs`;
-      
+
       console.log("✅ Saldo cargado exitosamente:", formattedBalance, "Bs");
     } catch (error) {
       console.error("❌ Error cargando saldo:", error);
-      
+
       // Mostrar mensaje de error más específico
       let errorMessage = "No disponible temporalmente";
-      
+
       if (error.message.includes("404")) {
         errorMessage = "Usuario no encontrado";
       } else if (error.message.includes("Backend no disponible")) {
@@ -200,9 +200,9 @@ class DepositApp {
       } else if (error.message.includes("fetch")) {
         errorMessage = "Error de conexión";
       }
-      
+
       document.getElementById("current-balance").textContent = errorMessage;
-      
+
       // Mostrar mensaje de error en la consola para debugging
       console.warn("⚠️ No se pudo cargar el saldo:", error.message);
     }
@@ -245,7 +245,8 @@ class DepositApp {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Error del servidor: ${response.status} - ${response.statusText}`
+          errorData.message ||
+            `Error del servidor: ${response.status} - ${response.statusText}`
         );
       }
 

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Patio - Portal de Cajeros</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Pantalla de Login -->
+      <div id="login-screen" class="screen active">
+        <div class="container">
+          <div class="header">
+            <h1>🏦 Portal de Cajeros</h1>
+            <p>El Patio - Sistema de Gestión</p>
+          </div>
+
+          <form id="login-form" class="form">
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="tu@email.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Contraseña:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="Tu contraseña"
+              />
+            </div>
+
+            <button type="submit" id="login-btn" class="btn btn-primary">
+              <span id="login-text">Iniciar Sesión</span>
+              <span id="login-loading" class="loading" style="display: none"
+                >Cargando...</span
+              >
+            </button>
+          </form>
+
+          <div
+            id="error-message"
+            class="error-message"
+            style="display: none"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Pantalla de Login Exitoso -->
+      <div id="success-screen" class="screen">
+        <div class="container">
+          <div class="header">
+            <h1>✅ Login Exitoso</h1>
+            <p>Bienvenido al Portal de Cajeros</p>
+          </div>
+
+          <div class="success-content">
+            <div class="success-icon">🎉</div>
+            <h2>¡Autenticación exitosa!</h2>
+            <p>Has iniciado sesión correctamente en el sistema.</p>
+
+            <div class="user-info">
+              <h3>Información del Cajero:</h3>
+              <div id="cajero-info" class="info-display">
+                <p><strong>ID:</strong> <span id="cajero-id">-</span></p>
+                <p><strong>Email:</strong> <span id="cajero-email">-</span></p>
+                <p><strong>Rol:</strong> <span id="cajero-rol">-</span></p>
+              </div>
+            </div>
+
+            <button id="logout-btn" class="btn btn-secondary">
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

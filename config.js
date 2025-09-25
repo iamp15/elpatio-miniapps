@@ -30,6 +30,7 @@ const config = {
   RETIROS_URL: "/retiros",
   SALAS_URL: "/salas",
   CONFIGURACION_URL: "/configuracion",
+  CAJEROS_URL: "/cajeros",
 };
 
 module.exports = config;
