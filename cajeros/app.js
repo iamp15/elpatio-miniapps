@@ -289,9 +289,9 @@ function createTransactionCard(transaccion) {
   card.className = "transaction-card";
   card.dataset.transactionId = transaccion._id;
 
-  const tipoClass = transaccion.tipo === "deposito" ? "deposito" : "retiro";
-  const tipoText = transaccion.tipo === "deposito" ? "Depósito" : "Retiro";
-  const icon = transaccion.tipo === "deposito" ? "💰" : "💸";
+  const tipoClass = transaccion.categoria === "deposito" ? "deposito" : "retiro";
+  const tipoText = transaccion.categoria === "deposito" ? "Depósito" : "Retiro";
+  const icon = transaccion.categoria === "deposito" ? "💰" : "💸";
 
   card.innerHTML = `
     <div class="transaction-header">
@@ -345,15 +345,10 @@ function createTransactionCard(transaccion) {
     </div>
     
     <div class="transaction-actions">
-      <button class="btn-action btn-confirm" onclick="confirmarTransaccion('${
+      <button class="btn-action btn-accept" onclick="aceptarTransaccion('${
         transaccion._id
       }')">
-        ✅ Confirmar
-      </button>
-      <button class="btn-action btn-reject" onclick="rechazarTransaccion('${
-        transaccion._id
-      }')">
-        ❌ Rechazar
+        ✅ Aceptar
       </button>
     </div>
   `;
@@ -362,10 +357,10 @@ function createTransactionCard(transaccion) {
 }
 
 /**
- * Confirmar transacción
+ * Aceptar transacción (tomar la transacción)
  */
-async function confirmarTransaccion(transaccionId) {
-  if (!confirm("¿Estás seguro de confirmar esta transacción?")) {
+async function aceptarTransaccion(transaccionId) {
+  if (!confirm("¿Estás seguro de aceptar esta transacción? Esto enviará los datos bancarios al jugador.")) {
     return;
   }
 
@@ -376,48 +371,20 @@ async function confirmarTransaccion(transaccionId) {
     );
 
     if (response.ok) {
-      alert("✅ Transacción confirmada exitosamente");
+      alert("✅ Transacción aceptada exitosamente. Los datos bancarios han sido enviados al jugador.");
       loadTransactions(); // Recargar la lista
     } else {
       const errorData = await response.json();
       alert(
-        `❌ Error: ${errorData.mensaje || "Error al confirmar transacción"}`
+        `❌ Error: ${errorData.mensaje || "Error al aceptar transacción"}`
       );
     }
   } catch (error) {
-    console.error("Error confirmando transacción:", error);
-    alert("❌ Error de conexión al confirmar transacción");
+    console.error("Error aceptando transacción:", error);
+    alert("❌ Error de conexión al aceptar transacción");
   }
 }
 
-/**
- * Rechazar transacción
- */
-async function rechazarTransaccion(transaccionId) {
-  if (!confirm("¿Estás seguro de rechazar esta transacción?")) {
-    return;
-  }
-
-  try {
-    const response = await authenticatedRequest(
-      `${API_BASE_URL}/api/transacciones/${transaccionId}/rechazar`,
-      { method: "PUT" }
-    );
-
-    if (response.ok) {
-      alert("❌ Transacción rechazada exitosamente");
-      loadTransactions(); // Recargar la lista
-    } else {
-      const errorData = await response.json();
-      alert(
-        `❌ Error: ${errorData.mensaje || "Error al rechazar transacción"}`
-      );
-    }
-  } catch (error) {
-    console.error("Error rechazando transacción:", error);
-    alert("❌ Error de conexión al rechazar transacción");
-  }
-}
 
 /**
  * Mostrar estado de carga de transacciones
@@ -470,6 +437,5 @@ window.CajerosApp = {
   getCurrentToken: () => currentToken,
   getCajeroInfo: () => cajeroInfo,
   loadTransactions,
-  confirmarTransaccion,
-  rechazarTransaccion,
+  aceptarTransaccion,
 };
