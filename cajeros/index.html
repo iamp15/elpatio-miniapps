@@ -68,9 +68,16 @@
             <div class="cajero-info-card">
               <h3>👤 Información del Cajero</h3>
               <div class="info-grid">
-                <div><strong>Email:</strong> <span id="cajero-email-display">-</span></div>
-                <div><strong>Banco:</strong> <span id="cajero-banco">-</span></div>
-                <div><strong>Teléfono:</strong> <span id="cajero-telefono">-</span></div>
+                <div>
+                  <strong>Email:</strong>
+                  <span id="cajero-email-display">-</span>
+                </div>
+                <div>
+                  <strong>Banco:</strong> <span id="cajero-banco">-</span>
+                </div>
+                <div>
+                  <strong>Teléfono:</strong> <span id="cajero-telefono">-</span>
+                </div>
               </div>
             </div>
 
@@ -78,11 +85,17 @@
             <div class="transactions-section">
               <div class="section-header">
                 <h3>📋 Solicitudes Pendientes</h3>
-                <button id="refresh-btn" class="btn btn-small">🔄 Actualizar</button>
+                <button id="refresh-btn" class="btn btn-small">
+                  🔄 Actualizar
+                </button>
               </div>
 
               <!-- Estado de carga -->
-              <div id="loading-transactions" class="loading-state" style="display: none;">
+              <div
+                id="loading-transactions"
+                class="loading-state"
+                style="display: none"
+              >
                 <div class="spinner"></div>
                 <p>Cargando solicitudes...</p>
               </div>
@@ -93,10 +106,17 @@
               </div>
 
               <!-- Mensaje cuando no hay transacciones -->
-              <div id="no-transactions" class="no-transactions" style="display: none;">
+              <div
+                id="no-transactions"
+                class="no-transactions"
+                style="display: none"
+              >
                 <div class="no-data-icon">📭</div>
                 <h4>No hay solicitudes pendientes</h4>
-                <p>Todas las solicitudes están procesadas o no hay nuevas solicitudes.</p>
+                <p>
+                  Todas las solicitudes están procesadas o no hay nuevas
+                  solicitudes.
+                </p>
               </div>
             </div>
 

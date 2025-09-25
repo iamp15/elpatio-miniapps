@@ -114,10 +114,10 @@ async function verifyToken(token) {
       const data = await response.json();
       currentToken = token;
       cajeroInfo = data.cajero;
-      
+
       // Cargar transacciones pendientes
       await loadTransactions();
-      
+
       // Mostrar dashboard
       showDashboard();
     } else {
@@ -241,17 +241,23 @@ async function loadTransactions() {
     showLoadingTransactions(true);
     hideNoTransactions();
 
-    const response = await authenticatedRequest(`${API_BASE_URL}/api/transacciones/pendientes-cajero`);
+    const response = await authenticatedRequest(
+      `${API_BASE_URL}/api/transacciones/pendientes-cajero`
+    );
 
     if (response.ok) {
-      const transacciones = await response.json();
+      const data = await response.json();
+      console.log("Respuesta del endpoint:", data);
+      // El endpoint devuelve { transacciones: [...], total: number }
+      const transacciones = data.transacciones || data;
+      console.log("Transacciones extraídas:", transacciones);
       displayTransactions(transacciones);
     } else {
-      console.error('Error cargando transacciones:', response.status);
+      console.error("Error cargando transacciones:", response.status);
       showNoTransactions();
     }
   } catch (error) {
-    console.error('Error cargando transacciones:', error);
+    console.error("Error cargando transacciones:", error);
     showNoTransactions();
   } finally {
     showLoadingTransactions(false);
@@ -262,14 +268,14 @@ async function loadTransactions() {
  * Mostrar transacciones en la interfaz
  */
 function displayTransactions(transacciones) {
-  transactionsList.innerHTML = '';
+  transactionsList.innerHTML = "";
 
   if (!transacciones || transacciones.length === 0) {
     showNoTransactions();
     return;
   }
 
-  transacciones.forEach(transaccion => {
+  transacciones.forEach((transaccion) => {
     const transactionCard = createTransactionCard(transaccion);
     transactionsList.appendChild(transactionCard);
   });
@@ -279,13 +285,13 @@ function displayTransactions(transacciones) {
  * Crear tarjeta de transacción
  */
 function createTransactionCard(transaccion) {
-  const card = document.createElement('div');
-  card.className = 'transaction-card';
+  const card = document.createElement("div");
+  card.className = "transaction-card";
   card.dataset.transactionId = transaccion._id;
 
-  const tipoClass = transaccion.tipo === 'deposito' ? 'deposito' : 'retiro';
-  const tipoText = transaccion.tipo === 'deposito' ? 'Depósito' : 'Retiro';
-  const icon = transaccion.tipo === 'deposito' ? '💰' : '💸';
+  const tipoClass = transaccion.tipo === "deposito" ? "deposito" : "retiro";
+  const tipoText = transaccion.tipo === "deposito" ? "Depósito" : "Retiro";
+  const icon = transaccion.tipo === "deposito" ? "💰" : "💸";
 
   card.innerHTML = `
     <div class="transaction-header">
@@ -298,23 +304,55 @@ function createTransactionCard(transaccion) {
     </div>
     
     <div class="transaction-details">
-      <p><strong>Descripción:</strong> ${transaccion.descripcion || 'Sin descripción'}</p>
-      <p><strong>Categoría:</strong> ${transaccion.categoria || 'N/A'}</p>
-      <p><strong>Fecha:</strong> ${new Date(transaccion.createdAt).toLocaleString()}</p>
-      ${transaccion.jugadorId ? `<p><strong>Jugador:</strong> ${transaccion.jugadorId.username || transaccion.jugadorId.nickname || 'N/A'}</p>` : ''}
-      ${transaccion.datosPago ? `
-        <p><strong>Método:</strong> ${transaccion.datosPago.metodo || 'N/A'}</p>
-        ${transaccion.datosPago.banco ? `<p><strong>Banco:</strong> ${transaccion.datosPago.banco}</p>` : ''}
-        ${transaccion.datosPago.telefono ? `<p><strong>Teléfono:</strong> ${transaccion.datosPago.telefono}</p>` : ''}
-        ${transaccion.datosPago.referencia ? `<p><strong>Referencia:</strong> ${transaccion.datosPago.referencia}</p>` : ''}
-      ` : ''}
+      <p><strong>Descripción:</strong> ${
+        transaccion.descripcion || "Sin descripción"
+      }</p>
+      <p><strong>Categoría:</strong> ${transaccion.categoria || "N/A"}</p>
+      <p><strong>Fecha:</strong> ${new Date(
+        transaccion.createdAt
+      ).toLocaleString()}</p>
+      ${
+        transaccion.jugadorId
+          ? `<p><strong>Jugador:</strong> ${
+              transaccion.jugadorId.username ||
+              transaccion.jugadorId.nickname ||
+              "N/A"
+            }</p>`
+          : ""
+      }
+      ${
+        transaccion.datosPago
+          ? `
+        <p><strong>Método:</strong> ${transaccion.datosPago.metodo || "N/A"}</p>
+        ${
+          transaccion.datosPago.banco
+            ? `<p><strong>Banco:</strong> ${transaccion.datosPago.banco}</p>`
+            : ""
+        }
+        ${
+          transaccion.datosPago.telefono
+            ? `<p><strong>Teléfono:</strong> ${transaccion.datosPago.telefono}</p>`
+            : ""
+        }
+        ${
+          transaccion.datosPago.referencia
+            ? `<p><strong>Referencia:</strong> ${transaccion.datosPago.referencia}</p>`
+            : ""
+        }
+      `
+          : ""
+      }
     </div>
     
     <div class="transaction-actions">
-      <button class="btn-action btn-confirm" onclick="confirmarTransaccion('${transaccion._id}')">
+      <button class="btn-action btn-confirm" onclick="confirmarTransaccion('${
+        transaccion._id
+      }')">
         ✅ Confirmar
       </button>
-      <button class="btn-action btn-reject" onclick="rechazarTransaccion('${transaccion._id}')">
+      <button class="btn-action btn-reject" onclick="rechazarTransaccion('${
+        transaccion._id
+      }')">
         ❌ Rechazar
       </button>
     </div>
@@ -327,26 +365,28 @@ function createTransactionCard(transaccion) {
  * Confirmar transacción
  */
 async function confirmarTransaccion(transaccionId) {
-  if (!confirm('¿Estás seguro de confirmar esta transacción?')) {
+  if (!confirm("¿Estás seguro de confirmar esta transacción?")) {
     return;
   }
 
   try {
     const response = await authenticatedRequest(
       `${API_BASE_URL}/api/transacciones/${transaccionId}/confirmar`,
-      { method: 'PUT' }
+      { method: "PUT" }
     );
 
     if (response.ok) {
-      alert('✅ Transacción confirmada exitosamente');
+      alert("✅ Transacción confirmada exitosamente");
       loadTransactions(); // Recargar la lista
     } else {
       const errorData = await response.json();
-      alert(`❌ Error: ${errorData.mensaje || 'Error al confirmar transacción'}`);
+      alert(
+        `❌ Error: ${errorData.mensaje || "Error al confirmar transacción"}`
+      );
     }
   } catch (error) {
-    console.error('Error confirmando transacción:', error);
-    alert('❌ Error de conexión al confirmar transacción');
+    console.error("Error confirmando transacción:", error);
+    alert("❌ Error de conexión al confirmar transacción");
   }
 }
 
@@ -354,26 +394,28 @@ async function confirmarTransaccion(transaccionId) {
  * Rechazar transacción
  */
 async function rechazarTransaccion(transaccionId) {
-  if (!confirm('¿Estás seguro de rechazar esta transacción?')) {
+  if (!confirm("¿Estás seguro de rechazar esta transacción?")) {
     return;
   }
 
   try {
     const response = await authenticatedRequest(
       `${API_BASE_URL}/api/transacciones/${transaccionId}/rechazar`,
-      { method: 'PUT' }
+      { method: "PUT" }
     );
 
     if (response.ok) {
-      alert('❌ Transacción rechazada exitosamente');
+      alert("❌ Transacción rechazada exitosamente");
       loadTransactions(); // Recargar la lista
     } else {
       const errorData = await response.json();
-      alert(`❌ Error: ${errorData.mensaje || 'Error al rechazar transacción'}`);
+      alert(
+        `❌ Error: ${errorData.mensaje || "Error al rechazar transacción"}`
+      );
     }
   } catch (error) {
-    console.error('Error rechazando transacción:', error);
-    alert('❌ Error de conexión al rechazar transacción');
+    console.error("Error rechazando transacción:", error);
+    alert("❌ Error de conexión al rechazar transacción");
   }
 }
 
@@ -381,22 +423,22 @@ async function rechazarTransaccion(transaccionId) {
  * Mostrar estado de carga de transacciones
  */
 function showLoadingTransactions(show) {
-  loadingTransactions.style.display = show ? 'block' : 'none';
+  loadingTransactions.style.display = show ? "block" : "none";
 }
 
 /**
  * Mostrar mensaje de no transacciones
  */
 function showNoTransactions() {
-  noTransactions.style.display = 'block';
-  transactionsList.innerHTML = '';
+  noTransactions.style.display = "block";
+  transactionsList.innerHTML = "";
 }
 
 /**
  * Ocultar mensaje de no transacciones
  */
 function hideNoTransactions() {
-  noTransactions.style.display = 'none';
+  noTransactions.style.display = "none";
 }
 
 /**
