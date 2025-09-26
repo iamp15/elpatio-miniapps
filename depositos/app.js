@@ -547,10 +547,19 @@ class DepositApp {
     } Bs`;
     document.getElementById("waiting-reference").textContent =
       transaction.referencia || transaction._id;
-    document.getElementById("waiting-status").textContent = "Creada exitosamente";
+    document.getElementById("waiting-status").textContent =
+      "Creada exitosamente";
+
+    // Ocultar el spinner de "Buscando cajero"
+    const loadingContainer = document.querySelector("#waiting-screen .loading-container");
+    if (loadingContainer) {
+      loadingContainer.style.display = "none";
+    }
 
     // Actualizar el mensaje de la pantalla
-    const statusElement = document.querySelector("#waiting-screen .status-message");
+    const statusElement = document.querySelector(
+      "#waiting-screen .status-message"
+    );
     if (statusElement) {
       statusElement.textContent = "Solicitud creada correctamente";
     }
@@ -560,7 +569,9 @@ class DepositApp {
     if (descElement) {
       descElement.innerHTML = `
         <p>Tu solicitud de depósito ha sido creada exitosamente.</p>
-        <p><strong>ID de transacción:</strong> ${transaction.referencia || transaction._id}</p>
+        <p><strong>ID de transacción:</strong> ${
+          transaction.referencia || transaction._id
+        }</p>
         <p>En los próximos minutos se te asignará un cajero para que realices el pago móvil.</p>
       `;
     }

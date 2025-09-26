@@ -282,6 +282,15 @@ function displayTransactions(transacciones) {
 }
 
 /**
+ * Formatear referencia para mostrar solo últimos 6 dígitos
+ */
+function formatReference(referencia) {
+  if (!referencia) return "N/A";
+  if (referencia.length <= 6) return referencia;
+  return "..." + referencia.slice(-6);
+}
+
+/**
  * Crear tarjeta de transacción
  */
 function createTransactionCard(transaccion) {
@@ -312,6 +321,7 @@ function createTransactionCard(transaccion) {
       <p><strong>Fecha:</strong> ${new Date(
         transaccion.createdAt
       ).toLocaleString()}</p>
+      ${transaccion.referencia ? `<p><strong>ID Transacción:</strong> ${formatReference(transaccion.referencia)}</p>` : ""}
       ${
         transaccion.jugadorId
           ? `<p><strong>Jugador:</strong> ${
@@ -337,7 +347,7 @@ function createTransactionCard(transaccion) {
         }
         ${
           transaccion.datosPago.referencia
-            ? `<p><strong>Referencia:</strong> ${transaccion.datosPago.referencia}</p>`
+            ? `<p><strong>Referencia:</strong> ${formatReference(transaccion.datosPago.referencia)}</p>`
             : ""
         }
       `
