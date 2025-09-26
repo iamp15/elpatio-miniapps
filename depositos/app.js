@@ -329,29 +329,31 @@ class DepositApp {
       // Obtener token de autenticación
       console.log("🔐 Obteniendo token de autenticación...");
       const token = await this.getBotToken();
-      
+
       if (!token || token === "bot_token_placeholder") {
-        throw new Error("No se pudo obtener un token válido para la autenticación");
+        throw new Error(
+          "No se pudo obtener un token válido para la autenticación"
+        );
       }
-      
+
       console.log("✅ Token obtenido:", token.substring(0, 20) + "...");
 
-      // Primero necesitamos obtener o crear el jugador
-      console.log("👥 Obteniendo/creando jugador...");
-      const jugador = await this.getOrCreateJugador(token);
-      
+      // Obtener el jugador existente
+      console.log("👥 Obteniendo jugador existente...");
+      const jugador = await this.getJugador(token);
+
       if (!jugador) {
-        throw new Error("No se pudo obtener o crear el jugador");
+        throw new Error("No se pudo obtener el jugador. Verifica que el usuario esté registrado.");
       }
-      
+
       if (!jugador._id) {
         throw new Error("El jugador no tiene un ID válido");
       }
-      
+
       console.log("✅ Jugador obtenido:", {
         id: jugador._id,
         username: jugador.username,
-        saldo: jugador.saldo
+        saldo: jugador.saldo,
       });
 
       // Crear la transacción de depósito
@@ -387,12 +389,19 @@ class DepositApp {
         }
       );
 
-      console.log("📡 Respuesta del servidor:", response.status, response.statusText);
+      console.log(
+        "📡 Respuesta del servidor:",
+        response.status,
+        response.statusText
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("❌ Error del servidor:", errorData);
-        throw new Error(errorData.mensaje || `Error del servidor: ${response.status} - ${response.statusText}`);
+        throw new Error(
+          errorData.mensaje ||
+            `Error del servidor: ${response.status} - ${response.statusText}`
+        );
       }
 
       const transactionData = await response.json();
@@ -402,18 +411,24 @@ class DepositApp {
     } catch (error) {
       console.error("❌ Error creando transacción:", error);
       // Agregar información adicional al error para debugging
-      const errorMessage = error.message + `\n\nDetalles técnicos:\n- Usuario ID: ${this.userData?.id}\n- Backend URL: ${this.backendUrl}\n- Timestamp: ${new Date().toISOString()}`;
+      const errorMessage =
+        error.message +
+        `\n\nDetalles técnicos:\n- Usuario ID: ${
+          this.userData?.id
+        }\n- Backend URL: ${
+          this.backendUrl
+        }\n- Timestamp: ${new Date().toISOString()}`;
       throw new Error(errorMessage);
     }
   }
 
-  // Obtener o crear jugador
-  async getOrCreateJugador(token) {
+  // Obtener jugador existente
+  async getJugador(token) {
     try {
-      console.log("🔍 Buscando jugador existente...");
+      console.log("🔍 Obteniendo jugador existente...");
       console.log("👤 Telegram ID:", this.userData.id);
       
-      // Intentar obtener el jugador existente
+      // Obtener el jugador existente usando el endpoint correcto
       const response = await fetch(
         `${this.backendUrl}/jugadores/${this.userData.id}`,
         {
@@ -425,55 +440,23 @@ class DepositApp {
         }
       );
 
-      console.log("📡 Respuesta de búsqueda de jugador:", response.status, response.statusText);
+      console.log("📡 Respuesta del servidor:", response.status, response.statusText);
 
-      if (response.ok) {
-        const jugadorData = await response.json();
-        console.log("✅ Jugador encontrado:", jugadorData);
-        
-        if (jugadorData.jugador && jugadorData.jugador._id) {
-          return jugadorData.jugador;
-        } else {
-          console.warn("⚠️ Respuesta sin jugador válido:", jugadorData);
-        }
-      } else if (response.status === 404) {
-        console.log("👤 Jugador no encontrado, creando nuevo...");
-      } else {
-        console.error("❌ Error buscando jugador:", response.status, response.statusText);
+      if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("❌ Detalles del error:", errorData);
+        console.error("❌ Error obteniendo jugador:", errorData);
+        
+        if (response.status === 404) {
+          throw new Error("Jugador no encontrado. Verifica que el usuario esté registrado en el sistema.");
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error("Error de autenticación. Token inválido o expirado.");
+        } else {
+          throw new Error(errorData.mensaje || `Error del servidor: ${response.status} - ${response.statusText}`);
+        }
       }
 
-      // Si no existe, crear el jugador
-      const newJugador = {
-        telegramId: this.userData.id.toString(),
-        username: this.userData.username,
-        firstName: this.userData.first_name,
-        nickname: this.userData.username || `user_${this.userData.id}`,
-        saldo: 0,
-      };
-
-      console.log("📝 Creando nuevo jugador:", newJugador);
-
-      const createResponse = await fetch(`${this.backendUrl}/jugadores`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newJugador),
-      });
-
-      console.log("📡 Respuesta de creación de jugador:", createResponse.status, createResponse.statusText);
-
-      if (!createResponse.ok) {
-        const errorData = await createResponse.json().catch(() => ({}));
-        console.error("❌ Error creando jugador:", errorData);
-        throw new Error(errorData.mensaje || `Error al crear el jugador: ${createResponse.status} - ${createResponse.statusText}`);
-      }
-
-      const jugadorData = await createResponse.json();
-      console.log("✅ Jugador creado exitosamente:", jugadorData);
+      const jugadorData = await response.json();
+      console.log("✅ Jugador obtenido:", jugadorData);
       
       if (jugadorData.jugador && jugadorData.jugador._id) {
         return jugadorData.jugador;
@@ -481,7 +464,7 @@ class DepositApp {
         throw new Error("La respuesta del servidor no contiene un jugador válido");
       }
     } catch (error) {
-      console.error("❌ Error obteniendo/creando jugador:", error);
+      console.error("❌ Error obteniendo jugador:", error);
       throw error;
     }
   }
