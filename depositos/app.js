@@ -306,13 +306,8 @@ class DepositApp {
 
       this.currentTransaction = transaction;
 
-      // Mostrar pantalla de espera
-      this.showWaitingScreen(transaction);
-
-      // Simular asignación de cajero (en producción esto sería automático)
-      setTimeout(() => {
-        this.simulateCajeroAssignment();
-      }, 2000);
+      // Mostrar mensaje de confirmación exitosa
+      this.showSuccessScreen(transaction);
     } catch (error) {
       console.error("Error creando solicitud:", error);
       this.showError("Error en la solicitud", error.message);
@@ -545,84 +540,36 @@ class DepositApp {
     return "bot_token_placeholder";
   }
 
-  // Mostrar pantalla de espera
-  showWaitingScreen(transaction) {
+  // Mostrar pantalla de éxito
+  showSuccessScreen(transaction) {
     document.getElementById("waiting-amount").textContent = `${
       transaction.monto / 100
     } Bs`;
     document.getElementById("waiting-reference").textContent =
-      transaction.referencia;
-    document.getElementById("waiting-status").textContent = "Pendiente";
+      transaction.referencia || transaction._id;
+    document.getElementById("waiting-status").textContent = "Creada exitosamente";
+
+    // Actualizar el mensaje de la pantalla
+    const statusElement = document.querySelector("#waiting-screen .status-message");
+    if (statusElement) {
+      statusElement.textContent = "Solicitud creada correctamente";
+    }
+
+    // Actualizar el mensaje de descripción
+    const descElement = document.querySelector("#waiting-screen .description");
+    if (descElement) {
+      descElement.innerHTML = `
+        <p>Tu solicitud de depósito ha sido creada exitosamente.</p>
+        <p><strong>ID de transacción:</strong> ${transaction.referencia || transaction._id}</p>
+        <p>En los próximos minutos se te asignará un cajero para que realices el pago móvil.</p>
+      `;
+    }
 
     this.showScreen("waiting-screen");
   }
 
-  // Simular asignación de cajero
-  async simulateCajeroAssignment() {
-    try {
-      // Obtener cajeros disponibles
-      const cajeros = await this.getAvailableCajeros();
-      const cajero = cajeros[0]; // Tomar el primer cajero disponible
-
-      // Asignar cajero a la transacción
-      await this.assignCajeroToTransaction(
-        this.currentTransaction._id,
-        cajero._id,
-        cajero.datosBancarios
-      );
-
-      // Mostrar pantalla de datos bancarios
-      this.showBankInfoScreen(cajero);
-    } catch (error) {
-      console.error("Error asignando cajero:", error);
-      this.showError("Error asignando cajero", error.message);
-    }
-  }
-
-  // Obtener cajeros disponibles
-  async getAvailableCajeros() {
-    // TODO: Implementar llamada real al backend
-    return [
-      {
-        _id: "64f1a2b3c4d5e6f7g8h9i0j2",
-        nombre: "Cajero Principal",
-        datosBancarios: {
-          banco: "Banesco",
-          telefono: "04141234567",
-          cedula: "12345678",
-        },
-      },
-    ];
-  }
-
-  // Asignar cajero a transacción
-  async assignCajeroToTransaction(transactionId, cajeroId, datosBancarios) {
-    // TODO: Implementar llamada real al backend
-    console.log("Asignando cajero:", {
-      transactionId,
-      cajeroId,
-      datosBancarios,
-    });
-
-    // Simular actualización de estado
-    this.currentTransaction.estado = "en_proceso";
-    this.currentTransaction.cajeroId = cajeroId;
-  }
-
-  // Mostrar pantalla de datos bancarios
-  showBankInfoScreen(cajero) {
-    document.getElementById("bank-name").textContent =
-      cajero.datosBancarios.banco;
-    document.getElementById("bank-phone").textContent =
-      cajero.datosBancarios.telefono;
-    document.getElementById("bank-id").textContent =
-      cajero.datosBancarios.cedula;
-    document.getElementById("bank-amount").textContent = `${
-      this.currentTransaction.monto / 100
-    } Bs`;
-
-    this.showScreen("bank-info-screen");
-  }
+  // Las funciones de simulación han sido eliminadas
+  // En el futuro se implementará la asignación real de cajeros
 
   // Manejar confirmación de pago
   async handlePaymentConfirmation() {
