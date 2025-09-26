@@ -540,18 +540,27 @@ class DepositApp {
     return "bot_token_placeholder";
   }
 
+  // Formatear referencia para mostrar solo últimos 6 dígitos
+  formatReference(referencia) {
+    if (!referencia) return "N/A";
+    if (referencia.length <= 6) return referencia;
+    return "..." + referencia.slice(-6);
+  }
+
   // Mostrar pantalla de éxito
   showSuccessScreen(transaction) {
     document.getElementById("waiting-amount").textContent = `${
       transaction.monto / 100
     } Bs`;
     document.getElementById("waiting-reference").textContent =
-      transaction.referencia || transaction._id;
+      this.formatReference(transaction.referencia || transaction._id);
     document.getElementById("waiting-status").textContent =
       "Creada exitosamente";
 
     // Ocultar el spinner de "Buscando cajero"
-    const loadingContainer = document.querySelector("#waiting-screen .loading-container");
+    const loadingContainer = document.querySelector(
+      "#waiting-screen .loading-container"
+    );
     if (loadingContainer) {
       loadingContainer.style.display = "none";
     }
@@ -570,7 +579,7 @@ class DepositApp {
       descElement.innerHTML = `
         <p>Tu solicitud de depósito ha sido creada exitosamente.</p>
         <p><strong>ID de transacción:</strong> ${
-          transaction.referencia || transaction._id
+          this.formatReference(transaction.referencia || transaction._id)
         }</p>
         <p>En los próximos minutos se te asignará un cajero para que realices el pago móvil.</p>
       `;
