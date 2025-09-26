@@ -565,23 +565,19 @@ class DepositApp {
       loadingContainer.style.display = "none";
     }
 
-    // Actualizar el mensaje de la pantalla
-    const statusElement = document.querySelector(
-      "#waiting-screen .status-message"
-    );
-    if (statusElement) {
-      statusElement.textContent = "Solicitud creada correctamente";
+    // Actualizar el título de la pantalla
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "✅ Solicitud Creada";
     }
 
-    // Actualizar el mensaje de descripción
-    const descElement = document.querySelector("#waiting-screen .description");
-    if (descElement) {
-      descElement.innerHTML = `
-        <p>Tu solicitud de depósito ha sido creada exitosamente.</p>
-        <p><strong>ID de transacción:</strong> ${
-          this.formatReference(transaction.referencia || transaction._id)
-        }</p>
-        <p>En los próximos minutos se te asignará un cajero para que realices el pago móvil.</p>
+    // Actualizar el subtítulo con el mensaje completo
+    const subtitle = document.querySelector("#waiting-screen .header .subtitle");
+    if (subtitle) {
+      subtitle.innerHTML = `
+        Tu solicitud de depósito ha sido creada exitosamente.<br>
+        <strong>ID de transacción:</strong> ${this.formatReference(transaction.referencia || transaction._id)}<br>
+        En los próximos minutos se te asignará un cajero para que realices el pago móvil.
       `;
     }
 
