@@ -343,7 +343,9 @@ class DepositApp {
       const jugador = await this.getJugador(token);
 
       if (!jugador) {
-        throw new Error("No se pudo obtener el jugador. Verifica que el usuario esté registrado.");
+        throw new Error(
+          "No se pudo obtener el jugador. Verifica que el usuario esté registrado."
+        );
       }
 
       if (!jugador._id) {
@@ -427,7 +429,7 @@ class DepositApp {
     try {
       console.log("🔍 Obteniendo jugador existente...");
       console.log("👤 Telegram ID:", this.userData.id);
-      
+
       // Obtener el jugador existente usando el endpoint correcto
       const response = await fetch(
         `${this.backendUrl}/jugadores/${this.userData.id}`,
@@ -440,28 +442,40 @@ class DepositApp {
         }
       );
 
-      console.log("📡 Respuesta del servidor:", response.status, response.statusText);
+      console.log(
+        "📡 Respuesta del servidor:",
+        response.status,
+        response.statusText
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         console.error("❌ Error obteniendo jugador:", errorData);
-        
+
         if (response.status === 404) {
-          throw new Error("Jugador no encontrado. Verifica que el usuario esté registrado en el sistema.");
+          throw new Error(
+            "Jugador no encontrado. Verifica que el usuario esté registrado en el sistema."
+          );
         } else if (response.status === 401 || response.status === 403) {
           throw new Error("Error de autenticación. Token inválido o expirado.");
         } else {
-          throw new Error(errorData.mensaje || `Error del servidor: ${response.status} - ${response.statusText}`);
+          throw new Error(
+            errorData.mensaje ||
+              `Error del servidor: ${response.status} - ${response.statusText}`
+          );
         }
       }
 
       const jugadorData = await response.json();
       console.log("✅ Jugador obtenido:", jugadorData);
-      
-      if (jugadorData.jugador && jugadorData.jugador._id) {
-        return jugadorData.jugador;
+
+      // El endpoint devuelve directamente el objeto jugador, no envuelto
+      if (jugadorData && jugadorData._id) {
+        return jugadorData;
       } else {
-        throw new Error("La respuesta del servidor no contiene un jugador válido");
+        throw new Error(
+          "La respuesta del servidor no contiene un jugador válido"
+        );
       }
     } catch (error) {
       console.error("❌ Error obteniendo jugador:", error);
