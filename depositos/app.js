@@ -742,42 +742,32 @@ class DepositApp {
 
     if (bankInfoScreen) {
       // Actualizar elementos de la pantalla de datos bancarios
-      const cajeroNombre = document.getElementById("cajero-nombre");
-      const cajeroTelefono = document.getElementById("cajero-telefono");
-      const cajeroBanco = document.getElementById("cajero-banco");
-      const cajeroCedula = document.getElementById("cajero-cedula");
-      const montoPago = document.getElementById("monto-pago");
-      const referenciaPago = document.getElementById("referencia-pago");
+      const cajeroBanco = document.getElementById("bank-name");        // Banco del cajero
+      const cajeroTelefono = document.getElementById("bank-phone");    // Teléfono del cajero
+      const cajeroCedula = document.getElementById("bank-id");         // Cédula del cajero
+      const montoPago = document.getElementById("bank-amount");        // Monto a pagar
 
       this.mostrarLogTemporal(`🔍 Elementos encontrados:`);
       this.mostrarLogTemporal(
-        `  - cajero-nombre: ${cajeroNombre ? "SÍ" : "NO"}`
+        `  - bank-name (banco): ${cajeroBanco ? "SÍ" : "NO"}`
       );
       this.mostrarLogTemporal(
-        `  - cajero-telefono: ${cajeroTelefono ? "SÍ" : "NO"}`
+        `  - bank-phone (teléfono): ${cajeroTelefono ? "SÍ" : "NO"}`
       );
-      this.mostrarLogTemporal(`  - cajero-banco: ${cajeroBanco ? "SÍ" : "NO"}`);
       this.mostrarLogTemporal(
-        `  - cajero-cedula: ${cajeroCedula ? "SÍ" : "NO"}`
+        `  - bank-id (cédula): ${cajeroCedula ? "SÍ" : "NO"}`
       );
-      this.mostrarLogTemporal(`  - monto-pago: ${montoPago ? "SÍ" : "NO"}`);
-      this.mostrarLogTemporal(
-        `  - referencia-pago: ${referenciaPago ? "SÍ" : "NO"}`
-      );
+      this.mostrarLogTemporal(`  - bank-amount (monto): ${montoPago ? "SÍ" : "NO"}`);
 
-      if (cajeroNombre) {
-        cajeroNombre.textContent = cajero.nombre;
-        this.mostrarLogTemporal(`✅ Nombre actualizado: ${cajero.nombre}`);
-      }
-      if (cajeroTelefono) {
-        cajeroTelefono.textContent = cajero.telefono;
-        this.mostrarLogTemporal(`✅ Teléfono actualizado: ${cajero.telefono}`);
-      }
       if (cajeroBanco) {
         cajeroBanco.textContent = cajero.datosPago.banco;
         this.mostrarLogTemporal(
           `✅ Banco actualizado: ${cajero.datosPago.banco}`
         );
+      }
+      if (cajeroTelefono) {
+        cajeroTelefono.textContent = cajero.telefono;
+        this.mostrarLogTemporal(`✅ Teléfono actualizado: ${cajero.telefono}`);
       }
       if (cajeroCedula) {
         cajeroCedula.textContent = `${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`;
@@ -793,12 +783,6 @@ class DepositApp {
           `✅ Monto actualizado: ${(estado.monto / 100).toLocaleString(
             "es-VE"
           )} Bs`
-        );
-      }
-      if (referenciaPago) {
-        referenciaPago.textContent = estado.referencia;
-        this.mostrarLogTemporal(
-          `✅ Referencia actualizada: ${estado.referencia}`
         );
       }
 
@@ -1098,3 +1082,4 @@ window.Telegram.WebApp.onEvent("backButtonClicked", () => {
 
 // Exportar para uso global
 window.DepositApp = DepositApp;
+
