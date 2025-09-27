@@ -9,6 +9,12 @@ import { UI } from "./ui.js";
 class TransactionManager {
   constructor() {
     this.transactions = [];
+    this.filteredTransactions = {
+      pendientes: [],
+      en_proceso: [],
+      completadas: []
+    };
+    this.currentTab = 'pendientes';
     this.callbacks = {
       onTransactionAssigned: null,
       onTransactionError: null,
@@ -43,7 +49,9 @@ class TransactionManager {
         console.log("Transacciones extraídas:", transacciones);
 
         this.transactions = transacciones;
-        this.displayTransactions(transacciones);
+        this.filterTransactionsByStatus();
+        this.displayTransactionsByTab();
+        this.updateTabCounts();
       } else {
         console.error("Error cargando transacciones:", response.status);
         UI.showNoTransactions();
@@ -57,20 +65,67 @@ class TransactionManager {
   }
 
   /**
-   * Mostrar transacciones en la interfaz
+   * Filtrar transacciones por estado
+   */
+  filterTransactionsByStatus() {
+    this.filteredTransactions = {
+      pendientes: [],
+      en_proceso: [],
+      completadas: []
+    };
+
+    this.transactions.forEach((transaccion) => {
+      switch (transaccion.estado) {
+        case 'pendiente':
+          this.filteredTransactions.pendientes.push(transaccion);
+          break;
+        case 'en_proceso':
+          this.filteredTransactions.en_proceso.push(transaccion);
+          break;
+        case 'confirmada':
+          this.filteredTransactions.completadas.push(transaccion);
+          break;
+        default:
+          // Por defecto, considerar como pendiente
+          this.filteredTransactions.pendientes.push(transaccion);
+      }
+    });
+  }
+
+  /**
+   * Mostrar transacciones según la pestaña activa
+   */
+  displayTransactionsByTab() {
+    const currentTransactions = this.filteredTransactions[this.currentTab];
+    UI.displayTransactionsForTab(this.currentTab, currentTransactions);
+  }
+
+  /**
+   * Cambiar pestaña activa
+   */
+  switchTab(tabName) {
+    this.currentTab = tabName;
+    this.displayTransactionsByTab();
+    UI.switchTab(tabName);
+  }
+
+  /**
+   * Actualizar contadores de pestañas
+   */
+  updateTabCounts() {
+    UI.updateTabCount('pendientes', this.filteredTransactions.pendientes.length);
+    UI.updateTabCount('en_proceso', this.filteredTransactions.en_proceso.length);
+    UI.updateTabCount('completadas', this.filteredTransactions.completadas.length);
+  }
+
+  /**
+   * Mostrar transacciones en la interfaz (método legacy - mantener compatibilidad)
    */
   displayTransactions(transacciones) {
-    UI.clearTransactionsList();
-
-    if (!transacciones || transacciones.length === 0) {
-      UI.showNoTransactions();
-      return;
-    }
-
-    transacciones.forEach((transaccion) => {
-      const transactionCard = this.createTransactionCard(transaccion);
-      UI.addTransactionToList(transactionCard);
-    });
+    // Este método se mantiene para compatibilidad pero ahora usa el nuevo sistema
+    this.filterTransactionsByStatus();
+    this.displayTransactionsByTab();
+    this.updateTabCounts();
   }
 
   /**
@@ -111,8 +166,10 @@ class TransactionManager {
     const card = document.createElement("div");
     card.className = "transaction-card";
     card.dataset.transactionId = transaccion._id;
+    card.dataset.status = transaccion.estado || 'pendiente';
 
     const tipoInfo = this.getTransactionTypeInfo(transaccion.categoria);
+    const estado = transaccion.estado || 'pendiente';
 
     card.innerHTML = `
       <div class="transaction-header">
@@ -129,6 +186,7 @@ class TransactionManager {
           transaccion.descripcion || "Sin descripción"
         }</p>
         <p><strong>Categoría:</strong> ${transaccion.categoria || "N/A"}</p>
+        <p><strong>Estado:</strong> ${this.formatEstado(estado)}</p>
         <p><strong>Fecha:</strong> ${new Date(
           transaccion.createdAt
         ).toLocaleString()}</p>
@@ -152,15 +210,63 @@ class TransactionManager {
       </div>
       
       <div class="transaction-actions">
-        <button class="btn-action btn-accept" onclick="acceptTransaction('${
-          transaccion._id
-        }')">
-          ✅ Aceptar
-        </button>
+        ${this.renderActionButtons(transaccion, estado)}
       </div>
     `;
 
     return card;
+  }
+
+  /**
+   * Formatear estado para mostrar
+   */
+  formatEstado(estado) {
+    const estados = {
+      'pendiente': '⏳ Pendiente',
+      'en_proceso': '🔄 En Proceso',
+      'confirmada': '✅ Completada'
+    };
+    return estados[estado] || estado;
+  }
+
+  /**
+   * Renderizar botones de acción según el estado
+   */
+  renderActionButtons(transaccion, estado) {
+    switch (estado) {
+      case 'pendiente':
+        return `
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${
+            transaccion._id
+          }')">
+            ✅ Aceptar
+          </button>
+        `;
+      case 'en_proceso':
+        return `
+          <button class="btn-action btn-view" onclick="viewTransactionDetails('${
+            transaccion._id
+          }')">
+            👁️ Ver Detalles
+          </button>
+        `;
+      case 'confirmada':
+        return `
+          <button class="btn-action btn-view" onclick="viewTransactionDetails('${
+            transaccion._id
+          }')">
+            👁️ Ver Detalles
+          </button>
+        `;
+      default:
+        return `
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${
+            transaccion._id
+          }')">
+            ✅ Aceptar
+          </button>
+        `;
+    }
   }
 
   /**

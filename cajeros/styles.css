@@ -539,6 +539,130 @@ body {
   flex: 1;
 }
 
+/* Sistema de Pestañas */
+.tabs-container {
+  margin-top: 20px;
+}
+
+.tabs-header {
+  display: flex;
+  background: #f8f9fa;
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
+  border-bottom: 2px solid #e1e5e9;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  border: none;
+  background: transparent;
+  color: #666;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+
+.tab-btn:hover {
+  background: rgba(102, 126, 234, 0.1);
+  color: #667eea;
+}
+
+.tab-btn.active {
+  background: #667eea;
+  color: white;
+  font-weight: 600;
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #fff;
+}
+
+.tab-count {
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.tab-btn.active .tab-count {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tab-btn:not(.active) .tab-count {
+  background: #e1e5e9;
+  color: #666;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 0 0 10px 10px;
+  min-height: 300px;
+}
+
+.tab-panel {
+  display: none;
+  padding: 20px 0;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* Estados de transacciones específicos */
+.transaction-card[data-status="en_proceso"] {
+  border-left: 4px solid #ffc107;
+}
+
+.transaction-card[data-status="en_proceso"] .transaction-type {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.transaction-card[data-status="confirmada"] {
+  border-left: 4px solid #28a745;
+}
+
+.transaction-card[data-status="confirmada"] .transaction-type {
+  background: #d4edda;
+  color: #155724;
+}
+
+/* Botones específicos por estado */
+.btn-complete {
+  background: #28a745;
+  color: white;
+}
+
+.btn-complete:hover {
+  background: #218838;
+}
+
+.btn-view {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-view:hover {
+  background: #138496;
+}
+
 /* Responsive para móviles */
 @media (max-width: 480px) {
   .modal-overlay {
@@ -558,5 +682,19 @@ body {
 
   .modal-actions {
     flex-direction: column;
+  }
+
+  .tabs-header {
+    flex-direction: column;
+  }
+
+  .tab-btn {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 10px 15px;
+  }
+
+  .tab-count {
+    margin-left: auto;
   }
 }

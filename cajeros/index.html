@@ -85,42 +85,108 @@
               </div>
             </div>
 
-            <!-- Sección de transacciones pendientes -->
+            <!-- Sección de transacciones con pestañas -->
             <div class="transactions-section">
               <div class="section-header">
-                <h3>📋 Solicitudes Pendientes</h3>
+                <h3>📋 Gestión de Solicitudes</h3>
                 <button id="refresh-btn" class="btn btn-small">
                   🔄 Actualizar
                 </button>
               </div>
 
-              <!-- Estado de carga -->
-              <div
-                id="loading-transactions"
-                class="loading-state"
-                style="display: none"
-              >
-                <div class="spinner"></div>
-                <p>Cargando solicitudes...</p>
-              </div>
+              <!-- Sistema de pestañas -->
+              <div class="tabs-container">
+                <div class="tabs-header">
+                  <button class="tab-btn active" data-tab="pendientes">
+                    ⏳ Pendientes
+                    <span class="tab-count" id="count-pendientes">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="en_proceso">
+                    🔄 En Proceso
+                    <span class="tab-count" id="count-en_proceso">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="completadas">
+                    ✅ Completadas
+                    <span class="tab-count" id="count-completadas">0</span>
+                  </button>
+                </div>
 
-              <!-- Lista de transacciones -->
-              <div id="transactions-list" class="transactions-list">
-                <!-- Las transacciones se cargarán dinámicamente aquí -->
-              </div>
+                <!-- Contenido de pestañas -->
+                <div class="tab-content">
+                  <!-- Pestaña Pendientes -->
+                  <div class="tab-panel active" id="tab-pendientes">
+                    <!-- Estado de carga -->
+                    <div
+                      id="loading-transactions"
+                      class="loading-state"
+                      style="display: none"
+                    >
+                      <div class="spinner"></div>
+                      <p>Cargando solicitudes...</p>
+                    </div>
 
-              <!-- Mensaje cuando no hay transacciones -->
-              <div
-                id="no-transactions"
-                class="no-transactions"
-                style="display: none"
-              >
-                <div class="no-data-icon">📭</div>
-                <h4>No hay solicitudes pendientes</h4>
-                <p>
-                  Todas las solicitudes están procesadas o no hay nuevas
-                  solicitudes.
-                </p>
+                    <!-- Lista de transacciones pendientes -->
+                    <div id="transactions-list-pendientes" class="transactions-list">
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones pendientes -->
+                    <div
+                      id="no-transactions-pendientes"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">📭</div>
+                      <h4>No hay solicitudes pendientes</h4>
+                      <p>
+                        Todas las solicitudes están procesadas o no hay nuevas
+                        solicitudes.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Pestaña En Proceso -->
+                  <div class="tab-panel" id="tab-en_proceso">
+                    <!-- Lista de transacciones en proceso -->
+                    <div id="transactions-list-en_proceso" class="transactions-list">
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones en proceso -->
+                    <div
+                      id="no-transactions-en_proceso"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">⏳</div>
+                      <h4>No hay transacciones en proceso</h4>
+                      <p>
+                        No tienes transacciones asignadas en este momento.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Pestaña Completadas -->
+                  <div class="tab-panel" id="tab-completadas">
+                    <!-- Lista de transacciones completadas -->
+                    <div id="transactions-list-completadas" class="transactions-list">
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones completadas -->
+                    <div
+                      id="no-transactions-completadas"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">🎉</div>
+                      <h4>No hay transacciones completadas</h4>
+                      <p>
+                        Aún no has completado ninguna transacción.
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

@@ -36,6 +36,7 @@ class CajerosApp {
         onLogin: this.handleLogin.bind(this),
         onLogout: this.handleLogout.bind(this),
         onRefresh: this.handleRefresh.bind(this),
+        onTabSwitch: this.handleTabSwitch.bind(this),
       });
 
       // Inicializar autenticación
@@ -105,13 +106,13 @@ class CajerosApp {
   handleLogout() {
     // Limpiar sesión en Auth
     Auth.logout();
-    
+
     // Actualizar UI
     UI.showLoginScreen();
-    
+
     // Limpiar transacciones
     TransactionManager.clearTransactions();
-    
+
     console.log("👋 Usuario cerró sesión");
   }
 
@@ -132,6 +133,14 @@ class CajerosApp {
     if (Auth.isAuthenticated()) {
       await this.loadTransactions();
     }
+  }
+
+  /**
+   * Manejar cambio de pestaña
+   */
+  handleTabSwitch(tabName) {
+    TransactionManager.switchTab(tabName);
+    console.log(`🔄 Cambiando a pestaña: ${tabName}`);
   }
 
   /**
@@ -221,6 +230,25 @@ window.refreshTransactions = async () => {
 
 window.closeTransactionDetails = () => {
   app.getUI().closeTransactionDetailsModal();
+};
+
+window.viewTransactionDetails = async (transaccionId) => {
+  const token = app.getToken();
+  if (token && window.transactionManager) {
+    try {
+      // Importar API dinámicamente
+      const { API } = await import('./js/api.js');
+      const response = await API.getTransaccionDetalle(transaccionId, token);
+      if (response.ok) {
+        const data = await response.json();
+        window.transactionManager.showTransactionDetailsModal(data.transaccion);
+      } else {
+        console.error("Error obteniendo detalles de transacción:", response.status);
+      }
+    } catch (error) {
+      console.error("Error obteniendo detalles de transacción:", error);
+    }
+  }
 };
 
 // Exportar para uso en otros módulos si es necesario
