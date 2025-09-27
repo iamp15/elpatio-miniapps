@@ -7,6 +7,8 @@ class DepositApp {
     this.userData = null;
     // Configuración del backend basada en el ambiente
     this.backendUrl = this.getBackendUrl();
+    // Estado de logs visuales (inicialmente ocultos)
+    this.logsVisibles = false;
 
     this.init();
   }
@@ -38,6 +40,9 @@ class DepositApp {
     // Configurar Telegram Web App
     this.tg.ready();
     this.tg.expand();
+
+    // Crear botón toggle de logs
+    this.crearBotonToggleLogs();
 
     // Obtener datos del usuario
     this.userData = this.tg.initDataUnsafe?.user;
@@ -1124,12 +1129,13 @@ class DepositApp {
 
   // Función temporal para mostrar logs en pantalla (para debugging)
   mostrarLogTemporal(mensaje) {
-    console.log(mensaje); // Solo en consola por ahora (logs visuales deshabilitados temporalmente)
-    
-    // TEMPORALMENTE DESHABILITADO - Los logs visuales están ocultos para pruebas móviles
-    // Descomenta el código de abajo cuando termines las pruebas
-    
-    /*
+    console.log(mensaje); // Siempre en consola
+
+    // Solo mostrar logs visuales si están habilitados
+    if (!this.logsVisibles) {
+      return;
+    }
+
     // Crear o obtener el contenedor de logs
     let logContainer = document.getElementById("debug-logs");
     if (!logContainer) {
@@ -1150,6 +1156,7 @@ class DepositApp {
         z-index: 10000;
         overflow-y: auto;
         border: 2px solid #ff6b6b;
+        display: none;
       `;
       document.body.appendChild(logContainer);
     }
@@ -1174,7 +1181,70 @@ class DepositApp {
 
     // Auto-scroll al final
     logContainer.scrollTop = logContainer.scrollHeight;
-    */
+  }
+
+  // Toggle para mostrar/ocultar logs visuales
+  toggleLogs() {
+    this.logsVisibles = !this.logsVisibles;
+    const logContainer = document.getElementById("debug-logs");
+    const toggleButton = document.getElementById("logs-toggle-btn");
+    
+    if (logContainer) {
+      logContainer.style.display = this.logsVisibles ? "block" : "none";
+    }
+    
+    if (toggleButton) {
+      toggleButton.textContent = this.logsVisibles ? "🔍" : "📋";
+      toggleButton.title = this.logsVisibles ? "Ocultar logs" : "Mostrar logs";
+    }
+    
+    console.log(`Logs visuales ${this.logsVisibles ? 'habilitados' : 'deshabilitados'}`);
+  }
+
+  // Crear botón toggle de logs
+  crearBotonToggleLogs() {
+    const toggleButton = document.createElement("button");
+    toggleButton.id = "logs-toggle-btn";
+    toggleButton.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--tg-theme-button-color, #2481cc);
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10001;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+    
+    toggleButton.textContent = "📋";
+    toggleButton.title = "Mostrar logs";
+    
+    // Efectos hover
+    toggleButton.addEventListener("mouseenter", () => {
+      toggleButton.style.transform = "scale(1.1)";
+      toggleButton.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.4)";
+    });
+    
+    toggleButton.addEventListener("mouseleave", () => {
+      toggleButton.style.transform = "scale(1)";
+      toggleButton.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
+    });
+    
+    // Click handler
+    toggleButton.addEventListener("click", () => {
+      this.toggleLogs();
+    });
+    
+    document.body.appendChild(toggleButton);
   }
 
   // Método para comunicación con el bot
