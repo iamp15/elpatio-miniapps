@@ -22,7 +22,6 @@ class CajerosApp {
       // Configurar callbacks de autenticación
       Auth.setCallbacks({
         onLoginSuccess: this.handleLoginSuccess.bind(this),
-        onLogout: this.handleLogout.bind(this),
         onTokenExpired: this.handleTokenExpired.bind(this),
       });
 
@@ -104,9 +103,15 @@ class CajerosApp {
    * Manejar logout
    */
   handleLogout() {
+    // Limpiar sesión en Auth
     Auth.logout();
+    
+    // Actualizar UI
     UI.showLoginScreen();
+    
+    // Limpiar transacciones
     TransactionManager.clearTransactions();
+    
     console.log("👋 Usuario cerró sesión");
   }
 

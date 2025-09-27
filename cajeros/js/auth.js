@@ -129,11 +129,8 @@ class AuthManager {
    */
   logout() {
     this.clearSession();
-
-    // Ejecutar callback de logout
-    if (this.callbacks.onLogout) {
-      this.callbacks.onLogout();
-    }
+    // No ejecutar callback aquí para evitar bucle infinito
+    // El callback se maneja directamente en CajerosApp.handleLogout()
   }
 
   /**
