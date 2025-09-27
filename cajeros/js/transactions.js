@@ -231,8 +231,8 @@ class TransactionManager {
    */
   formatEstado(estado) {
     const estados = {
-      pendiente: "⏳ En espera de cajero",
-      en_proceso: "🔄 Esperando pago",
+      pendiente: "⏳ Pendiente",
+      en_proceso: "🔄 En Proceso",
       confirmada: "✅ Completada",
     };
     return estados[estado] || estado;
