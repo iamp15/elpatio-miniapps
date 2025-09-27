@@ -237,13 +237,16 @@ window.viewTransactionDetails = async (transaccionId) => {
   if (token && window.transactionManager) {
     try {
       // Importar API dinámicamente
-      const { API } = await import('./js/api.js');
+      const { API } = await import("./js/api.js");
       const response = await API.getTransaccionDetalle(transaccionId, token);
       if (response.ok) {
         const data = await response.json();
         window.transactionManager.showTransactionDetailsModal(data.transaccion);
       } else {
-        console.error("Error obteniendo detalles de transacción:", response.status);
+        console.error(
+          "Error obteniendo detalles de transacción:",
+          response.status
+        );
       }
     } catch (error) {
       console.error("Error obteniendo detalles de transacción:", error);

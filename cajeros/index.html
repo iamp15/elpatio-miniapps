@@ -98,15 +98,15 @@
               <div class="tabs-container">
                 <div class="tabs-header">
                   <button class="tab-btn active" data-tab="pendientes">
-                    ⏳ Pendientes
+                    En espera de cajero
                     <span class="tab-count" id="count-pendientes">0</span>
                   </button>
                   <button class="tab-btn" data-tab="en_proceso">
-                    🔄 En Proceso
+                    Esperando pago
                     <span class="tab-count" id="count-en_proceso">0</span>
                   </button>
                   <button class="tab-btn" data-tab="completadas">
-                    ✅ Completadas
+                    Completadas
                     <span class="tab-count" id="count-completadas">0</span>
                   </button>
                 </div>
@@ -126,7 +126,10 @@
                     </div>
 
                     <!-- Lista de transacciones pendientes -->
-                    <div id="transactions-list-pendientes" class="transactions-list">
+                    <div
+                      id="transactions-list-pendientes"
+                      class="transactions-list"
+                    >
                       <!-- Las transacciones se cargarán dinámicamente aquí -->
                     </div>
 
@@ -137,10 +140,9 @@
                       style="display: none"
                     >
                       <div class="no-data-icon">📭</div>
-                      <h4>No hay solicitudes pendientes</h4>
+                      <h4>No hay solicitudes en espera</h4>
                       <p>
-                        Todas las solicitudes están procesadas o no hay nuevas
-                        solicitudes.
+                        No hay solicitudes esperando asignación de cajero.
                       </p>
                     </div>
                   </div>
@@ -148,7 +150,10 @@
                   <!-- Pestaña En Proceso -->
                   <div class="tab-panel" id="tab-en_proceso">
                     <!-- Lista de transacciones en proceso -->
-                    <div id="transactions-list-en_proceso" class="transactions-list">
+                    <div
+                      id="transactions-list-en_proceso"
+                      class="transactions-list"
+                    >
                       <!-- Las transacciones se cargarán dinámicamente aquí -->
                     </div>
 
@@ -159,17 +164,18 @@
                       style="display: none"
                     >
                       <div class="no-data-icon">⏳</div>
-                      <h4>No hay transacciones en proceso</h4>
-                      <p>
-                        No tienes transacciones asignadas en este momento.
-                      </p>
+                      <h4>No hay transacciones esperando pago</h4>
+                      <p>No tienes transacciones esperando pago del jugador.</p>
                     </div>
                   </div>
 
                   <!-- Pestaña Completadas -->
                   <div class="tab-panel" id="tab-completadas">
                     <!-- Lista de transacciones completadas -->
-                    <div id="transactions-list-completadas" class="transactions-list">
+                    <div
+                      id="transactions-list-completadas"
+                      class="transactions-list"
+                    >
                       <!-- Las transacciones se cargarán dinámicamente aquí -->
                     </div>
 
@@ -181,9 +187,7 @@
                     >
                       <div class="no-data-icon">🎉</div>
                       <h4>No hay transacciones completadas</h4>
-                      <p>
-                        Aún no has completado ninguna transacción.
-                      </p>
+                      <p>Aún no has completado ninguna transacción.</p>
                     </div>
                   </div>
                 </div>

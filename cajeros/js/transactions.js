@@ -12,9 +12,9 @@ class TransactionManager {
     this.filteredTransactions = {
       pendientes: [],
       en_proceso: [],
-      completadas: []
+      completadas: [],
     };
-    this.currentTab = 'pendientes';
+    this.currentTab = "pendientes";
     this.callbacks = {
       onTransactionAssigned: null,
       onTransactionError: null,
@@ -71,18 +71,18 @@ class TransactionManager {
     this.filteredTransactions = {
       pendientes: [],
       en_proceso: [],
-      completadas: []
+      completadas: [],
     };
 
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
-        case 'pendiente':
+        case "pendiente":
           this.filteredTransactions.pendientes.push(transaccion);
           break;
-        case 'en_proceso':
+        case "en_proceso":
           this.filteredTransactions.en_proceso.push(transaccion);
           break;
-        case 'confirmada':
+        case "confirmada":
           this.filteredTransactions.completadas.push(transaccion);
           break;
         default:
@@ -113,9 +113,18 @@ class TransactionManager {
    * Actualizar contadores de pestañas
    */
   updateTabCounts() {
-    UI.updateTabCount('pendientes', this.filteredTransactions.pendientes.length);
-    UI.updateTabCount('en_proceso', this.filteredTransactions.en_proceso.length);
-    UI.updateTabCount('completadas', this.filteredTransactions.completadas.length);
+    UI.updateTabCount(
+      "pendientes",
+      this.filteredTransactions.pendientes.length
+    );
+    UI.updateTabCount(
+      "en_proceso",
+      this.filteredTransactions.en_proceso.length
+    );
+    UI.updateTabCount(
+      "completadas",
+      this.filteredTransactions.completadas.length
+    );
   }
 
   /**
@@ -166,10 +175,10 @@ class TransactionManager {
     const card = document.createElement("div");
     card.className = "transaction-card";
     card.dataset.transactionId = transaccion._id;
-    card.dataset.status = transaccion.estado || 'pendiente';
+    card.dataset.status = transaccion.estado || "pendiente";
 
     const tipoInfo = this.getTransactionTypeInfo(transaccion.categoria);
-    const estado = transaccion.estado || 'pendiente';
+    const estado = transaccion.estado || "pendiente";
 
     card.innerHTML = `
       <div class="transaction-header">
@@ -222,9 +231,9 @@ class TransactionManager {
    */
   formatEstado(estado) {
     const estados = {
-      'pendiente': '⏳ Pendiente',
-      'en_proceso': '🔄 En Proceso',
-      'confirmada': '✅ Completada'
+      pendiente: "⏳ En espera de cajero",
+      en_proceso: "🔄 Esperando pago",
+      confirmada: "✅ Completada",
     };
     return estados[estado] || estado;
   }
@@ -234,35 +243,27 @@ class TransactionManager {
    */
   renderActionButtons(transaccion, estado) {
     switch (estado) {
-      case 'pendiente':
+      case "pendiente":
         return `
-          <button class="btn-action btn-accept" onclick="acceptTransaction('${
-            transaccion._id
-          }')">
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')">
             ✅ Aceptar
           </button>
         `;
-      case 'en_proceso':
+      case "en_proceso":
         return `
-          <button class="btn-action btn-view" onclick="viewTransactionDetails('${
-            transaccion._id
-          }')">
+          <button class="btn-action btn-view" onclick="viewTransactionDetails('${transaccion._id}')">
             👁️ Ver Detalles
           </button>
         `;
-      case 'confirmada':
+      case "confirmada":
         return `
-          <button class="btn-action btn-view" onclick="viewTransactionDetails('${
-            transaccion._id
-          }')">
+          <button class="btn-action btn-view" onclick="viewTransactionDetails('${transaccion._id}')">
             👁️ Ver Detalles
           </button>
         `;
       default:
         return `
-          <button class="btn-action btn-accept" onclick="acceptTransaction('${
-            transaccion._id
-          }')">
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')">
             ✅ Aceptar
           </button>
         `;
