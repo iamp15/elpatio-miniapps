@@ -16,7 +16,8 @@ const refreshBtn = document.getElementById("refresh-btn");
 const cajeroName = document.getElementById("cajero-name");
 const cajeroEmailDisplay = document.getElementById("cajero-email-display");
 const cajeroBanco = document.getElementById("cajero-banco");
-const cajeroTelefono = document.getElementById("cajero-telefono");
+const cajeroCedula = document.getElementById("cajero-cedula");
+const cajeroTelefonoPago = document.getElementById("cajero-telefono-pago");
 const loadingTransactions = document.getElementById("loading-transactions");
 const transactionsList = document.getElementById("transactions-list");
 const noTransactions = document.getElementById("no-transactions");
@@ -165,7 +166,17 @@ function updateCajeroDisplay() {
     cajeroName.textContent = cajeroInfo.nombreCompleto || "-";
     cajeroEmailDisplay.textContent = cajeroInfo.email || "-";
     cajeroBanco.textContent = cajeroInfo.datosPagoMovil?.banco || "-";
-    cajeroTelefono.textContent = cajeroInfo.telefonoContacto || "-";
+    
+    // Formatear cédula con prefijo y número
+    const cedula = cajeroInfo.datosPagoMovil?.cedula;
+    if (cedula && cedula.prefijo && cedula.numero) {
+      cajeroCedula.textContent = `${cedula.prefijo}-${cedula.numero}`;
+    } else {
+      cajeroCedula.textContent = "-";
+    }
+    
+    // Mostrar teléfono de pago móvil
+    cajeroTelefonoPago.textContent = cajeroInfo.datosPagoMovil?.telefono || "-";
   }
 }
 
