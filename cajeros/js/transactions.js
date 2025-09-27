@@ -245,8 +245,9 @@ class TransactionManager {
     switch (estado) {
       case "pendiente":
         return `
-          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')">
-            ✅ Aceptar
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')" data-transaction-id="${transaccion._id}">
+            <span class="btn-text">✅ Aceptar</span>
+            <span class="btn-loading" style="display: none;">⏳ Procesando...</span>
           </button>
         `;
       case "en_proceso":
@@ -263,8 +264,9 @@ class TransactionManager {
         `;
       default:
         return `
-          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')">
-            ✅ Aceptar
+          <button class="btn-action btn-accept" onclick="acceptTransaction('${transaccion._id}')" data-transaction-id="${transaccion._id}">
+            <span class="btn-text">✅ Aceptar</span>
+            <span class="btn-loading" style="display: none;">⏳ Procesando...</span>
           </button>
         `;
     }
@@ -302,6 +304,9 @@ class TransactionManager {
    * Aceptar transacción (tomar la transacción)
    */
   async acceptTransaction(transaccionId, token) {
+    // Mostrar estado de loading en el botón
+    this.setButtonLoading(transaccionId, true);
+
     UI.showConfirmDialog(MESSAGES.CONFIRM.ASSIGN_TRANSACTION, async () => {
       try {
         // 1. Asignar cajero a la transacción
@@ -344,8 +349,32 @@ class TransactionManager {
         if (this.callbacks.onTransactionError) {
           this.callbacks.onTransactionError(error);
         }
+      } finally {
+        // Ocultar estado de loading
+        this.setButtonLoading(transaccionId, false);
       }
     });
+  }
+
+  /**
+   * Establecer estado de loading en botón
+   */
+  setButtonLoading(transaccionId, loading) {
+    const button = document.querySelector(`[data-transaction-id="${transaccionId}"]`);
+    if (button) {
+      const textSpan = button.querySelector('.btn-text');
+      const loadingSpan = button.querySelector('.btn-loading');
+      
+      if (loading) {
+        button.disabled = true;
+        if (textSpan) textSpan.style.display = 'none';
+        if (loadingSpan) loadingSpan.style.display = 'inline';
+      } else {
+        button.disabled = false;
+        if (textSpan) textSpan.style.display = 'inline';
+        if (loadingSpan) loadingSpan.style.display = 'none';
+      }
+    }
   }
 
   /**
@@ -358,7 +387,7 @@ class TransactionManager {
       <div class="transaction-details-modal">
         <div class="modal-header">
           <h2>✅ Transacción Aceptada</h2>
-          <button onclick="UI.closeTransactionDetailsModal()" class="close-btn">&times;</button>
+          <button onclick="closeTransactionDetails()" class="close-btn">&times;</button>
         </div>
         
         <div class="transaction-info">
@@ -433,8 +462,8 @@ class TransactionManager {
         </div>
         
         <div class="modal-actions">
-          <button onclick="UI.closeTransactionDetailsModal()" class="btn btn-primary">Cerrar</button>
-          <button onclick="refreshTransactions(); UI.closeTransactionDetailsModal();" class="btn btn-secondary">Ver Lista</button>
+          <button onclick="closeTransactionDetails()" class="btn btn-primary">Cerrar</button>
+          <button onclick="refreshTransactions(); closeTransactionDetails();" class="btn btn-secondary">Ver Lista</button>
         </div>
       </div>
     `;

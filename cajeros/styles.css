@@ -320,6 +320,16 @@ body {
   background: #218838;
 }
 
+.btn-accept:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.btn-loading {
+  font-size: 12px;
+}
+
 .no-transactions {
   text-align: center;
   padding: 40px 20px;
