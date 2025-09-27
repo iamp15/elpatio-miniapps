@@ -62,6 +62,9 @@ class DepositApp {
 
     // Configurar eventos
     this.setupEventListeners();
+    
+    // Configurar eventos de confirmación de pago
+    this.setupPaymentConfirmationEvents();
 
     // Cargar saldo inicial
     this.loadUserBalance();
@@ -159,6 +162,13 @@ class DepositApp {
     document.getElementById("payment-date").value = new Date()
       .toISOString()
       .split("T")[0];
+  }
+
+  // Configurar eventos de confirmación de pago
+  setupPaymentConfirmationEvents() {
+    // El botón "Ya realicé el pago" ya está configurado en setupEventListeners
+    // Aquí podemos agregar configuraciones adicionales si es necesario
+    console.log("✅ Eventos de confirmación de pago configurados");
   }
 
   // Mostrar pantalla específica
@@ -915,6 +925,35 @@ class DepositApp {
     }
   }
 
+  // Mostrar transacción rechazada
+  mostrarTransaccionRechazada(estado) {
+    this.mostrarLogTemporal(`❌ Mostrando transacción rechazada: ${JSON.stringify(estado, null, 2)}`);
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "❌ Transacción Rechazada";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "El cajero rechazó tu transacción";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Rechazada";
+      statusElement.className = "status-rejected";
+    }
+
+    // Mostrar pantalla de espera con estado rechazado
+    this.showScreen("waiting-screen");
+  }
+
   // Manejar confirmación de pago
   async handlePaymentConfirmation() {
     const formData = new FormData(
@@ -944,12 +983,150 @@ class DepositApp {
 
   // Confirmar pago del usuario
   async confirmUserPayment(transactionId, paymentData) {
-    // TODO: Implementar llamada real al backend
-    console.log("Confirmando pago:", { transactionId, paymentData });
+    try {
+      this.mostrarLogTemporal(`💳 Confirmando pago para transacción: ${transactionId}`);
+      this.mostrarLogTemporal(`📊 Datos del pago: ${JSON.stringify(paymentData, null, 2)}`);
 
-    // Simular actualización
-    this.currentTransaction.estado = "pagada";
-    this.currentTransaction.datosPago = paymentData;
+      // Preparar datos para el endpoint
+      const payload = {
+        bancoOrigen: paymentData.banco,
+        telefonoOrigen: paymentData.telefono,
+        numeroReferencia: paymentData.referencia,
+        fechaPago: paymentData.fecha,
+        metodoPago: "pago_movil"
+      };
+
+      this.mostrarLogTemporal(`📤 Enviando datos al backend: ${JSON.stringify(payload, null, 2)}`);
+
+      // Obtener token del bot para autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener token de autenticación");
+      }
+
+      // Hacer llamada al endpoint de confirmación de pago
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transactionId}/confirmar-pago-usuario`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      this.mostrarLogTemporal(`📡 Respuesta HTTP: ${response.status} ${response.statusText}`);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.mensaje || `Error del servidor: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      this.mostrarLogTemporal(`✅ Pago confirmado exitosamente: ${JSON.stringify(result, null, 2)}`);
+
+      // Actualizar estado de la transacción
+      this.currentTransaction.estado = "en_proceso";
+      this.currentTransaction.infoPago = payload;
+
+      // Iniciar polling para esperar confirmación del cajero
+      this.iniciarPollingConfirmacionCajero(transactionId);
+
+      return result;
+    } catch (error) {
+      this.mostrarLogTemporal(`❌ Error confirmando pago: ${error.message}`);
+      throw error;
+    }
+  }
+
+  // Iniciar polling para esperar confirmación del cajero
+  iniciarPollingConfirmacionCajero(transaccionId) {
+    this.mostrarLogTemporal(`🔄 Iniciando polling para confirmación del cajero: ${transaccionId}`);
+    
+    // Mostrar pantalla de confirmación mientras esperamos
+    this.showConfirmationScreen();
+
+    const intervalId = setInterval(async () => {
+      this.mostrarLogTemporal(`⏰ Verificando confirmación del cajero... (${new Date().toLocaleTimeString()})`);
+      const estado = await this.verificarEstadoTransaccion(transaccionId);
+
+      if (estado) {
+        this.mostrarLogTemporal(`📊 Estado actual: ${estado.estado}`);
+
+        if (estado.estado === "completada") {
+          this.mostrarLogTemporal(`🎉 Transacción completada por el cajero`);
+          this.mostrarTransaccionCompletada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "rechazada") {
+          this.mostrarLogTemporal(`❌ Transacción rechazada por el cajero`);
+          this.mostrarTransaccionRechazada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "confirmada") {
+          this.mostrarLogTemporal(`✅ Transacción confirmada, esperando procesamiento`);
+          // Continuar polling hasta que se complete
+        } else {
+          this.mostrarLogTemporal(`⏳ Esperando confirmación del cajero... Estado: ${estado.estado}`);
+        }
+      } else {
+        this.mostrarLogTemporal(`❌ No se pudo obtener el estado`);
+      }
+    }, 5000); // Verificar cada 5 segundos
+
+    // Timeout de 30 minutos (1800000 ms)
+    const timeoutId = setTimeout(() => {
+      this.mostrarLogTemporal(`⏰ Timeout de 30 minutos alcanzado, cancelando transacción`);
+      clearInterval(intervalId);
+      this.cancelarTransaccionPorTimeout(transaccionId);
+    }, 1800000); // 30 minutos
+
+    // Guardar IDs para poder limpiarlos si es necesario
+    this.pollingIntervalId = intervalId;
+    this.timeoutId = timeoutId;
+  }
+
+  // Cancelar transacción por timeout
+  async cancelarTransaccionPorTimeout(transaccionId) {
+    try {
+      this.mostrarLogTemporal(`🚫 Cancelando transacción por timeout: ${transaccionId}`);
+      
+      // Obtener token del bot para autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener token de autenticación");
+      }
+
+      // Hacer llamada al endpoint de rechazo
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transaccionId}/rechazar`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            motivo: "Timeout: Usuario no completó el pago en 30 minutos"
+          }),
+        }
+      );
+
+      this.mostrarLogTemporal(`📡 Respuesta de cancelación: ${response.status} ${response.statusText}`);
+
+      if (response.ok) {
+        this.mostrarLogTemporal(`✅ Transacción cancelada exitosamente`);
+        this.mostrarTransaccionCancelada({ estado: "cancelada", motivo: "Timeout de 30 minutos" });
+      } else {
+        this.mostrarLogTemporal(`❌ Error cancelando transacción`);
+        this.showError("Error", "No se pudo cancelar la transacción automáticamente");
+      }
+    } catch (error) {
+      this.mostrarLogTemporal(`❌ Error en cancelación por timeout: ${error.message}`);
+      this.showError("Error", "Error cancelando la transacción por timeout");
+    }
   }
 
   // Mostrar pantalla de confirmación final
@@ -1188,17 +1365,19 @@ class DepositApp {
     this.logsVisibles = !this.logsVisibles;
     const logContainer = document.getElementById("debug-logs");
     const toggleButton = document.getElementById("logs-toggle-btn");
-    
+
     if (logContainer) {
       logContainer.style.display = this.logsVisibles ? "block" : "none";
     }
-    
+
     if (toggleButton) {
       toggleButton.textContent = this.logsVisibles ? "🔍" : "📋";
       toggleButton.title = this.logsVisibles ? "Ocultar logs" : "Mostrar logs";
     }
-    
-    console.log(`Logs visuales ${this.logsVisibles ? 'habilitados' : 'deshabilitados'}`);
+
+    console.log(
+      `Logs visuales ${this.logsVisibles ? "habilitados" : "deshabilitados"}`
+    );
   }
 
   // Crear botón toggle de logs
@@ -1224,26 +1403,26 @@ class DepositApp {
       align-items: center;
       justify-content: center;
     `;
-    
+
     toggleButton.textContent = "📋";
     toggleButton.title = "Mostrar logs";
-    
+
     // Efectos hover
     toggleButton.addEventListener("mouseenter", () => {
       toggleButton.style.transform = "scale(1.1)";
       toggleButton.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.4)";
     });
-    
+
     toggleButton.addEventListener("mouseleave", () => {
       toggleButton.style.transform = "scale(1)";
       toggleButton.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
     });
-    
+
     // Click handler
     toggleButton.addEventListener("click", () => {
       this.toggleLogs();
     });
-    
+
     document.body.appendChild(toggleButton);
   }
 
