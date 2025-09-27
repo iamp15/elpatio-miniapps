@@ -2,10 +2,10 @@
  * Aplicación principal de cajeros - Versión modular
  */
 
-import { Auth } from "./js/auth.js";
-import { UI } from "./js/ui.js";
-import { TransactionManager } from "./js/transactions.js";
-import { MESSAGES } from "./js/config.js";
+import { Auth } from './js/auth.js';
+import { UI } from './js/ui.js';
+import { TransactionManager } from './js/transactions.js';
+import { MESSAGES } from './js/config.js';
 
 class CajerosApp {
   constructor() {
@@ -23,20 +23,20 @@ class CajerosApp {
       Auth.setCallbacks({
         onLoginSuccess: this.handleLoginSuccess.bind(this),
         onLogout: this.handleLogout.bind(this),
-        onTokenExpired: this.handleTokenExpired.bind(this),
+        onTokenExpired: this.handleTokenExpired.bind(this)
       });
 
       // Configurar callbacks de transacciones
       TransactionManager.setCallbacks({
         onTransactionAssigned: this.handleTransactionAssigned.bind(this),
-        onTransactionError: this.handleTransactionError.bind(this),
+        onTransactionError: this.handleTransactionError.bind(this)
       });
 
       // Configurar event listeners de la UI
       UI.setupEventListeners({
         onLogin: this.handleLogin.bind(this),
         onLogout: this.handleLogout.bind(this),
-        onRefresh: this.handleRefresh.bind(this),
+        onRefresh: this.handleRefresh.bind(this)
       });
 
       // Inicializar autenticación
@@ -47,10 +47,11 @@ class CajerosApp {
       window.CajerosApp = this;
 
       this.isInitialized = true;
-      console.log("✅ Aplicación de cajeros inicializada correctamente");
+      console.log('✅ Aplicación de cajeros inicializada correctamente');
+
     } catch (error) {
-      console.error("❌ Error inicializando la aplicación:", error);
-      UI.showError("Error al inicializar la aplicación");
+      console.error('❌ Error inicializando la aplicación:', error);
+      UI.showError('Error al inicializar la aplicación');
     }
   }
 
@@ -72,7 +73,7 @@ class CajerosApp {
     try {
       await Auth.login(formData.email, formData.password);
     } catch (error) {
-      console.error("Error en login:", error);
+      console.error('Error en login:', error);
       UI.showError(error.message);
     } finally {
       UI.setLoading(false);
@@ -86,17 +87,17 @@ class CajerosApp {
     try {
       // Actualizar UI con información del cajero
       UI.updateCajeroDisplay(cajeroInfo);
-
+      
       // Cargar transacciones pendientes
       await this.loadTransactions();
-
+      
       // Mostrar dashboard
       UI.showDashboard();
-
-      console.log("✅ Login exitoso para:", cajeroInfo.email);
+      
+      console.log('✅ Login exitoso para:', cajeroInfo.email);
     } catch (error) {
-      console.error("Error después del login exitoso:", error);
-      UI.showError("Error al cargar datos del dashboard");
+      console.error('Error después del login exitoso:', error);
+      UI.showError('Error al cargar datos del dashboard');
     }
   }
 
@@ -107,7 +108,7 @@ class CajerosApp {
     Auth.logout();
     UI.showLoginScreen();
     TransactionManager.clearTransactions();
-    console.log("👋 Usuario cerró sesión");
+    console.log('👋 Usuario cerró sesión');
   }
 
   /**
@@ -116,8 +117,8 @@ class CajerosApp {
   handleTokenExpired() {
     UI.showLoginScreen();
     TransactionManager.clearTransactions();
-    UI.showError("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
-    console.log("⏰ Token expirado");
+    UI.showError('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    console.log('⏰ Token expirado');
   }
 
   /**
@@ -151,7 +152,7 @@ class CajerosApp {
    * Manejar error en transacción
    */
   handleTransactionError(error) {
-    console.error("Error en transacción:", error);
+    console.error('Error en transacción:', error);
     // Aquí se podría implementar lógica adicional para manejar errores específicos
   }
 
@@ -195,7 +196,7 @@ class CajerosApp {
 const app = new CajerosApp();
 
 // Inicializar la aplicación cuando se carga el DOM
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener('DOMContentLoaded', () => {
   app.init();
 });
 
