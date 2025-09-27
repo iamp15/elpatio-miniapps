@@ -547,6 +547,71 @@ class DepositApp {
     return "..." + referencia.slice(-6);
   }
 
+  // Método para verificar estado de transacción (usando X-Telegram-ID)
+  async verificarEstadoTransaccion(transaccionId) {
+    try {
+      const telegramId = this.userData.id.toString();
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transaccionId}/estado`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Telegram-ID": telegramId,
+          },
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      return null;
+    } catch (error) {
+      console.error("Error verificando estado:", error);
+      return null;
+    }
+  }
+
+  // Iniciar polling cuando se crea la transacción
+  iniciarPollingEstado(transaccionId) {
+    console.log(`🔄 Iniciando polling para transacción: ${transaccionId}`);
+
+    const intervalId = setInterval(async () => {
+      const estado = await this.verificarEstadoTransaccion(transaccionId);
+
+      if (estado) {
+        console.log("📊 Estado de transacción:", estado);
+
+        if (estado.estado === "en_proceso" && estado.cajeroAsignado) {
+          // ¡Cajero asignado! Mostrar datos bancarios
+          console.log("✅ Cajero asignado, mostrando datos bancarios");
+          this.mostrarDatosCajero(estado);
+          clearInterval(intervalId);
+        } else if (
+          estado.estado === "rechazada" ||
+          estado.estado === "cancelada"
+        ) {
+          // Transacción cancelada
+          console.log("❌ Transacción cancelada o rechazada");
+          this.mostrarTransaccionCancelada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "completada") {
+          // Transacción completada
+          console.log("🎉 Transacción completada");
+          this.mostrarTransaccionCompletada(estado);
+          clearInterval(intervalId);
+        }
+      }
+    }, 3000); // Verificar cada 3 segundos
+
+    // Limpiar polling después de 5 minutos
+    setTimeout(() => {
+      console.log("⏰ Polling expirado después de 5 minutos");
+      clearInterval(intervalId);
+    }, 300000);
+  }
+
   // Mostrar pantalla de éxito
   showSuccessScreen(transaction) {
     document.getElementById("waiting-amount").textContent = `${
@@ -615,11 +680,162 @@ class DepositApp {
       transactionInfo.appendChild(cajeroMessage);
     }
 
+    // Iniciar polling para verificar cuando se asigne un cajero
+    this.iniciarPollingEstado(transaction._id);
+
     this.showScreen("waiting-screen");
   }
 
-  // Las funciones de simulación han sido eliminadas
-  // En el futuro se implementará la asignación real de cajeros
+  // Mostrar datos del cajero asignado
+  mostrarDatosCajero(estado) {
+    const cajero = estado.cajero;
+
+    console.log("🏦 Mostrando datos del cajero:", cajero);
+
+    // Actualizar la pantalla con los datos del cajero
+    const bankInfoScreen = document.getElementById("bank-info-screen");
+    if (bankInfoScreen) {
+      // Actualizar elementos de la pantalla de datos bancarios
+      const cajeroNombre = document.getElementById("cajero-nombre");
+      const cajeroTelefono = document.getElementById("cajero-telefono");
+      const cajeroBanco = document.getElementById("cajero-banco");
+      const cajeroCedula = document.getElementById("cajero-cedula");
+      const montoPago = document.getElementById("monto-pago");
+      const referenciaPago = document.getElementById("referencia-pago");
+
+      if (cajeroNombre) cajeroNombre.textContent = cajero.nombre;
+      if (cajeroTelefono) cajeroTelefono.textContent = cajero.telefono;
+      if (cajeroBanco) cajeroBanco.textContent = cajero.datosPago.banco;
+      if (cajeroCedula) {
+        cajeroCedula.textContent = `${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`;
+      }
+      if (montoPago) {
+        montoPago.textContent = `${(estado.monto / 100).toLocaleString(
+          "es-VE"
+        )} Bs`;
+      }
+      if (referenciaPago) {
+        referenciaPago.textContent = estado.referencia;
+      }
+
+      this.showScreen("bank-info-screen");
+    } else {
+      console.warn("⚠️ No se encontró la pantalla bank-info-screen");
+      // Fallback: mostrar en la pantalla de espera
+      this.actualizarPantallaEsperaConCajero(estado);
+    }
+  }
+
+  // Actualizar pantalla de espera con datos del cajero (fallback)
+  actualizarPantallaEsperaConCajero(estado) {
+    const cajero = estado.cajero;
+
+    // Actualizar el título de la pantalla
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "✅ Cajero Asignado";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Realiza el pago móvil con los datos del cajero";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Cajero Asignado";
+      statusElement.className = "status-assigned";
+    }
+
+    // Agregar información del cajero
+    const transactionInfo = document.querySelector(
+      "#waiting-screen .transaction-info"
+    );
+    if (transactionInfo) {
+      // Limpiar mensaje anterior
+      const cajeroMessage = transactionInfo.querySelector(".cajero-message");
+      if (cajeroMessage) {
+        cajeroMessage.remove();
+      }
+
+      // Agregar nueva información del cajero
+      const nuevaInfoCajero = document.createElement("div");
+      nuevaInfoCajero.className = "cajero-message";
+      nuevaInfoCajero.innerHTML = `
+        <div class="info-card cajero-info">
+          <h3>🏦 Datos del Cajero</h3>
+          <p><strong>Nombre:</strong> ${cajero.nombre}</p>
+          <p><strong>Teléfono:</strong> ${cajero.telefono}</p>
+          <p><strong>Banco:</strong> ${cajero.datosPago.banco}</p>
+          <p><strong>Cédula:</strong> ${cajero.datosPago.cedula.prefijo}-${
+        cajero.datosPago.cedula.numero
+      }</p>
+          <p><strong>Monto:</strong> ${(estado.monto / 100).toLocaleString(
+            "es-VE"
+          )} Bs</p>
+          <p><strong>Referencia:</strong> ${estado.referencia}</p>
+        </div>
+      `;
+      transactionInfo.appendChild(nuevaInfoCajero);
+    }
+  }
+
+  // Mostrar transacción cancelada
+  mostrarTransaccionCancelada(estado) {
+    console.log("❌ Mostrando transacción cancelada:", estado);
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "❌ Transacción Cancelada";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Tu transacción ha sido cancelada o rechazada";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent =
+        estado.estado === "rechazada" ? "Rechazada" : "Cancelada";
+      statusElement.className = "status-cancelled";
+    }
+  }
+
+  // Mostrar transacción completada
+  mostrarTransaccionCompletada(estado) {
+    console.log("🎉 Mostrando transacción completada:", estado);
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "🎉 ¡Transacción Completada!";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Tu depósito ha sido procesado exitosamente";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Completada";
+      statusElement.className = "status-completed";
+    }
+  }
 
   // Manejar confirmación de pago
   async handlePaymentConfirmation() {

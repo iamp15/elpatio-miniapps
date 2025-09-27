@@ -166,7 +166,7 @@ function updateCajeroDisplay() {
     cajeroName.textContent = cajeroInfo.nombreCompleto || "-";
     cajeroEmailDisplay.textContent = cajeroInfo.email || "-";
     cajeroBanco.textContent = cajeroInfo.datosPagoMovil?.banco || "-";
-    
+
     // Formatear cédula con prefijo y número
     const cedula = cajeroInfo.datosPagoMovil?.cedula;
     if (cedula && cedula.prefijo && cedula.numero) {
@@ -174,7 +174,7 @@ function updateCajeroDisplay() {
     } else {
       cajeroCedula.textContent = "-";
     }
-    
+
     // Mostrar teléfono de pago móvil
     cajeroTelefonoPago.textContent = cajeroInfo.datosPagoMovil?.telefono || "-";
   }
@@ -392,30 +392,134 @@ function createTransactionCard(transaccion) {
 async function aceptarTransaccion(transaccionId) {
   if (
     !confirm(
-      "¿Estás seguro de aceptar esta transacción? Esto enviará los datos bancarios al jugador."
+      "¿Estás seguro de aceptar esta transacción? Te asignarás como cajero responsable."
     )
   ) {
     return;
   }
 
   try {
-    const response = await authenticatedRequest(
-      `${API_BASE_URL}/api/transacciones/${transaccionId}/confirmar`,
+    // 1. Asignar cajero a la transacción
+    const asignacionResponse = await authenticatedRequest(
+      `${API_BASE_URL}/api/transacciones/${transaccionId}/asignar-cajero`,
       { method: "PUT" }
     );
 
-    if (response.ok) {
-      alert(
-        "✅ Transacción aceptada exitosamente. Los datos bancarios han sido enviados al jugador."
-      );
-      loadTransactions(); // Recargar la lista
-    } else {
-      const errorData = await response.json();
-      alert(`❌ Error: ${errorData.mensaje || "Error al aceptar transacción"}`);
+    if (!asignacionResponse.ok) {
+      const errorData = await asignacionResponse.json();
+      alert(`❌ Error: ${errorData.mensaje || "Error al asignar transacción"}`);
+      return;
     }
+
+    // 2. Obtener detalles de la transacción asignada
+    const transaccionResponse = await authenticatedRequest(
+      `${API_BASE_URL}/api/transacciones/${transaccionId}`
+    );
+
+    if (transaccionResponse.ok) {
+      const transaccionData = await transaccionResponse.json();
+      showTransactionDetails(transaccionData.transaccion);
+    } else {
+      alert("✅ Transacción asignada exitosamente");
+      loadTransactions(); // Recargar la lista
+    }
+
   } catch (error) {
     console.error("Error aceptando transacción:", error);
     alert("❌ Error de conexión al aceptar transacción");
+  }
+}
+
+/**
+ * Mostrar detalles de transacción aceptada
+ */
+function showTransactionDetails(transaccion) {
+  const tipoClass = transaccion.categoria === "deposito" ? "deposito" : "retiro";
+  const tipoText = transaccion.categoria === "deposito" ? "Depósito" : "Retiro";
+  const icon = transaccion.categoria === "deposito" ? "💰" : "💸";
+
+  const detailsHTML = `
+    <div class="transaction-details-modal">
+      <div class="modal-header">
+        <h2>✅ Transacción Aceptada</h2>
+        <button onclick="closeTransactionDetails()" class="close-btn">&times;</button>
+      </div>
+      
+      <div class="transaction-info">
+        <div class="transaction-header ${tipoClass}">
+          <div class="transaction-type">
+            ${icon} ${tipoText}
+          </div>
+          <div class="transaction-amount">
+            ${(transaccion.monto / 100).toLocaleString("es-VE")} Bs
+          </div>
+        </div>
+        
+        <div class="details-grid">
+          <div class="detail-item">
+            <strong>ID Transacción:</strong>
+            <span>${formatReference(transaccion.referencia || transaccion._id)}</span>
+          </div>
+          
+          <div class="detail-item">
+            <strong>Jugador:</strong>
+            <span>${transaccion.jugadorId?.username || transaccion.jugadorId?.nickname || "N/A"}</span>
+          </div>
+          
+          <div class="detail-item">
+            <strong>Estado:</strong>
+            <span class="status-en-proceso">En Proceso</span>
+          </div>
+          
+          <div class="detail-item">
+            <strong>Fecha Asignación:</strong>
+            <span>${new Date().toLocaleString("es-VE")}</span>
+          </div>
+        </div>
+        
+        <div class="payment-info">
+          <h3>📱 Información de Pago Móvil</h3>
+          <div class="payment-details">
+            <div class="payment-item">
+              <strong>Banco:</strong> ${cajeroInfo?.datosPagoMovil?.banco || "N/A"}
+            </div>
+            <div class="payment-item">
+              <strong>Cédula:</strong> ${cajeroInfo?.datosPagoMovil?.cedula?.prefijo || ""}-${cajeroInfo?.datosPagoMovil?.cedula?.numero || "N/A"}
+            </div>
+            <div class="payment-item">
+              <strong>Teléfono:</strong> ${cajeroInfo?.datosPagoMovil?.telefono || "N/A"}
+            </div>
+          </div>
+        </div>
+        
+        <div class="status-message">
+          <p>🔄 <strong>Estado:</strong> Esperando pago del jugador</p>
+          <p>Los datos bancarios han sido enviados al jugador. Recibirás una notificación cuando realice el pago.</p>
+        </div>
+      </div>
+      
+      <div class="modal-actions">
+        <button onclick="closeTransactionDetails()" class="btn btn-primary">Cerrar</button>
+        <button onclick="loadTransactions(); closeTransactionDetails();" class="btn btn-secondary">Ver Lista</button>
+      </div>
+    </div>
+  `;
+
+  // Crear overlay
+  const overlay = document.createElement("div");
+  overlay.className = "modal-overlay";
+  overlay.innerHTML = detailsHTML;
+  
+  document.body.appendChild(overlay);
+}
+
+/**
+ * Cerrar detalles de transacción
+ */
+function closeTransactionDetails() {
+  const overlay = document.querySelector(".modal-overlay");
+  if (overlay) {
+    overlay.remove();
   }
 }
 
@@ -471,4 +575,6 @@ window.CajerosApp = {
   getCajeroInfo: () => cajeroInfo,
   loadTransactions,
   aceptarTransaccion,
+  showTransactionDetails,
+  closeTransactionDetails,
 };
