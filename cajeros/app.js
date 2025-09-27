@@ -399,6 +399,10 @@ async function aceptarTransaccion(transaccionId) {
   }
 
   try {
+    // Debug: Log current token and cajero info
+    console.log("aceptarTransaccion - Current token:", currentToken);
+    console.log("aceptarTransaccion - Cajero info:", cajeroInfo);
+
     // 1. Asignar cajero a la transacción
     const asignacionResponse = await authenticatedRequest(
       `${API_BASE_URL}/api/transacciones/${transaccionId}/asignar-cajero`,
@@ -423,7 +427,6 @@ async function aceptarTransaccion(transaccionId) {
       alert("✅ Transacción asignada exitosamente");
       loadTransactions(); // Recargar la lista
     }
-
   } catch (error) {
     console.error("Error aceptando transacción:", error);
     alert("❌ Error de conexión al aceptar transacción");
@@ -434,7 +437,8 @@ async function aceptarTransaccion(transaccionId) {
  * Mostrar detalles de transacción aceptada
  */
 function showTransactionDetails(transaccion) {
-  const tipoClass = transaccion.categoria === "deposito" ? "deposito" : "retiro";
+  const tipoClass =
+    transaccion.categoria === "deposito" ? "deposito" : "retiro";
   const tipoText = transaccion.categoria === "deposito" ? "Depósito" : "Retiro";
   const icon = transaccion.categoria === "deposito" ? "💰" : "💸";
 
@@ -458,12 +462,18 @@ function showTransactionDetails(transaccion) {
         <div class="details-grid">
           <div class="detail-item">
             <strong>ID Transacción:</strong>
-            <span>${formatReference(transaccion.referencia || transaccion._id)}</span>
+            <span>${formatReference(
+              transaccion.referencia || transaccion._id
+            )}</span>
           </div>
           
           <div class="detail-item">
             <strong>Jugador:</strong>
-            <span>${transaccion.jugadorId?.username || transaccion.jugadorId?.nickname || "N/A"}</span>
+            <span>${
+              transaccion.jugadorId?.username ||
+              transaccion.jugadorId?.nickname ||
+              "N/A"
+            }</span>
           </div>
           
           <div class="detail-item">
@@ -481,13 +491,19 @@ function showTransactionDetails(transaccion) {
           <h3>📱 Información de Pago Móvil</h3>
           <div class="payment-details">
             <div class="payment-item">
-              <strong>Banco:</strong> ${cajeroInfo?.datosPagoMovil?.banco || "N/A"}
+              <strong>Banco:</strong> ${
+                cajeroInfo?.datosPagoMovil?.banco || "N/A"
+              }
             </div>
             <div class="payment-item">
-              <strong>Cédula:</strong> ${cajeroInfo?.datosPagoMovil?.cedula?.prefijo || ""}-${cajeroInfo?.datosPagoMovil?.cedula?.numero || "N/A"}
+              <strong>Cédula:</strong> ${
+                cajeroInfo?.datosPagoMovil?.cedula?.prefijo || ""
+              }-${cajeroInfo?.datosPagoMovil?.cedula?.numero || "N/A"}
             </div>
             <div class="payment-item">
-              <strong>Teléfono:</strong> ${cajeroInfo?.datosPagoMovil?.telefono || "N/A"}
+              <strong>Teléfono:</strong> ${
+                cajeroInfo?.datosPagoMovil?.telefono || "N/A"
+              }
             </div>
           </div>
         </div>
@@ -509,7 +525,7 @@ function showTransactionDetails(transaccion) {
   const overlay = document.createElement("div");
   overlay.className = "modal-overlay";
   overlay.innerHTML = detailsHTML;
-  
+
   document.body.appendChild(overlay);
 }
 
@@ -553,6 +569,10 @@ async function authenticatedRequest(url, options = {}) {
     throw new Error("No hay token de autenticación");
   }
 
+  // Debug: Log request details
+  console.log("authenticatedRequest - URL:", url);
+  console.log("authenticatedRequest - Token:", currentToken.substring(0, 20) + "...");
+
   const defaultOptions = {
     headers: {
       Authorization: `Bearer ${currentToken}`,
@@ -561,7 +581,12 @@ async function authenticatedRequest(url, options = {}) {
     },
   };
 
-  return fetch(url, { ...defaultOptions, ...options });
+  const response = await fetch(url, { ...defaultOptions, ...options });
+  
+  // Debug: Log response status
+  console.log("authenticatedRequest - Response status:", response.status);
+  
+  return response;
 }
 
 // Inicializar la aplicación cuando se carga el DOM

@@ -544,16 +544,18 @@ body {
   .modal-overlay {
     padding: 10px;
   }
-  
+
   .transaction-details-modal {
     max-height: 95vh;
   }
-  
-  .modal-header, .transaction-info, .modal-actions {
+
+  .modal-header,
+  .transaction-info,
+  .modal-actions {
     padding-left: 16px;
     padding-right: 16px;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
