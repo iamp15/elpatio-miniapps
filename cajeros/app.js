@@ -321,7 +321,13 @@ function createTransactionCard(transaccion) {
       <p><strong>Fecha:</strong> ${new Date(
         transaccion.createdAt
       ).toLocaleString()}</p>
-      ${transaccion.referencia ? `<p><strong>ID Transacción:</strong> ${formatReference(transaccion.referencia)}</p>` : ""}
+      ${
+        transaccion.referencia
+          ? `<p><strong>ID Transacción:</strong> ${formatReference(
+              transaccion.referencia
+            )}</p>`
+          : ""
+      }
       ${
         transaccion.jugadorId
           ? `<p><strong>Jugador:</strong> ${
@@ -347,7 +353,9 @@ function createTransactionCard(transaccion) {
         }
         ${
           transaccion.datosPago.referencia
-            ? `<p><strong>Referencia:</strong> ${formatReference(transaccion.datosPago.referencia)}</p>`
+            ? `<p><strong>Referencia:</strong> ${formatReference(
+                transaccion.datosPago.referencia
+              )}</p>`
             : ""
         }
       `

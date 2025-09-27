@@ -571,14 +571,48 @@ class DepositApp {
       headerTitle.textContent = "✅ Solicitud Creada";
     }
 
-    // Actualizar el subtítulo con el mensaje completo
-    const subtitle = document.querySelector("#waiting-screen .header .subtitle");
+    // Actualizar el subtítulo con mensaje simple
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
     if (subtitle) {
-      subtitle.innerHTML = `
-        Tu solicitud de depósito ha sido creada exitosamente.<br>
-        <strong>ID de transacción:</strong> ${this.formatReference(transaction.referencia || transaction._id)}<br>
-        En los próximos minutos se te asignará un cajero para que realices el pago móvil.
+      subtitle.textContent = "Tu solicitud de depósito se creó exitosamente";
+    }
+
+    // Actualizar los detalles de la transacción
+    const amountElement = document.getElementById("waiting-amount");
+    if (amountElement) {
+      amountElement.textContent = `${(transaction.monto / 100).toLocaleString(
+        "es-VE"
+      )} Bs`;
+    }
+
+    const referenceElement = document.getElementById("waiting-reference");
+    if (referenceElement) {
+      referenceElement.textContent = this.formatReference(
+        transaction.referencia || transaction._id
+      );
+    }
+
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Pago Móvil";
+      statusElement.className = "status-pending";
+    }
+
+    // Agregar mensaje de asignación de cajero
+    const transactionInfo = document.querySelector(
+      "#waiting-screen .transaction-info"
+    );
+    if (transactionInfo) {
+      const cajeroMessage = document.createElement("div");
+      cajeroMessage.className = "cajero-message";
+      cajeroMessage.innerHTML = `
+        <div class="info-card">
+          <p>🔄 Se está asignando un cajero para completar tu solicitud</p>
+        </div>
       `;
+      transactionInfo.appendChild(cajeroMessage);
     }
 
     this.showScreen("waiting-screen");
