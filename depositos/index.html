@@ -115,19 +115,38 @@
               <div class="detail-row">
                 <span class="label">Banco:</span>
                 <span id="bank-name" class="value">-</span>
+                <button class="copy-btn" onclick="copyToClipboard('bank-name')" title="Copiar banco">
+                  📋
+                </button>
               </div>
               <div class="detail-row">
                 <span class="label">Teléfono:</span>
                 <span id="bank-phone" class="value">-</span>
+                <button class="copy-btn" onclick="copyToClipboard('bank-phone')" title="Copiar teléfono">
+                  📋
+                </button>
               </div>
               <div class="detail-row">
                 <span class="label">Cédula:</span>
                 <span id="bank-id" class="value">-</span>
+                <button class="copy-btn" onclick="copyToClipboard('bank-id')" title="Copiar cédula">
+                  📋
+                </button>
               </div>
               <div class="detail-row">
                 <span class="label">Monto:</span>
                 <span id="bank-amount" class="value amount">-</span>
+                <button class="copy-btn" onclick="copyToClipboard('bank-amount')" title="Copiar monto">
+                  📋
+                </button>
               </div>
+            </div>
+            
+            <!-- Botón para copiar todos los datos -->
+            <div class="copy-all-section">
+              <button class="btn btn-copy-all" id="copy-all-btn" onclick="copyAllBankData()">
+                📋 Copiar Todos los Datos
+              </button>
             </div>
           </div>
 
