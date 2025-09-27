@@ -399,9 +399,6 @@ async function aceptarTransaccion(transaccionId) {
   }
 
   try {
-    // Debug: Log current token and cajero info
-    console.log("aceptarTransaccion - Current token:", currentToken);
-    console.log("aceptarTransaccion - Cajero info:", cajeroInfo);
 
     // 1. Asignar cajero a la transacción
     const asignacionResponse = await authenticatedRequest(
@@ -569,10 +566,6 @@ async function authenticatedRequest(url, options = {}) {
     throw new Error("No hay token de autenticación");
   }
 
-  // Debug: Log request details
-  console.log("authenticatedRequest - URL:", url);
-  console.log("authenticatedRequest - Token:", currentToken.substring(0, 20) + "...");
-
   const defaultOptions = {
     headers: {
       Authorization: `Bearer ${currentToken}`,
@@ -581,12 +574,7 @@ async function authenticatedRequest(url, options = {}) {
     },
   };
 
-  const response = await fetch(url, { ...defaultOptions, ...options });
-  
-  // Debug: Log response status
-  console.log("authenticatedRequest - Response status:", response.status);
-  
-  return response;
+  return fetch(url, { ...defaultOptions, ...options });
 }
 
 // Inicializar la aplicación cuando se carga el DOM
