@@ -989,7 +989,7 @@ class DepositApp {
       }
 
       const textToCopy = element.textContent.trim();
-      if (!textToCopy || textToCopy === '-') {
+      if (!textToCopy || textToCopy === "-") {
         this.mostrarLogTemporal(`❌ No hay texto para copiar en ${elementId}`);
         return;
       }
@@ -998,80 +998,86 @@ class DepositApp {
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(textToCopy);
         this.mostrarLogTemporal(`✅ Copiado al portapapeles: ${textToCopy}`);
-        this.showCopyFeedback(elementId, '✅');
+        this.showCopyFeedback(elementId, "✅");
       } else {
         // Fallback para navegadores más antiguos o contextos no seguros
-        const textArea = document.createElement('textarea');
+        const textArea = document.createElement("textarea");
         textArea.value = textToCopy;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         try {
-          document.execCommand('copy');
+          document.execCommand("copy");
           this.mostrarLogTemporal(`✅ Copiado (fallback): ${textToCopy}`);
-          this.showCopyFeedback(elementId, '✅');
+          this.showCopyFeedback(elementId, "✅");
         } catch (err) {
           this.mostrarLogTemporal(`❌ Error copiando: ${err.message}`);
-          this.showCopyFeedback(elementId, '❌');
+          this.showCopyFeedback(elementId, "❌");
         }
-        
+
         document.body.removeChild(textArea);
       }
     } catch (error) {
       this.mostrarLogTemporal(`❌ Error en copyToClipboard: ${error.message}`);
-      this.showCopyFeedback(elementId, '❌');
+      this.showCopyFeedback(elementId, "❌");
     }
   }
 
   // Función para copiar todos los datos bancarios
   async copyAllBankData() {
     try {
-      const bankName = document.getElementById('bank-name')?.textContent?.trim() || '';
-      const bankPhone = document.getElementById('bank-phone')?.textContent?.trim() || '';
-      const bankId = document.getElementById('bank-id')?.textContent?.trim() || '';
-      const bankAmount = document.getElementById('bank-amount')?.textContent?.trim() || '';
+      const bankName =
+        document.getElementById("bank-name")?.textContent?.trim() || "";
+      const bankPhone =
+        document.getElementById("bank-phone")?.textContent?.trim() || "";
+      const bankId =
+        document.getElementById("bank-id")?.textContent?.trim() || "";
+      const bankAmount =
+        document.getElementById("bank-amount")?.textContent?.trim() || "";
 
-      if (!bankName || bankName === '-') {
+      if (!bankName || bankName === "-") {
         this.mostrarLogTemporal(`❌ No hay datos bancarios para copiar`);
         return;
       }
 
       const allData = `Banco: ${bankName}\nTeléfono: ${bankPhone}\nCédula: ${bankId}\nMonto: ${bankAmount}`;
-      
+
       // Usar la API del portapapeles moderna
       if (navigator.clipboard && window.isSecureContext) {
         await navigator.clipboard.writeText(allData);
         this.mostrarLogTemporal(`✅ Todos los datos copiados al portapapeles`);
-        this.showCopyAllFeedback('✅');
+        this.showCopyAllFeedback("✅");
       } else {
         // Fallback para navegadores más antiguos
-        const textArea = document.createElement('textarea');
+        const textArea = document.createElement("textarea");
         textArea.value = allData;
-        textArea.style.position = 'fixed';
-        textArea.style.left = '-999999px';
-        textArea.style.top = '-999999px';
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
         document.body.appendChild(textArea);
         textArea.focus();
         textArea.select();
-        
+
         try {
-          document.execCommand('copy');
+          document.execCommand("copy");
           this.mostrarLogTemporal(`✅ Todos los datos copiados (fallback)`);
-          this.showCopyAllFeedback('✅');
+          this.showCopyAllFeedback("✅");
         } catch (err) {
-          this.mostrarLogTemporal(`❌ Error copiando todos los datos: ${err.message}`);
-          this.showCopyAllFeedback('❌');
+          this.mostrarLogTemporal(
+            `❌ Error copiando todos los datos: ${err.message}`
+          );
+          this.showCopyAllFeedback("❌");
         }
-        
+
         document.body.removeChild(textArea);
       }
     } catch (error) {
       this.mostrarLogTemporal(`❌ Error en copyAllBankData: ${error.message}`);
-      this.showCopyAllFeedback('❌');
+      this.showCopyAllFeedback("❌");
     }
   }
 
@@ -1082,11 +1088,12 @@ class DepositApp {
 
     const originalText = element.textContent;
     const originalClass = element.className;
-    
+
     // Cambiar temporalmente el texto y estilo
-    element.textContent = status === '✅' ? '¡Copiado!' : 'Error';
-    element.className = originalClass + (status === '✅' ? ' copy-success' : ' copy-error');
-    
+    element.textContent = status === "✅" ? "¡Copiado!" : "Error";
+    element.className =
+      originalClass + (status === "✅" ? " copy-success" : " copy-error");
+
     // Restaurar después de 2 segundos
     setTimeout(() => {
       element.textContent = originalText;
@@ -1096,16 +1103,18 @@ class DepositApp {
 
   // Mostrar feedback visual para copiado de todos los datos
   showCopyAllFeedback(status) {
-    const button = document.getElementById('copy-all-btn');
+    const button = document.getElementById("copy-all-btn");
     if (!button) return;
 
     const originalText = button.textContent;
     const originalClass = button.className;
-    
+
     // Cambiar temporalmente el texto y estilo
-    button.textContent = status === '✅' ? '¡Todos copiados!' : 'Error al copiar';
-    button.className = originalClass + (status === '✅' ? ' copy-success' : ' copy-error');
-    
+    button.textContent =
+      status === "✅" ? "¡Todos copiados!" : "Error al copiar";
+    button.className =
+      originalClass + (status === "✅" ? " copy-success" : " copy-error");
+
     // Restaurar después de 3 segundos
     setTimeout(() => {
       button.textContent = originalText;
@@ -1115,8 +1124,12 @@ class DepositApp {
 
   // Función temporal para mostrar logs en pantalla (para debugging)
   mostrarLogTemporal(mensaje) {
-    console.log(mensaje); // También en consola por si acaso
-
+    console.log(mensaje); // Solo en consola por ahora (logs visuales deshabilitados temporalmente)
+    
+    // TEMPORALMENTE DESHABILITADO - Los logs visuales están ocultos para pruebas móviles
+    // Descomenta el código de abajo cuando termines las pruebas
+    
+    /*
     // Crear o obtener el contenedor de logs
     let logContainer = document.getElementById("debug-logs");
     if (!logContainer) {
@@ -1161,6 +1174,7 @@ class DepositApp {
 
     // Auto-scroll al final
     logContainer.scrollTop = logContainer.scrollHeight;
+    */
   }
 
   // Método para comunicación con el bot
@@ -1201,13 +1215,13 @@ class DepositApp {
 }
 
 // Hacer las funciones de copiado globales para que funcionen desde el HTML
-window.copyToClipboard = function(elementId) {
+window.copyToClipboard = function (elementId) {
   if (window.depositApp) {
     window.depositApp.copyToClipboard(elementId);
   }
 };
 
-window.copyAllBankData = function() {
+window.copyAllBankData = function () {
   if (window.depositApp) {
     window.depositApp.copyAllBankData();
   }
