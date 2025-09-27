@@ -551,6 +551,16 @@ class DepositApp {
   async verificarEstadoTransaccion(transaccionId) {
     try {
       const telegramId = this.userData.id.toString();
+
+      // LOG TEMPORAL: Mostrar en pantalla
+      this.mostrarLogTemporal(
+        `🔍 Verificando estado de transacción: ${transaccionId}`
+      );
+      this.mostrarLogTemporal(`👤 Telegram ID: ${telegramId}`);
+      this.mostrarLogTemporal(
+        `🔗 URL: ${this.backendUrl}/transacciones/${transaccionId}/estado`
+      );
+
       const response = await fetch(
         `${this.backendUrl}/transacciones/${transaccionId}/estado`,
         {
@@ -562,12 +572,23 @@ class DepositApp {
         }
       );
 
+      this.mostrarLogTemporal(
+        `📡 Respuesta HTTP: ${response.status} ${response.statusText}`
+      );
+
       if (response.ok) {
         const data = await response.json();
+        this.mostrarLogTemporal(
+          `✅ Datos recibidos: ${JSON.stringify(data, null, 2)}`
+        );
         return data;
+      } else {
+        const errorText = await response.text();
+        this.mostrarLogTemporal(`❌ Error HTTP: ${errorText}`);
+        return null;
       }
-      return null;
     } catch (error) {
+      this.mostrarLogTemporal(`💥 Error de conexión: ${error.message}`);
       console.error("Error verificando estado:", error);
       return null;
     }
@@ -575,17 +596,25 @@ class DepositApp {
 
   // Iniciar polling cuando se crea la transacción
   iniciarPollingEstado(transaccionId) {
-    console.log(`🔄 Iniciando polling para transacción: ${transaccionId}`);
+    this.mostrarLogTemporal(
+      `🔄 Iniciando polling para transacción: ${transaccionId}`
+    );
 
     const intervalId = setInterval(async () => {
+      this.mostrarLogTemporal(
+        `⏰ Verificando estado... (${new Date().toLocaleTimeString()})`
+      );
       const estado = await this.verificarEstadoTransaccion(transaccionId);
 
       if (estado) {
-        console.log("📊 Estado de transacción:", estado);
+        this.mostrarLogTemporal(`📊 Estado actual: ${estado.estado}`);
+        this.mostrarLogTemporal(`👤 Cajero asignado: ${estado.cajeroAsignado}`);
 
         if (estado.estado === "en_proceso" && estado.cajeroAsignado) {
           // ¡Cajero asignado! Mostrar datos bancarios
-          console.log("✅ Cajero asignado, mostrando datos bancarios");
+          this.mostrarLogTemporal(
+            `✅ Cajero asignado, mostrando datos bancarios`
+          );
           this.mostrarDatosCajero(estado);
           clearInterval(intervalId);
         } else if (
@@ -593,21 +622,27 @@ class DepositApp {
           estado.estado === "cancelada"
         ) {
           // Transacción cancelada
-          console.log("❌ Transacción cancelada o rechazada");
+          this.mostrarLogTemporal(`❌ Transacción cancelada o rechazada`);
           this.mostrarTransaccionCancelada(estado);
           clearInterval(intervalId);
         } else if (estado.estado === "completada") {
           // Transacción completada
-          console.log("🎉 Transacción completada");
+          this.mostrarLogTemporal(`🎉 Transacción completada`);
           this.mostrarTransaccionCompletada(estado);
           clearInterval(intervalId);
+        } else {
+          this.mostrarLogTemporal(
+            `⏳ Esperando cajero... Estado: ${estado.estado}`
+          );
         }
+      } else {
+        this.mostrarLogTemporal(`❌ No se pudo obtener el estado`);
       }
     }, 3000); // Verificar cada 3 segundos
 
     // Limpiar polling después de 5 minutos
     setTimeout(() => {
-      console.log("⏰ Polling expirado después de 5 minutos");
+      this.mostrarLogTemporal(`⏰ Polling expirado después de 5 minutos`);
       clearInterval(intervalId);
     }, 300000);
   }
@@ -690,10 +725,21 @@ class DepositApp {
   mostrarDatosCajero(estado) {
     const cajero = estado.cajero;
 
-    console.log("🏦 Mostrando datos del cajero:", cajero);
+    this.mostrarLogTemporal(
+      `🏦 Mostrando datos del cajero: ${JSON.stringify(cajero, null, 2)}`
+    );
+    this.mostrarLogTemporal(
+      `📊 Estado completo: ${JSON.stringify(estado, null, 2)}`
+    );
 
     // Actualizar la pantalla con los datos del cajero
     const bankInfoScreen = document.getElementById("bank-info-screen");
+    this.mostrarLogTemporal(
+      `🔍 Buscando pantalla bank-info-screen: ${
+        bankInfoScreen ? "ENCONTRADA" : "NO ENCONTRADA"
+      }`
+    );
+
     if (bankInfoScreen) {
       // Actualizar elementos de la pantalla de datos bancarios
       const cajeroNombre = document.getElementById("cajero-nombre");
@@ -703,24 +749,65 @@ class DepositApp {
       const montoPago = document.getElementById("monto-pago");
       const referenciaPago = document.getElementById("referencia-pago");
 
-      if (cajeroNombre) cajeroNombre.textContent = cajero.nombre;
-      if (cajeroTelefono) cajeroTelefono.textContent = cajero.telefono;
-      if (cajeroBanco) cajeroBanco.textContent = cajero.datosPago.banco;
+      this.mostrarLogTemporal(`🔍 Elementos encontrados:`);
+      this.mostrarLogTemporal(
+        `  - cajero-nombre: ${cajeroNombre ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(
+        `  - cajero-telefono: ${cajeroTelefono ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(`  - cajero-banco: ${cajeroBanco ? "SÍ" : "NO"}`);
+      this.mostrarLogTemporal(
+        `  - cajero-cedula: ${cajeroCedula ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(`  - monto-pago: ${montoPago ? "SÍ" : "NO"}`);
+      this.mostrarLogTemporal(
+        `  - referencia-pago: ${referenciaPago ? "SÍ" : "NO"}`
+      );
+
+      if (cajeroNombre) {
+        cajeroNombre.textContent = cajero.nombre;
+        this.mostrarLogTemporal(`✅ Nombre actualizado: ${cajero.nombre}`);
+      }
+      if (cajeroTelefono) {
+        cajeroTelefono.textContent = cajero.telefono;
+        this.mostrarLogTemporal(`✅ Teléfono actualizado: ${cajero.telefono}`);
+      }
+      if (cajeroBanco) {
+        cajeroBanco.textContent = cajero.datosPago.banco;
+        this.mostrarLogTemporal(
+          `✅ Banco actualizado: ${cajero.datosPago.banco}`
+        );
+      }
       if (cajeroCedula) {
         cajeroCedula.textContent = `${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`;
+        this.mostrarLogTemporal(
+          `✅ Cédula actualizada: ${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`
+        );
       }
       if (montoPago) {
         montoPago.textContent = `${(estado.monto / 100).toLocaleString(
           "es-VE"
         )} Bs`;
+        this.mostrarLogTemporal(
+          `✅ Monto actualizado: ${(estado.monto / 100).toLocaleString(
+            "es-VE"
+          )} Bs`
+        );
       }
       if (referenciaPago) {
         referenciaPago.textContent = estado.referencia;
+        this.mostrarLogTemporal(
+          `✅ Referencia actualizada: ${estado.referencia}`
+        );
       }
 
+      this.mostrarLogTemporal(`🔄 Cambiando a pantalla bank-info-screen`);
       this.showScreen("bank-info-screen");
     } else {
-      console.warn("⚠️ No se encontró la pantalla bank-info-screen");
+      this.mostrarLogTemporal(
+        `⚠️ No se encontró la pantalla bank-info-screen, usando fallback`
+      );
       // Fallback: mostrar en la pantalla de espera
       this.actualizarPantallaEsperaConCajero(estado);
     }
@@ -904,6 +991,56 @@ class DepositApp {
   // Enviar datos al bot (para comunicación con el backend)
   sendDataToBot(data) {
     this.tg.sendData(JSON.stringify(data));
+  }
+
+  // Función temporal para mostrar logs en pantalla (para debugging)
+  mostrarLogTemporal(mensaje) {
+    console.log(mensaje); // También en consola por si acaso
+
+    // Crear o obtener el contenedor de logs
+    let logContainer = document.getElementById("debug-logs");
+    if (!logContainer) {
+      logContainer = document.createElement("div");
+      logContainer.id = "debug-logs";
+      logContainer.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 300px;
+        max-height: 400px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 11px;
+        z-index: 10000;
+        overflow-y: auto;
+        border: 2px solid #ff6b6b;
+      `;
+      document.body.appendChild(logContainer);
+    }
+
+    // Agregar el mensaje con timestamp
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement("div");
+    logEntry.style.cssText = `
+      margin-bottom: 5px;
+      padding: 2px;
+      border-bottom: 1px solid #333;
+      word-wrap: break-word;
+    `;
+    logEntry.textContent = `[${timestamp}] ${mensaje}`;
+
+    logContainer.appendChild(logEntry);
+
+    // Mantener solo los últimos 20 logs
+    while (logContainer.children.length > 20) {
+      logContainer.removeChild(logContainer.firstChild);
+    }
+
+    // Auto-scroll al final
+    logContainer.scrollTop = logContainer.scrollHeight;
   }
 
   // Método para comunicación con el bot
