@@ -2,7 +2,12 @@
  * Módulo de gestión de transacciones para depósitos
  */
 
-import { TRANSACTION_CONFIG, TRANSACTION_STATES, MESSAGES, POLLING_CONFIG } from "./config.js";
+import {
+  TRANSACTION_CONFIG,
+  TRANSACTION_STATES,
+  MESSAGES,
+  POLLING_CONFIG,
+} from "./config.js";
 import { API } from "./api.js";
 import { UI } from "./ui.js";
 
@@ -51,7 +56,7 @@ class TransactionManager {
       if (response.ok) {
         const data = await response.json();
         this.currentTransaction = data.transaccion;
-        
+
         // Ejecutar callback de transacción creada
         if (this.callbacks.onTransactionCreated) {
           this.callbacks.onTransactionCreated(this.currentTransaction);
@@ -78,7 +83,7 @@ class TransactionManager {
       if (response.ok) {
         const data = await response.json();
         const transaction = data.transaccion;
-        
+
         // Actualizar transacción actual
         this.currentTransaction = transaction;
 
@@ -108,7 +113,7 @@ class TransactionManager {
       if (response.ok) {
         const data = await response.json();
         const transaction = data.transaccion;
-        
+
         // Actualizar transacción actual
         this.currentTransaction = transaction;
 
@@ -137,13 +142,13 @@ class TransactionManager {
     }
 
     this.pollingAttempts = 0;
-    
+
     this.pollingInterval = setInterval(async () => {
       try {
         this.pollingAttempts++;
-        
+
         const transaction = await this.checkTransactionStatus(transaccionId);
-        
+
         // Verificar si la transacción ha cambiado de estado
         if (this.shouldStopPolling(transaction)) {
           this.stopPolling();
@@ -153,20 +158,19 @@ class TransactionManager {
         // Verificar si hemos excedido el número máximo de intentos
         if (this.pollingAttempts >= this.maxPollingAttempts) {
           this.stopPolling();
-          
+
           if (this.callbacks.onTransactionTimeout) {
             this.callbacks.onTransactionTimeout(transaccionId);
           }
           return;
         }
-
       } catch (error) {
         console.error("Error en polling:", error);
-        
+
         // Si hay muchos errores consecutivos, detener el polling
         if (this.pollingAttempts >= this.maxPollingAttempts) {
           this.stopPolling();
-          
+
           if (this.callbacks.onTransactionError) {
             this.callbacks.onTransactionError(error);
           }
@@ -195,7 +199,7 @@ class TransactionManager {
       TRANSACTION_STATES.CANCELADA,
       TRANSACTION_STATES.EXPIRADA,
     ];
-    
+
     return finalStates.includes(transaction.estado);
   }
 
@@ -206,11 +210,14 @@ class TransactionManager {
     try {
       // Aquí se podría implementar una llamada al backend para cancelar la transacción
       console.log(`Cancelando transacción ${transaccionId} por timeout`);
-      
+
       // Por ahora, solo actualizamos el estado local
-      if (this.currentTransaction && this.currentTransaction._id === transaccionId) {
+      if (
+        this.currentTransaction &&
+        this.currentTransaction._id === transaccionId
+      ) {
         this.currentTransaction.estado = TRANSACTION_STATES.EXPIRADA;
-        
+
         if (this.callbacks.onTransactionTimeout) {
           this.callbacks.onTransactionTimeout(transaccionId);
         }
@@ -227,7 +234,7 @@ class TransactionManager {
   async communicateWithBot(action, data) {
     try {
       const response = await API.comunicarConBot(action, data);
-      
+
       if (response.ok) {
         const result = await response.json();
         return result;
@@ -247,7 +254,7 @@ class TransactionManager {
   async getBotToken() {
     try {
       const response = await API.getBotToken();
-      
+
       if (response.ok) {
         const data = await response.json();
         return data.token;
@@ -265,7 +272,9 @@ class TransactionManager {
    * Convertir monto a centavos
    */
   convertToCents(amount) {
-    return Math.round(parseFloat(amount || 0) * TRANSACTION_CONFIG.AMOUNT_DIVISOR);
+    return Math.round(
+      parseFloat(amount || 0) * TRANSACTION_CONFIG.AMOUNT_DIVISOR
+    );
   }
 
   /**
@@ -318,13 +327,13 @@ class TransactionManager {
    */
   isTransactionFinal() {
     if (!this.currentTransaction) return true;
-    
+
     const finalStates = [
       TRANSACTION_STATES.CONFIRMADA,
       TRANSACTION_STATES.CANCELADA,
       TRANSACTION_STATES.EXPIRADA,
     ];
-    
+
     return finalStates.includes(this.currentTransaction.estado);
   }
 
@@ -368,7 +377,9 @@ class TransactionManager {
     return {
       banco: bankData.banco,
       telefono: bankData.telefono,
-      cedula: `${bankData.cedula?.prefijo || ""}-${bankData.cedula?.numero || ""}`,
+      cedula: `${bankData.cedula?.prefijo || ""}-${
+        bankData.cedula?.numero || ""
+      }`,
       monto: this.currentTransaction.monto,
     };
   }

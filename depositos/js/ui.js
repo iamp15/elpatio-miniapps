@@ -2,7 +2,13 @@
  * Módulo de interfaz de usuario para depósitos
  */
 
-import { DOM_SELECTORS, UI_CONFIG, MESSAGES, APP_STATES, TRANSACTION_CONFIG } from "./config.js";
+import {
+  DOM_SELECTORS,
+  UI_CONFIG,
+  MESSAGES,
+  APP_STATES,
+  TRANSACTION_CONFIG,
+} from "./config.js";
 
 class UIManager {
   constructor() {
@@ -16,51 +22,117 @@ class UIManager {
    */
   initElements() {
     // Pantallas
-    this.elements.loadingScreen = document.querySelector(DOM_SELECTORS.LOADING_SCREEN);
-    this.elements.mainScreen = document.querySelector(DOM_SELECTORS.MAIN_SCREEN);
-    this.elements.waitingScreen = document.querySelector(DOM_SELECTORS.WAITING_SCREEN);
-    this.elements.bankInfoScreen = document.querySelector(DOM_SELECTORS.BANK_INFO_SCREEN);
-    this.elements.paymentConfirmationScreen = document.querySelector(DOM_SELECTORS.PAYMENT_CONFIRMATION_SCREEN);
-    this.elements.confirmationScreen = document.querySelector(DOM_SELECTORS.CONFIRMATION_SCREEN);
-    this.elements.errorScreen = document.querySelector(DOM_SELECTORS.ERROR_SCREEN);
+    this.elements.loadingScreen = document.querySelector(
+      DOM_SELECTORS.LOADING_SCREEN
+    );
+    this.elements.mainScreen = document.querySelector(
+      DOM_SELECTORS.MAIN_SCREEN
+    );
+    this.elements.waitingScreen = document.querySelector(
+      DOM_SELECTORS.WAITING_SCREEN
+    );
+    this.elements.bankInfoScreen = document.querySelector(
+      DOM_SELECTORS.BANK_INFO_SCREEN
+    );
+    this.elements.paymentConfirmationScreen = document.querySelector(
+      DOM_SELECTORS.PAYMENT_CONFIRMATION_SCREEN
+    );
+    this.elements.confirmationScreen = document.querySelector(
+      DOM_SELECTORS.CONFIRMATION_SCREEN
+    );
+    this.elements.errorScreen = document.querySelector(
+      DOM_SELECTORS.ERROR_SCREEN
+    );
 
     // Formularios
-    this.elements.depositForm = document.querySelector(DOM_SELECTORS.DEPOSIT_FORM);
-    this.elements.paymentConfirmationForm = document.querySelector(DOM_SELECTORS.PAYMENT_CONFIRMATION_FORM);
+    this.elements.depositForm = document.querySelector(
+      DOM_SELECTORS.DEPOSIT_FORM
+    );
+    this.elements.paymentConfirmationForm = document.querySelector(
+      DOM_SELECTORS.PAYMENT_CONFIRMATION_FORM
+    );
 
     // Botones
-    this.elements.requestDepositBtn = document.querySelector(DOM_SELECTORS.REQUEST_DEPOSIT_BTN);
-    this.elements.paymentDoneBtn = document.querySelector(DOM_SELECTORS.PAYMENT_DONE_BTN);
-    this.elements.confirmPaymentBtn = document.querySelector(DOM_SELECTORS.CONFIRM_PAYMENT_BTN);
-    this.elements.backToBankBtn = document.querySelector(DOM_SELECTORS.BACK_TO_BANK_BTN);
-    this.elements.closeAppBtn = document.querySelector(DOM_SELECTORS.CLOSE_APP_BTN);
+    this.elements.requestDepositBtn = document.querySelector(
+      DOM_SELECTORS.REQUEST_DEPOSIT_BTN
+    );
+    this.elements.paymentDoneBtn = document.querySelector(
+      DOM_SELECTORS.PAYMENT_DONE_BTN
+    );
+    this.elements.confirmPaymentBtn = document.querySelector(
+      DOM_SELECTORS.CONFIRM_PAYMENT_BTN
+    );
+    this.elements.backToBankBtn = document.querySelector(
+      DOM_SELECTORS.BACK_TO_BANK_BTN
+    );
+    this.elements.closeAppBtn = document.querySelector(
+      DOM_SELECTORS.CLOSE_APP_BTN
+    );
     this.elements.retryBtn = document.querySelector(DOM_SELECTORS.RETRY_BTN);
-    this.elements.closeErrorBtn = document.querySelector(DOM_SELECTORS.CLOSE_ERROR_BTN);
-    this.elements.copyAllBtn = document.querySelector(DOM_SELECTORS.COPY_ALL_BTN);
+    this.elements.closeErrorBtn = document.querySelector(
+      DOM_SELECTORS.CLOSE_ERROR_BTN
+    );
+    this.elements.copyAllBtn = document.querySelector(
+      DOM_SELECTORS.COPY_ALL_BTN
+    );
 
     // Campos de entrada
-    this.elements.amountInput = document.querySelector(DOM_SELECTORS.AMOUNT_INPUT);
-    this.elements.amountCentsInput = document.querySelector(DOM_SELECTORS.AMOUNT_CENTS_INPUT);
-    this.elements.paymentBankSelect = document.querySelector(DOM_SELECTORS.PAYMENT_BANK_SELECT);
-    this.elements.paymentPhoneInput = document.querySelector(DOM_SELECTORS.PAYMENT_PHONE_INPUT);
-    this.elements.paymentReferenceInput = document.querySelector(DOM_SELECTORS.PAYMENT_REFERENCE_INPUT);
-    this.elements.paymentDateInput = document.querySelector(DOM_SELECTORS.PAYMENT_DATE_INPUT);
-    this.elements.paymentAmountInput = document.querySelector(DOM_SELECTORS.PAYMENT_AMOUNT_INPUT);
+    this.elements.amountInput = document.querySelector(
+      DOM_SELECTORS.AMOUNT_INPUT
+    );
+    this.elements.amountCentsInput = document.querySelector(
+      DOM_SELECTORS.AMOUNT_CENTS_INPUT
+    );
+    this.elements.paymentBankSelect = document.querySelector(
+      DOM_SELECTORS.PAYMENT_BANK_SELECT
+    );
+    this.elements.paymentPhoneInput = document.querySelector(
+      DOM_SELECTORS.PAYMENT_PHONE_INPUT
+    );
+    this.elements.paymentReferenceInput = document.querySelector(
+      DOM_SELECTORS.PAYMENT_REFERENCE_INPUT
+    );
+    this.elements.paymentDateInput = document.querySelector(
+      DOM_SELECTORS.PAYMENT_DATE_INPUT
+    );
+    this.elements.paymentAmountInput = document.querySelector(
+      DOM_SELECTORS.PAYMENT_AMOUNT_INPUT
+    );
 
     // Información mostrada
-    this.elements.currentBalance = document.querySelector(DOM_SELECTORS.CURRENT_BALANCE);
-    this.elements.waitingAmount = document.querySelector(DOM_SELECTORS.WAITING_AMOUNT);
-    this.elements.waitingReference = document.querySelector(DOM_SELECTORS.WAITING_REFERENCE);
-    this.elements.waitingStatus = document.querySelector(DOM_SELECTORS.WAITING_STATUS);
+    this.elements.currentBalance = document.querySelector(
+      DOM_SELECTORS.CURRENT_BALANCE
+    );
+    this.elements.waitingAmount = document.querySelector(
+      DOM_SELECTORS.WAITING_AMOUNT
+    );
+    this.elements.waitingReference = document.querySelector(
+      DOM_SELECTORS.WAITING_REFERENCE
+    );
+    this.elements.waitingStatus = document.querySelector(
+      DOM_SELECTORS.WAITING_STATUS
+    );
     this.elements.bankName = document.querySelector(DOM_SELECTORS.BANK_NAME);
     this.elements.bankPhone = document.querySelector(DOM_SELECTORS.BANK_PHONE);
     this.elements.bankId = document.querySelector(DOM_SELECTORS.BANK_ID);
-    this.elements.bankAmount = document.querySelector(DOM_SELECTORS.BANK_AMOUNT);
-    this.elements.finalAmount = document.querySelector(DOM_SELECTORS.FINAL_AMOUNT);
-    this.elements.finalReference = document.querySelector(DOM_SELECTORS.FINAL_REFERENCE);
-    this.elements.finalStatus = document.querySelector(DOM_SELECTORS.FINAL_STATUS);
-    this.elements.errorTitle = document.querySelector(DOM_SELECTORS.ERROR_TITLE);
-    this.elements.errorMessage = document.querySelector(DOM_SELECTORS.ERROR_MESSAGE);
+    this.elements.bankAmount = document.querySelector(
+      DOM_SELECTORS.BANK_AMOUNT
+    );
+    this.elements.finalAmount = document.querySelector(
+      DOM_SELECTORS.FINAL_AMOUNT
+    );
+    this.elements.finalReference = document.querySelector(
+      DOM_SELECTORS.FINAL_REFERENCE
+    );
+    this.elements.finalStatus = document.querySelector(
+      DOM_SELECTORS.FINAL_STATUS
+    );
+    this.elements.errorTitle = document.querySelector(
+      DOM_SELECTORS.ERROR_TITLE
+    );
+    this.elements.errorMessage = document.querySelector(
+      DOM_SELECTORS.ERROR_MESSAGE
+    );
   }
 
   /**
@@ -69,25 +141,43 @@ class UIManager {
   setupEventListeners(eventHandlers) {
     // Formulario de depósito
     if (this.elements.depositForm && eventHandlers.onDepositSubmit) {
-      this.elements.depositForm.addEventListener("submit", eventHandlers.onDepositSubmit);
+      this.elements.depositForm.addEventListener(
+        "submit",
+        eventHandlers.onDepositSubmit
+      );
     }
 
     // Formulario de confirmación de pago
-    if (this.elements.paymentConfirmationForm && eventHandlers.onPaymentConfirmationSubmit) {
-      this.elements.paymentConfirmationForm.addEventListener("submit", eventHandlers.onPaymentConfirmationSubmit);
+    if (
+      this.elements.paymentConfirmationForm &&
+      eventHandlers.onPaymentConfirmationSubmit
+    ) {
+      this.elements.paymentConfirmationForm.addEventListener(
+        "submit",
+        eventHandlers.onPaymentConfirmationSubmit
+      );
     }
 
     // Botones
     if (this.elements.paymentDoneBtn && eventHandlers.onPaymentDone) {
-      this.elements.paymentDoneBtn.addEventListener("click", eventHandlers.onPaymentDone);
+      this.elements.paymentDoneBtn.addEventListener(
+        "click",
+        eventHandlers.onPaymentDone
+      );
     }
 
     if (this.elements.backToBankBtn && eventHandlers.onBackToBank) {
-      this.elements.backToBankBtn.addEventListener("click", eventHandlers.onBackToBank);
+      this.elements.backToBankBtn.addEventListener(
+        "click",
+        eventHandlers.onBackToBank
+      );
     }
 
     if (this.elements.closeAppBtn && eventHandlers.onCloseApp) {
-      this.elements.closeAppBtn.addEventListener("click", eventHandlers.onCloseApp);
+      this.elements.closeAppBtn.addEventListener(
+        "click",
+        eventHandlers.onCloseApp
+      );
     }
 
     if (this.elements.retryBtn && eventHandlers.onRetry) {
@@ -95,12 +185,18 @@ class UIManager {
     }
 
     if (this.elements.closeErrorBtn && eventHandlers.onCloseError) {
-      this.elements.closeErrorBtn.addEventListener("click", eventHandlers.onCloseError);
+      this.elements.closeErrorBtn.addEventListener(
+        "click",
+        eventHandlers.onCloseError
+      );
     }
 
     // Input de monto con validación en tiempo real
     if (this.elements.amountInput && eventHandlers.onAmountChange) {
-      this.elements.amountInput.addEventListener("input", eventHandlers.onAmountChange);
+      this.elements.amountInput.addEventListener(
+        "input",
+        eventHandlers.onAmountChange
+      );
     }
   }
 
@@ -109,7 +205,7 @@ class UIManager {
    */
   showScreen(screenId) {
     // Ocultar todas las pantallas
-    Object.values(APP_STATES).forEach(state => {
+    Object.values(APP_STATES).forEach((state) => {
       const screen = document.getElementById(state);
       if (screen) {
         screen.classList.remove("active");
@@ -194,13 +290,18 @@ class UIManager {
    */
   updateWaitingTransaction(transaction) {
     if (this.elements.waitingAmount) {
-      this.elements.waitingAmount.textContent = this.formatCurrency(transaction.monto);
+      this.elements.waitingAmount.textContent = this.formatCurrency(
+        transaction.monto
+      );
     }
     if (this.elements.waitingReference) {
-      this.elements.waitingReference.textContent = transaction.referencia || "-";
+      this.elements.waitingReference.textContent =
+        transaction.referencia || "-";
     }
     if (this.elements.waitingStatus) {
-      this.elements.waitingStatus.textContent = this.formatStatus(transaction.estado);
+      this.elements.waitingStatus.textContent = this.formatStatus(
+        transaction.estado
+      );
     }
   }
 
@@ -218,7 +319,9 @@ class UIManager {
       this.elements.bankId.textContent = bankData.cedula || "-";
     }
     if (this.elements.bankAmount) {
-      this.elements.bankAmount.textContent = this.formatCurrency(bankData.monto);
+      this.elements.bankAmount.textContent = this.formatCurrency(
+        bankData.monto
+      );
     }
   }
 
@@ -227,13 +330,17 @@ class UIManager {
    */
   updateFinalInfo(transaction) {
     if (this.elements.finalAmount) {
-      this.elements.finalAmount.textContent = this.formatCurrency(transaction.monto);
+      this.elements.finalAmount.textContent = this.formatCurrency(
+        transaction.monto
+      );
     }
     if (this.elements.finalReference) {
       this.elements.finalReference.textContent = transaction.referencia || "-";
     }
     if (this.elements.finalStatus) {
-      this.elements.finalStatus.textContent = this.formatStatus(transaction.estado);
+      this.elements.finalStatus.textContent = this.formatStatus(
+        transaction.estado
+      );
     }
   }
 
@@ -242,7 +349,9 @@ class UIManager {
    */
   formatCurrency(amount) {
     const amountInBs = amount / TRANSACTION_CONFIG.AMOUNT_DIVISOR;
-    return `${amountInBs.toLocaleString(TRANSACTION_CONFIG.LOCALE)} ${TRANSACTION_CONFIG.CURRENCY_SYMBOL}`;
+    return `${amountInBs.toLocaleString(TRANSACTION_CONFIG.LOCALE)} ${
+      TRANSACTION_CONFIG.CURRENCY_SYMBOL
+    }`;
   }
 
   /**
@@ -297,16 +406,16 @@ class UIManager {
     }
 
     if (formData.amount < TRANSACTION_CONFIG.MIN_AMOUNT) {
-      return { 
-        valid: false, 
-        message: `El monto mínimo es ${TRANSACTION_CONFIG.MIN_AMOUNT} ${TRANSACTION_CONFIG.CURRENCY_SYMBOL}` 
+      return {
+        valid: false,
+        message: `El monto mínimo es ${TRANSACTION_CONFIG.MIN_AMOUNT} ${TRANSACTION_CONFIG.CURRENCY_SYMBOL}`,
       };
     }
 
     if (formData.amount > TRANSACTION_CONFIG.MAX_AMOUNT) {
-      return { 
-        valid: false, 
-        message: `El monto máximo es ${TRANSACTION_CONFIG.MAX_AMOUNT} ${TRANSACTION_CONFIG.CURRENCY_SYMBOL}` 
+      return {
+        valid: false,
+        message: `El monto máximo es ${TRANSACTION_CONFIG.MAX_AMOUNT} ${TRANSACTION_CONFIG.CURRENCY_SYMBOL}`,
       };
     }
 

@@ -36,7 +36,7 @@ class APIManager {
    */
   async telegramRequest(url, options = {}) {
     const telegramData = window.Telegram?.WebApp?.initData;
-    
+
     const telegramOptions = {
       ...options,
       headers: {
@@ -65,7 +65,7 @@ class APIManager {
   async crearDeposito(depositoData) {
     const url = `${this.baseURL}${this.endpoints.CREAR_DEPOSITO}`;
     const body = JSON.stringify(depositoData);
-    
+
     return this.telegramRequest(url, {
       method: "POST",
       body,
@@ -88,7 +88,7 @@ class APIManager {
   async confirmarPago(transaccionId, paymentData) {
     const url = `${this.baseURL}${this.endpoints.CONFIRMAR_PAGO}/${transaccionId}/confirmar-pago`;
     const body = JSON.stringify(paymentData);
-    
+
     return this.telegramRequest(url, {
       method: "PUT",
       body,
@@ -111,7 +111,7 @@ class APIManager {
   async comunicarConBot(action, data) {
     const url = `${this.baseURL}${this.endpoints.COMUNICAR_BOT}`;
     const body = JSON.stringify({ action, data });
-    
+
     return this.telegramRequest(url, {
       method: "POST",
       body,
@@ -204,13 +204,13 @@ class APIManager {
    */
   buildUrlWithParams(baseUrl, params) {
     const url = new URL(baseUrl);
-    
-    Object.keys(params).forEach(key => {
+
+    Object.keys(params).forEach((key) => {
       if (params[key] !== null && params[key] !== undefined) {
         url.searchParams.append(key, params[key]);
       }
     });
-    
+
     return url.toString();
   }
 
@@ -219,23 +219,23 @@ class APIManager {
    */
   async requestWithRetry(url, options = {}, maxRetries = 3, delay = 1000) {
     let lastError;
-    
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await this.request(url, options);
         return response;
       } catch (error) {
         lastError = error;
-        
+
         if (attempt === maxRetries) {
           throw error;
         }
-        
+
         // Esperar antes del siguiente intento
-        await new Promise(resolve => setTimeout(resolve, delay * attempt));
+        await new Promise((resolve) => setTimeout(resolve, delay * attempt));
       }
     }
-    
+
     throw lastError;
   }
 }
