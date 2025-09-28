@@ -72,12 +72,12 @@ export const MESSAGES = {
 // Estados de la aplicación
 export const APP_STATES = {
   LOADING: "loading",
-  MAIN: "main",
-  WAITING: "waiting",
-  BANK_INFO: "bank_info",
-  PAYMENT_CONFIRMATION: "payment_confirmation",
-  CONFIRMATION: "confirmation",
-  ERROR: "error",
+  MAIN: "main-screen",
+  WAITING: "waiting-screen",
+  BANK_INFO: "bank-info-screen",
+  PAYMENT_CONFIRMATION: "payment-confirmation-screen",
+  CONFIRMATION: "confirmation-screen",
+  ERROR: "error-screen",
 };
 
 // Estados de transacciones
