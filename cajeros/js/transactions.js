@@ -360,19 +360,21 @@ class TransactionManager {
    * Establecer estado de loading en botón
    */
   setButtonLoading(transaccionId, loading) {
-    const button = document.querySelector(`[data-transaction-id="${transaccionId}"]`);
+    const button = document.querySelector(
+      `[data-transaction-id="${transaccionId}"]`
+    );
     if (button) {
-      const textSpan = button.querySelector('.btn-text');
-      const loadingSpan = button.querySelector('.btn-loading');
-      
+      const textSpan = button.querySelector(".btn-text");
+      const loadingSpan = button.querySelector(".btn-loading");
+
       if (loading) {
         button.disabled = true;
-        if (textSpan) textSpan.style.display = 'none';
-        if (loadingSpan) loadingSpan.style.display = 'inline';
+        if (textSpan) textSpan.style.display = "none";
+        if (loadingSpan) loadingSpan.style.display = "inline";
       } else {
         button.disabled = false;
-        if (textSpan) textSpan.style.display = 'inline';
-        if (loadingSpan) loadingSpan.style.display = 'none';
+        if (textSpan) textSpan.style.display = "inline";
+        if (loadingSpan) loadingSpan.style.display = "none";
       }
     }
   }

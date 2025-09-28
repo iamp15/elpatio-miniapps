@@ -25,19 +25,7 @@ class TelegramAuthManager {
 
       // Verificar si Telegram Web App está disponible
       if (!window.Telegram?.WebApp) {
-        console.warn(
-          "⚠️ Telegram Web App no está disponible, usando modo de desarrollo"
-        );
-        // Crear datos de usuario simulados para desarrollo
-        this.userData = this.createMockUserData();
-        this.isInitialized = true;
-
-        if (this.callbacks.onUserDataLoaded) {
-          this.callbacks.onUserDataLoaded(this.userData);
-        }
-
-        console.log("✅ Modo de desarrollo activado");
-        return this.userData;
+        throw new Error("Telegram Web App no está disponible");
       }
 
       this.tg = window.Telegram.WebApp;
@@ -53,10 +41,7 @@ class TelegramAuthManager {
       this.userData = this.tg.initDataUnsafe?.user;
 
       if (!this.userData) {
-        console.warn(
-          "⚠️ No se pudieron obtener datos del usuario, usando datos simulados"
-        );
-        this.userData = this.createMockUserData();
+        throw new Error("No se pudieron obtener datos del usuario de Telegram");
       }
 
       this.isInitialized = true;
@@ -70,17 +55,7 @@ class TelegramAuthManager {
       return this.userData;
     } catch (error) {
       console.error("❌ Error inicializando Telegram Web App:", error);
-
-      // En caso de error, usar datos simulados
-      this.userData = this.createMockUserData();
-      this.isInitialized = true;
-
-      if (this.callbacks.onUserDataLoaded) {
-        this.callbacks.onUserDataLoaded(this.userData);
-      }
-
-      console.log("✅ Inicialización con datos simulados completada");
-      return this.userData;
+      throw error;
     }
   }
 
@@ -104,21 +79,6 @@ class TelegramAuthManager {
 
       checkTelegram();
     });
-  }
-
-  /**
-   * Crear datos de usuario simulados para desarrollo
-   */
-  createMockUserData() {
-    return {
-      id: 123456789,
-      first_name: "Usuario",
-      last_name: "Prueba",
-      username: "usuario_prueba",
-      language_code: "es",
-      is_premium: false,
-      allows_write_to_pm: true,
-    };
   }
 
   /**

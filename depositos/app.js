@@ -42,7 +42,8 @@ class DepositApp {
       // Configurar event listeners de la UI
       UI.setupEventListeners({
         onDepositSubmit: this.handleDepositSubmit.bind(this),
-        onPaymentConfirmationSubmit: this.handlePaymentConfirmationSubmit.bind(this),
+        onPaymentConfirmationSubmit:
+          this.handlePaymentConfirmationSubmit.bind(this),
         onPaymentDone: this.handlePaymentDone.bind(this),
         onBackToBank: this.handleBackToBank.bind(this),
         onCloseApp: this.handleCloseApp.bind(this),
@@ -70,44 +71,15 @@ class DepositApp {
   }
 
   /**
-   * Inicializar con timeout para evitar que se quede colgado
+   * Inicializar Telegram Web App
    */
   async initWithTimeout() {
-    return new Promise(async (resolve, reject) => {
-      const timeout = setTimeout(() => {
-        console.warn("Timeout en inicializacion, usando datos simulados");
-        // Crear datos de usuario simulados
-        const mockUserData = {
-          id: 123456789,
-          first_name: "Usuario",
-          last_name: "Prueba",
-          username: "usuario_prueba",
-        };
-        this.handleUserDataLoaded(mockUserData);
-        resolve();
-      }, 10000); // 10 segundos de timeout
-
-      try {
-        await TelegramAuth.init();
-        clearTimeout(timeout);
-        resolve();
-      } catch (error) {
-        clearTimeout(timeout);
-        console.warn(
-          "Error en inicializacion, usando datos simulados:",
-          error
-        );
-        // Crear datos de usuario simulados
-        const mockUserData = {
-          id: 123456789,
-          first_name: "Usuario",
-          last_name: "Prueba",
-          username: "usuario_prueba",
-        };
-        this.handleUserDataLoaded(mockUserData);
-        resolve();
-      }
-    });
+    try {
+      await TelegramAuth.init();
+    } catch (error) {
+      console.error("Error inicializando Telegram Web App:", error);
+      throw error;
+    }
   }
 
   /**

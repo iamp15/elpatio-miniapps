@@ -155,20 +155,7 @@ class APIManager {
    * Obtener URL del backend basada en el ambiente
    */
   getBackendUrl() {
-    // En desarrollo local
-    if (
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1"
-    ) {
-      return "http://localhost:3001/api";
-    }
-
-    // En Vercel (desarrollo), usar Railway backend
-    if (window.location.hostname.includes("vercel.app")) {
-      return "https://elpatio-backend-production.up.railway.app/api";
-    }
-
-    // En producción real
+    // Siempre usar Railway backend para consistencia
     return "https://elpatio-backend-production.up.railway.app/api";
   }
 
