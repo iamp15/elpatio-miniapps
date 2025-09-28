@@ -41,13 +41,17 @@ class TransactionManager {
       // Obtener token de autenticación
       const token = await this.getBotToken();
       if (!token || token === "bot_token_placeholder") {
-        throw new Error("No se pudo obtener un token válido para la autenticación");
+        throw new Error(
+          "No se pudo obtener un token válido para la autenticación"
+        );
       }
 
       // Obtener el jugador existente
       const jugador = await API.getJugador(userData.id.toString(), token);
       if (!jugador || !jugador._id) {
-        throw new Error("No se pudo obtener el jugador. Verifica que el usuario esté registrado.");
+        throw new Error(
+          "No se pudo obtener el jugador. Verifica que el usuario esté registrado."
+        );
       }
 
       // Crear la transacción de depósito con la estructura correcta del backup
@@ -57,7 +61,9 @@ class TransactionManager {
         tipo: "credito",
         categoria: "deposito",
         monto: this.convertToCents(amount),
-        descripcion: `Depósito de ${(this.convertToCents(amount) / 100).toLocaleString("es-VE")} Bs`,
+        descripcion: `Depósito de ${(
+          this.convertToCents(amount) / 100
+        ).toLocaleString("es-VE")} Bs`,
         saldoAnterior: jugador.saldo || 0,
         referencia: `DEP_${userData.id}_${Date.now()}`,
         estado: "pendiente",
@@ -297,11 +303,18 @@ class TransactionManager {
         console.log("✅ Token del bot obtenido exitosamente");
         return data.token;
       } else {
-        console.error("❌ Error en login del bot:", response.status, response.statusText);
+        console.error(
+          "❌ Error en login del bot:",
+          response.status,
+          response.statusText
+        );
 
         // Fallback: usar token de cajero si el bot no está disponible
         console.log("🔄 Intentando fallback con cajero...");
-        const fallbackResponse = await API.cajeroLogin("luis@ejemplo.com", "clave123");
+        const fallbackResponse = await API.cajeroLogin(
+          "luis@ejemplo.com",
+          "clave123"
+        );
 
         if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json();

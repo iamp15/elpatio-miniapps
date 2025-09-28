@@ -4,7 +4,7 @@
 
 // Configuracion de la API
 export const API_CONFIG = {
-  BASE_URL: "https://elpatio-backend-production.up.railway.app",
+  BASE_URL: "https://elpatio-backend-production.up.railway.app/api",
   ENDPOINTS: {
     JUGADOR_SALDO: "/webapp/jugadores",
     CREAR_DEPOSITO: "/transacciones/solicitud",
@@ -13,8 +13,8 @@ export const API_CONFIG = {
     OBTENER_JUGADOR: "/jugadores",
     ADMIN_LOGIN: "/admin/login",
     CAJEROS_LOGIN: "/cajeros/login",
-    BOT_TOKEN: "/api/bot/token",
-    COMUNICAR_BOT: "/api/bot/comunicar",
+    BOT_TOKEN: "/bot/token",
+    COMUNICAR_BOT: "/bot/comunicar",
   },
 };
 
