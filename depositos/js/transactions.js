@@ -420,4 +420,7 @@ class TransactionManager {
 }
 
 // Crear instancia única del gestor de transacciones
-export const TransactionManager = new TransactionManager();
+const transactionManagerInstance = new TransactionManager();
+
+// Exportar la instancia como TransactionManager
+export { transactionManagerInstance as TransactionManager };
