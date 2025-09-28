@@ -35,13 +35,13 @@ class APIManager {
    * Realizar request con datos de Telegram
    */
   async telegramRequest(url, options = {}) {
-    const telegramData = window.Telegram?.WebApp?.initData;
+    const telegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
 
     const telegramOptions = {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        "X-Telegram-Init-Data": telegramData || "",
+        "X-Telegram-Id": telegramId || "",
         ...options.headers,
       },
     };

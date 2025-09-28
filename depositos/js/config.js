@@ -6,7 +6,7 @@
 export const API_CONFIG = {
   BASE_URL: "https://elpatio-backend-production.up.railway.app",
   ENDPOINTS: {
-    JUGADOR_SALDO: "/api/jugadores",
+    JUGADOR_SALDO: "/api/webapp/jugadores",
     CREAR_DEPOSITO: "/api/transacciones",
     VERIFICAR_ESTADO: "/api/transacciones",
     CONFIRMAR_PAGO: "/api/transacciones",
