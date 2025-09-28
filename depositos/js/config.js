@@ -1,8 +1,8 @@
 /**
- * Configuración de la aplicación de depósitos
+ * Configuracion de la aplicacion de depositos
  */
 
-// Configuración de la API
+// Configuracion de la API
 export const API_CONFIG = {
   BASE_URL: "https://elpatio-backend-production.up.railway.app",
   ENDPOINTS: {
@@ -15,7 +15,7 @@ export const API_CONFIG = {
   },
 };
 
-// Configuración de Telegram Web App
+// Configuracion de Telegram Web App
 export const TELEGRAM_CONFIG = {
   READY_TIMEOUT: 5000,
   EXPAND_ON_READY: true,

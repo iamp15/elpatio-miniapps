@@ -1,5 +1,5 @@
 /**
- * Módulo de autenticación para depósitos (Telegram Web App)
+ * Modulo de autenticacion para depositos (Telegram Web App)
  */
 
 import { TELEGRAM_CONFIG, MESSAGES } from "./config.js";
@@ -25,15 +25,17 @@ class TelegramAuthManager {
 
       // Verificar si Telegram Web App está disponible
       if (!window.Telegram?.WebApp) {
-        console.warn("⚠️ Telegram Web App no está disponible, usando modo de desarrollo");
+        console.warn(
+          "⚠️ Telegram Web App no está disponible, usando modo de desarrollo"
+        );
         // Crear datos de usuario simulados para desarrollo
         this.userData = this.createMockUserData();
         this.isInitialized = true;
-        
+
         if (this.callbacks.onUserDataLoaded) {
           this.callbacks.onUserDataLoaded(this.userData);
         }
-        
+
         console.log("✅ Modo de desarrollo activado");
         return this.userData;
       }
@@ -42,7 +44,7 @@ class TelegramAuthManager {
 
       // Configurar Telegram Web App
       this.tg.ready();
-      
+
       if (TELEGRAM_CONFIG.EXPAND_ON_READY) {
         this.tg.expand();
       }
@@ -51,7 +53,9 @@ class TelegramAuthManager {
       this.userData = this.tg.initDataUnsafe?.user;
 
       if (!this.userData) {
-        console.warn("⚠️ No se pudieron obtener datos del usuario, usando datos simulados");
+        console.warn(
+          "⚠️ No se pudieron obtener datos del usuario, usando datos simulados"
+        );
         this.userData = this.createMockUserData();
       }
 
@@ -66,15 +70,15 @@ class TelegramAuthManager {
       return this.userData;
     } catch (error) {
       console.error("❌ Error inicializando Telegram Web App:", error);
-      
+
       // En caso de error, usar datos simulados
       this.userData = this.createMockUserData();
       this.isInitialized = true;
-      
+
       if (this.callbacks.onUserDataLoaded) {
         this.callbacks.onUserDataLoaded(this.userData);
       }
-      
+
       console.log("✅ Inicialización con datos simulados completada");
       return this.userData;
     }
@@ -87,17 +91,17 @@ class TelegramAuthManager {
     return new Promise((resolve) => {
       let attempts = 0;
       const maxAttempts = 50; // 5 segundos máximo
-      
+
       const checkTelegram = () => {
         attempts++;
-        
+
         if (window.Telegram?.WebApp || attempts >= maxAttempts) {
           resolve();
         } else {
           setTimeout(checkTelegram, 100);
         }
       };
-      
+
       checkTelegram();
     });
   }
@@ -113,7 +117,7 @@ class TelegramAuthManager {
       username: "usuario_prueba",
       language_code: "es",
       is_premium: false,
-      allows_write_to_pm: true
+      allows_write_to_pm: true,
     };
   }
 
