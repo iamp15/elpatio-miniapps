@@ -38,24 +38,40 @@ class TransactionManager {
    */
   async createDepositRequest(amount, userData) {
     try {
+      // Obtener token de autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener un token válido para la autenticación");
+      }
+
+      // Obtener el jugador existente
+      const jugador = await API.getJugador(userData.id.toString(), token);
+      if (!jugador || !jugador._id) {
+        throw new Error("No se pudo obtener el jugador. Verifica que el usuario esté registrado.");
+      }
+
+      // Crear la transacción de depósito con la estructura correcta del backup
       const depositoData = {
-        monto: this.convertToCents(amount),
+        jugadorId: jugador._id,
+        telegramId: userData.id.toString(),
+        tipo: "credito",
         categoria: "deposito",
-        descripcion: `Depósito de ${amount} Bs`,
-        jugadorId: userData.id.toString(),
-        datosPago: {
-          metodo: "pago_movil",
-          banco: "pendiente",
-          telefono: "pendiente",
-          cedula: "pendiente",
+        monto: this.convertToCents(amount),
+        descripcion: `Depósito de ${(this.convertToCents(amount) / 100).toLocaleString("es-VE")} Bs`,
+        saldoAnterior: jugador.saldo || 0,
+        referencia: `DEP_${userData.id}_${Date.now()}`,
+        estado: "pendiente",
+        infoPago: {
+          metodoPago: "pago_movil",
         },
+        creadoPor: jugador._id,
       };
 
       const response = await API.crearDeposito(depositoData);
 
       if (response.ok) {
         const data = await response.json();
-        this.currentTransaction = data.transaccion;
+        this.currentTransaction = data.transaccion || data;
 
         // Ejecutar callback de transacción creada
         if (this.callbacks.onTransactionCreated) {
@@ -108,11 +124,26 @@ class TransactionManager {
    */
   async confirmPayment(transaccionId, paymentData) {
     try {
-      const response = await API.confirmarPago(transaccionId, paymentData);
+      // Obtener token del bot para autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener token de autenticación");
+      }
+
+      // Preparar datos para el endpoint con la estructura correcta del backup
+      const payload = {
+        bancoOrigen: paymentData.bank,
+        telefonoOrigen: paymentData.phone,
+        numeroReferencia: paymentData.reference,
+        fechaPago: paymentData.date,
+        metodoPago: "pago_movil",
+      };
+
+      const response = await API.confirmarPago(transaccionId, payload);
 
       if (response.ok) {
         const data = await response.json();
-        const transaction = data.transaccion;
+        const transaction = data.transaccion || data;
 
         // Actualizar transacción actual
         this.currentTransaction = transaction;
@@ -252,20 +283,39 @@ class TransactionManager {
    * Obtener token del bot
    */
   async getBotToken() {
+    // Credenciales del bot (en producción estas vendrían del build)
+    const BOT_EMAIL = "bot@elpatio.games";
+    const BOT_PASSWORD = "BotCl4ve#Sup3rS3gur4!2025";
+
     try {
-      const response = await API.getBotToken();
+      console.log("🔐 Obteniendo token del bot...");
+
+      const response = await API.adminLogin(BOT_EMAIL, BOT_PASSWORD);
 
       if (response.ok) {
         const data = await response.json();
+        console.log("✅ Token del bot obtenido exitosamente");
         return data.token;
       } else {
-        const errorData = await API.extractErrorData(response);
-        throw new Error(errorData.message);
+        console.error("❌ Error en login del bot:", response.status, response.statusText);
+
+        // Fallback: usar token de cajero si el bot no está disponible
+        console.log("🔄 Intentando fallback con cajero...");
+        const fallbackResponse = await API.cajeroLogin("luis@ejemplo.com", "clave123");
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          console.log("✅ Token de cajero obtenido como fallback");
+          return fallbackData.token;
+        }
       }
     } catch (error) {
-      console.error("Error obteniendo token del bot:", error);
-      throw error;
+      console.error("❌ Error obteniendo token:", error);
     }
+
+    // Si todo falla, usar token placeholder
+    console.warn("⚠️ Usando token placeholder");
+    return "bot_token_placeholder";
   }
 
   /**

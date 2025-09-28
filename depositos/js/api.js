@@ -76,7 +76,7 @@ class APIManager {
    * Verificar estado de transacción
    */
   async verificarEstadoTransaccion(transaccionId) {
-    const url = `${this.baseURL}${this.endpoints.VERIFICAR_ESTADO}/${transaccionId}`;
+    const url = `${this.baseURL}${this.endpoints.VERIFICAR_ESTADO}/${transaccionId}/estado`;
     return this.telegramRequest(url, {
       method: "GET",
     });
@@ -86,11 +86,51 @@ class APIManager {
    * Confirmar pago de transacción
    */
   async confirmarPago(transaccionId, paymentData) {
-    const url = `${this.baseURL}${this.endpoints.CONFIRMAR_PAGO}/${transaccionId}/confirmar-pago`;
+    const url = `${this.baseURL}${this.endpoints.CONFIRMAR_PAGO}/${transaccionId}/confirmar-pago-usuario`;
     const body = JSON.stringify(paymentData);
 
     return this.telegramRequest(url, {
       method: "PUT",
+      body,
+    });
+  }
+
+  /**
+   * Obtener jugador por ID
+   */
+  async getJugador(telegramId, token) {
+    const url = `${this.baseURL}${this.endpoints.OBTENER_JUGADOR}/${telegramId}`;
+    return this.request(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+  }
+
+  /**
+   * Login de admin
+   */
+  async adminLogin(email, password) {
+    const url = `${this.baseURL}${this.endpoints.ADMIN_LOGIN}`;
+    const body = JSON.stringify({ email, password });
+
+    return this.request(url, {
+      method: "POST",
+      body,
+    });
+  }
+
+  /**
+   * Login de cajero
+   */
+  async cajeroLogin(email, password) {
+    const url = `${this.baseURL}${this.endpoints.CAJEROS_LOGIN}`;
+    const body = JSON.stringify({ email, password });
+
+    return this.request(url, {
+      method: "POST",
       body,
     });
   }

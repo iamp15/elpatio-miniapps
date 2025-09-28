@@ -6,10 +6,13 @@
 export const API_CONFIG = {
   BASE_URL: "https://elpatio-backend-production.up.railway.app",
   ENDPOINTS: {
-    JUGADOR_SALDO: "/api/webapp/jugadores",
-    CREAR_DEPOSITO: "/api/transacciones",
-    VERIFICAR_ESTADO: "/api/transacciones",
-    CONFIRMAR_PAGO: "/api/transacciones",
+    JUGADOR_SALDO: "/webapp/jugadores",
+    CREAR_DEPOSITO: "/transacciones/solicitud",
+    VERIFICAR_ESTADO: "/transacciones",
+    CONFIRMAR_PAGO: "/transacciones",
+    OBTENER_JUGADOR: "/jugadores",
+    ADMIN_LOGIN: "/admin/login",
+    CAJEROS_LOGIN: "/cajeros/login",
     BOT_TOKEN: "/api/bot/token",
     COMUNICAR_BOT: "/api/bot/comunicar",
   },
