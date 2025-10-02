@@ -63,9 +63,13 @@ class DepositApp {
       await this.initWithTimeout();
 
       this.isInitialized = true;
-      window.visualLogger.success("✅ Aplicación de depósitos inicializada correctamente");
+      window.visualLogger.success(
+        "✅ Aplicación de depósitos inicializada correctamente"
+      );
     } catch (error) {
-      window.visualLogger.error(`Error inicializando la aplicación: ${error.message}`);
+      window.visualLogger.error(
+        `Error inicializando la aplicación: ${error.message}`
+      );
       UI.showErrorScreen(
         "Error de Inicializacion",
         "No se pudo inicializar la aplicacion. Por favor, recarga la pagina."
@@ -86,11 +90,20 @@ class DepositApp {
       window.visualLogger.websocket(`❌ WebSocket desconectado: ${reason}`);
     });
 
+    // Agregar callback para errores de conexión
+    window.depositoWebSocket.socket?.on("connect_error", (error) => {
+      window.visualLogger.error(`❌ Error de conexión WebSocket: ${error.message}`);
+    });
+
     window.depositoWebSocket.on("onAuthResult", (result) => {
       if (result.success) {
-        window.visualLogger.success(`🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`);
+        window.visualLogger.success(
+          `🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`
+        );
       } else {
-        window.visualLogger.error(`🔐 Error de autenticación WebSocket: ${result.message}`);
+        window.visualLogger.error(
+          `🔐 Error de autenticación WebSocket: ${result.message}`
+        );
       }
     });
 
@@ -105,7 +118,9 @@ class DepositApp {
     });
 
     window.depositoWebSocket.on("onError", (error) => {
-      window.visualLogger.error(`❌ Error WebSocket: ${error.message || error}`);
+      window.visualLogger.error(
+        `❌ Error WebSocket: ${error.message || error}`
+      );
     });
 
     // Conectar WebSocket
@@ -157,11 +172,13 @@ class DepositApp {
     if (window.depositoWebSocket.isConnected) {
       const telegramId = userData.id.toString();
       const initData = TelegramAuth.getInitData();
- 
+
       window.visualLogger.info(`🔐 Autenticando con WebSocket: ${telegramId}`);
       window.depositoWebSocket.authenticateJugador(telegramId, initData);
     } else {
-      window.visualLogger.warning("WebSocket no conectado, reintentando en 2 segundos...");
+      window.visualLogger.warning(
+        "WebSocket no conectado, reintentando en 2 segundos..."
+      );
       setTimeout(() => {
         this.authenticateWithWebSocket(userData);
       }, 2000);
@@ -173,8 +190,10 @@ class DepositApp {
    */
   handleSolicitudAceptada(data) {
     try {
-      window.visualLogger.success("✅ Solicitud aceptada, mostrando datos bancarios");
- 
+      window.visualLogger.success(
+        "✅ Solicitud aceptada, mostrando datos bancarios"
+      );
+
       // Actualizar datos bancarios en la UI
       UI.updateBankInfo({
         banco: data.cajero.datosPago.banco,
@@ -186,7 +205,9 @@ class DepositApp {
       // Mostrar pantalla de datos bancarios
       UI.showBankInfoScreen();
     } catch (error) {
-      window.visualLogger.error(`Error manejando solicitud aceptada: ${error.message}`);
+      window.visualLogger.error(
+        `Error manejando solicitud aceptada: ${error.message}`
+      );
     }
   }
 
@@ -196,15 +217,17 @@ class DepositApp {
   handleDepositoCompletado(data) {
     try {
       window.visualLogger.success("🎉 Depósito completado, actualizando saldo");
- 
+
       // Actualizar saldo
       this.loadUserBalance();
- 
+
       // Mostrar confirmación final
       UI.updateFinalInfo(data);
       UI.showConfirmationScreen();
     } catch (error) {
-      window.visualLogger.error(`Error manejando depósito completado: ${error.message}`);
+      window.visualLogger.error(
+        `Error manejando depósito completado: ${error.message}`
+      );
     }
   }
 
@@ -230,7 +253,9 @@ class DepositApp {
         UI.updateBalance(this.currentBalance);
         window.visualLogger.info(`💰 Saldo cargado: ${this.currentBalance} Bs`);
       } else {
-        window.visualLogger.warning("No se pudo cargar el saldo, usando valor por defecto");
+        window.visualLogger.warning(
+          "No se pudo cargar el saldo, usando valor por defecto"
+        );
         this.currentBalance = 0;
         UI.updateBalance(this.currentBalance);
       }
@@ -261,9 +286,15 @@ class DepositApp {
         !window.depositoWebSocket.isConnected ||
         !window.depositoWebSocket.isAuthenticated
       ) {
+        window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
+        window.visualLogger.info("🔄 Intentando reconectar...");
+        
+        // Intentar reconectar
+        window.depositoWebSocket.connect();
+        
         UI.showErrorScreen(
           "Error de Conexión",
-          "No hay conexión WebSocket activa. Por favor, recarga la página."
+          "No hay conexión WebSocket activa. Intentando reconectar..."
         );
         return;
       }
@@ -415,9 +446,15 @@ class DepositApp {
         !window.depositoWebSocket.isConnected ||
         !window.depositoWebSocket.isAuthenticated
       ) {
+        window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
+        window.visualLogger.info("🔄 Intentando reconectar...");
+        
+        // Intentar reconectar
+        window.depositoWebSocket.connect();
+        
         UI.showErrorScreen(
           "Error de Conexión",
-          "No hay conexión WebSocket activa. Por favor, recarga la página."
+          "No hay conexión WebSocket activa. Intentando reconectar..."
         );
         return;
       }

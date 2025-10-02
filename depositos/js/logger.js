@@ -17,8 +17,8 @@ class VisualLogger {
    */
   init() {
     // Esperar a que el DOM esté listo
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupLogger());
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => this.setupLogger());
     } else {
       this.setupLogger();
     }
@@ -28,19 +28,19 @@ class VisualLogger {
    * Configurar el logger
    */
   setupLogger() {
-    this.logsContainer = document.getElementById('logs-container');
-    this.debugPanel = document.getElementById('debug-panel');
-    
+    this.logsContainer = document.getElementById("logs-container");
+    this.debugPanel = document.getElementById("debug-panel");
+
     if (!this.logsContainer || !this.debugPanel) {
-      console.warn('Logger: No se encontraron los elementos del panel de logs');
+      console.warn("Logger: No se encontraron los elementos del panel de logs");
       return;
     }
 
     // Configurar event listeners
     this.setupEventListeners();
-    
+
     // Log inicial
-    this.log('Sistema de logging inicializado', 'info');
+    this.log("Sistema de logging inicializado", "info");
   }
 
   /**
@@ -48,26 +48,26 @@ class VisualLogger {
    */
   setupEventListeners() {
     // Toggle panel
-    const toggleBtn = document.getElementById('toggle-logs-btn');
-    const clearBtn = document.getElementById('clear-logs-btn');
-    const header = this.debugPanel.querySelector('.debug-header');
+    const toggleBtn = document.getElementById("toggle-logs-btn");
+    const clearBtn = document.getElementById("clear-logs-btn");
+    const header = this.debugPanel.querySelector(".debug-header");
 
     if (toggleBtn) {
-      toggleBtn.addEventListener('click', (e) => {
+      toggleBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         this.togglePanel();
       });
     }
 
     if (clearBtn) {
-      clearBtn.addEventListener('click', (e) => {
+      clearBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         this.clearLogs();
       });
     }
 
     if (header) {
-      header.addEventListener('click', () => {
+      header.addEventListener("click", () => {
         this.togglePanel();
       });
     }
@@ -78,11 +78,11 @@ class VisualLogger {
    */
   togglePanel() {
     this.isCollapsed = !this.isCollapsed;
-    this.debugPanel.classList.toggle('collapsed', this.isCollapsed);
-    
-    const toggleBtn = document.getElementById('toggle-logs-btn');
+    this.debugPanel.classList.toggle("collapsed", this.isCollapsed);
+
+    const toggleBtn = document.getElementById("toggle-logs-btn");
     if (toggleBtn) {
-      toggleBtn.textContent = this.isCollapsed ? '📋' : '📋';
+      toggleBtn.textContent = this.isCollapsed ? "📋" : "📋";
     }
   }
 
@@ -91,19 +91,19 @@ class VisualLogger {
    */
   clearLogs() {
     if (this.logsContainer) {
-      this.logsContainer.innerHTML = '';
-      this.log('Logs limpiados', 'info');
+      this.logsContainer.innerHTML = "";
+      this.log("Logs limpiados", "info");
     }
   }
 
   /**
    * Agregar un log
    */
-  log(message, type = 'info') {
+  log(message, type = "info") {
     if (!this.logsContainer) return;
 
     const timestamp = new Date().toLocaleTimeString();
-    const logEntry = document.createElement('div');
+    const logEntry = document.createElement("div");
     logEntry.className = `log-entry ${type}`;
     logEntry.textContent = `[${timestamp}] ${message}`;
 
@@ -136,42 +136,42 @@ class VisualLogger {
    * Log de información
    */
   info(message) {
-    this.log(message, 'info');
+    this.log(message, "info");
   }
 
   /**
    * Log de éxito
    */
   success(message) {
-    this.log(message, 'success');
+    this.log(message, "success");
   }
 
   /**
    * Log de advertencia
    */
   warning(message) {
-    this.log(message, 'warning');
+    this.log(message, "warning");
   }
 
   /**
    * Log de error
    */
   error(message) {
-    this.log(message, 'error');
+    this.log(message, "error");
   }
 
   /**
    * Log de WebSocket
    */
   websocket(message) {
-    this.log(message, 'websocket');
+    this.log(message, "websocket");
   }
 
   /**
    * Log de transacción
    */
   transaction(message) {
-    this.log(message, 'transaction');
+    this.log(message, "transaction");
   }
 
   /**
@@ -182,7 +182,7 @@ class VisualLogger {
     if (obj) {
       logMessage += `: ${JSON.stringify(obj, null, 2)}`;
     }
-    this.log(logMessage, 'info');
+    this.log(logMessage, "info");
   }
 }
 
