@@ -336,6 +336,19 @@
       </div>
     </div>
 
+    <!-- Panel de logs para debugging -->
+    <div id="debug-panel" class="debug-panel">
+      <div class="debug-header">
+        <h4>🔍 Logs del Sistema</h4>
+        <button id="toggle-logs-btn" class="toggle-logs-btn">📋</button>
+        <button id="clear-logs-btn" class="clear-logs-btn">🗑️</button>
+      </div>
+      <div id="logs-container" class="logs-container">
+        <div class="log-entry info">[Sistema] Aplicación iniciada</div>
+      </div>
+    </div>
+
+    <script src="js/logger.js"></script>
     <script src="js/websocket.js"></script>
     <script type="module" src="app.js"></script>
   </body>

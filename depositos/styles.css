@@ -620,3 +620,120 @@ body {
 .hidden {
   display: none !important;
 }
+
+/* Panel de logs para debugging */
+.debug-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.95);
+  color: #ffffff;
+  border-top: 2px solid #2481cc;
+  z-index: 1000;
+  max-height: 200px;
+  transition: max-height 0.3s ease;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+}
+
+.debug-panel.collapsed {
+  max-height: 40px;
+}
+
+.debug-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(36, 129, 204, 0.2);
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+
+.debug-header h4 {
+  margin: 0;
+  font-size: 14px;
+  color: #2481cc;
+}
+
+.toggle-logs-btn,
+.clear-logs-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.toggle-logs-btn:hover,
+.clear-logs-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.logs-container {
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.log-entry {
+  margin-bottom: 4px;
+  padding: 2px 0;
+  border-left: 3px solid transparent;
+  padding-left: 8px;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+
+.log-entry.info {
+  border-left-color: #2481cc;
+  color: #87ceeb;
+}
+
+.log-entry.success {
+  border-left-color: #28a745;
+  color: #90ee90;
+}
+
+.log-entry.warning {
+  border-left-color: #ffc107;
+  color: #ffeb3b;
+}
+
+.log-entry.error {
+  border-left-color: #dc3545;
+  color: #ff6b6b;
+}
+
+.log-entry.websocket {
+  border-left-color: #6f42c1;
+  color: #dda0dd;
+}
+
+.log-entry.transaction {
+  border-left-color: #fd7e14;
+  color: #ffb366;
+}
+
+/* Scrollbar personalizado para logs */
+.logs-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logs-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.logs-container::-webkit-scrollbar-thumb {
+  background: #2481cc;
+  border-radius: 3px;
+}
+
+.logs-container::-webkit-scrollbar-thumb:hover {
+  background: #1a6bb3;
+}

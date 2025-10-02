@@ -22,7 +22,7 @@ class DepositApp {
     if (this.isInitialized) return;
 
     try {
-      console.log("Iniciando aplicacion de depositos...");
+      window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -63,9 +63,9 @@ class DepositApp {
       await this.initWithTimeout();
 
       this.isInitialized = true;
-      console.log("Aplicacion de depositos inicializada correctamente");
+      window.visualLogger.success("✅ Aplicación de depósitos inicializada correctamente");
     } catch (error) {
-      console.error("Error inicializando la aplicacion:", error);
+      window.visualLogger.error(`Error inicializando la aplicación: ${error.message}`);
       UI.showErrorScreen(
         "Error de Inicializacion",
         "No se pudo inicializar la aplicacion. Por favor, recarga la pagina."
@@ -79,32 +79,37 @@ class DepositApp {
   setupWebSocket() {
     // Configurar callbacks de WebSocket
     window.depositoWebSocket.on("onConnect", () => {
-      console.log("✅ WebSocket conectado");
+      window.visualLogger.websocket("✅ WebSocket conectado");
     });
 
     window.depositoWebSocket.on("onDisconnect", (reason) => {
-      console.log("❌ WebSocket desconectado:", reason);
+      window.visualLogger.websocket(`❌ WebSocket desconectado: ${reason}`);
     });
 
     window.depositoWebSocket.on("onAuthResult", (result) => {
-      console.log("🔐 Resultado autenticación WebSocket:", result);
+      if (result.success) {
+        window.visualLogger.success(`🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`);
+      } else {
+        window.visualLogger.error(`🔐 Error de autenticación WebSocket: ${result.message}`);
+      }
     });
 
     window.depositoWebSocket.on("onSolicitudAceptada", (data) => {
-      console.log("✅ Solicitud aceptada via WebSocket:", data);
+      window.visualLogger.success("✅ Solicitud aceptada via WebSocket");
       this.handleSolicitudAceptada(data);
     });
 
     window.depositoWebSocket.on("onDepositoCompletado", (data) => {
-      console.log("🎉 Depósito completado via WebSocket:", data);
+      window.visualLogger.success("🎉 Depósito completado via WebSocket");
       this.handleDepositoCompletado(data);
     });
 
     window.depositoWebSocket.on("onError", (error) => {
-      console.error("❌ Error WebSocket:", error);
+      window.visualLogger.error(`❌ Error WebSocket: ${error.message || error}`);
     });
 
     // Conectar WebSocket
+    window.visualLogger.info("🔌 Iniciando conexión WebSocket...");
     window.depositoWebSocket.connect();
   }
 
@@ -152,11 +157,11 @@ class DepositApp {
     if (window.depositoWebSocket.isConnected) {
       const telegramId = userData.id.toString();
       const initData = TelegramAuth.getInitData();
-      
-      console.log("🔐 Autenticando con WebSocket:", telegramId);
+ 
+      window.visualLogger.info(`🔐 Autenticando con WebSocket: ${telegramId}`);
       window.depositoWebSocket.authenticateJugador(telegramId, initData);
     } else {
-      console.warn("WebSocket no conectado, reintentando en 2 segundos...");
+      window.visualLogger.warning("WebSocket no conectado, reintentando en 2 segundos...");
       setTimeout(() => {
         this.authenticateWithWebSocket(userData);
       }, 2000);
@@ -168,20 +173,20 @@ class DepositApp {
    */
   handleSolicitudAceptada(data) {
     try {
-      console.log("✅ Solicitud aceptada, mostrando datos bancarios");
-      
+      window.visualLogger.success("✅ Solicitud aceptada, mostrando datos bancarios");
+ 
       // Actualizar datos bancarios en la UI
       UI.updateBankInfo({
         banco: data.cajero.datosPago.banco,
         telefono: data.cajero.datosPago.telefono,
         cedula: `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`,
-        monto: data.monto
+        monto: data.monto,
       });
 
       // Mostrar pantalla de datos bancarios
       UI.showBankInfoScreen();
     } catch (error) {
-      console.error("Error manejando solicitud aceptada:", error);
+      window.visualLogger.error(`Error manejando solicitud aceptada: ${error.message}`);
     }
   }
 
@@ -190,16 +195,16 @@ class DepositApp {
    */
   handleDepositoCompletado(data) {
     try {
-      console.log("🎉 Depósito completado, actualizando saldo");
-      
+      window.visualLogger.success("🎉 Depósito completado, actualizando saldo");
+ 
       // Actualizar saldo
       this.loadUserBalance();
-      
+ 
       // Mostrar confirmación final
       UI.updateFinalInfo(data);
       UI.showConfirmationScreen();
     } catch (error) {
-      console.error("Error manejando depósito completado:", error);
+      window.visualLogger.error(`Error manejando depósito completado: ${error.message}`);
     }
   }
 
@@ -223,14 +228,14 @@ class DepositApp {
         const data = await response.json();
         this.currentBalance = data.saldo || 0;
         UI.updateBalance(this.currentBalance);
-        console.log("Saldo cargado:", this.currentBalance);
+        window.visualLogger.info(`💰 Saldo cargado: ${this.currentBalance} Bs`);
       } else {
-        console.warn("No se pudo cargar el saldo, usando valor por defecto");
+        window.visualLogger.warning("No se pudo cargar el saldo, usando valor por defecto");
         this.currentBalance = 0;
         UI.updateBalance(this.currentBalance);
       }
     } catch (error) {
-      console.error("Error cargando saldo:", error);
+      window.visualLogger.error(`Error cargando saldo: ${error.message}`);
       this.currentBalance = 0;
       UI.updateBalance(this.currentBalance);
     }
@@ -252,8 +257,14 @@ class DepositApp {
       }
 
       // Verificar si WebSocket está conectado y autenticado
-      if (!window.depositoWebSocket.isConnected || !window.depositoWebSocket.isAuthenticated) {
-        UI.showErrorScreen("Error de Conexión", "No hay conexión WebSocket activa. Por favor, recarga la página.");
+      if (
+        !window.depositoWebSocket.isConnected ||
+        !window.depositoWebSocket.isAuthenticated
+      ) {
+        UI.showErrorScreen(
+          "Error de Conexión",
+          "No hay conexión WebSocket activa. Por favor, recarga la página."
+        );
         return;
       }
 
@@ -261,15 +272,16 @@ class DepositApp {
       const depositoData = {
         monto: TransactionManager.convertToCents(formData.amount),
         descripcion: `Depósito de ${formData.amount} Bs`,
-        metodoPago: "pago_movil"
+        metodoPago: "pago_movil",
       };
 
-      console.log("💰 Enviando solicitud de depósito via WebSocket:", depositoData);
+      window.visualLogger.transaction(
+        `💰 Enviando solicitud de depósito via WebSocket: ${depositoData.monto} centavos`
+      );
       window.depositoWebSocket.solicitarDeposito(depositoData);
 
       // Mostrar pantalla de espera
       UI.showWaitingScreen();
-
     } catch (error) {
       console.error("Error creando solicitud de deposito:", error);
       UI.showErrorScreen("Error de Deposito", error.message);
@@ -399,8 +411,14 @@ class DepositApp {
       }
 
       // Verificar si WebSocket está conectado y autenticado
-      if (!window.depositoWebSocket.isConnected || !window.depositoWebSocket.isAuthenticated) {
-        UI.showErrorScreen("Error de Conexión", "No hay conexión WebSocket activa. Por favor, recarga la página.");
+      if (
+        !window.depositoWebSocket.isConnected ||
+        !window.depositoWebSocket.isAuthenticated
+      ) {
+        UI.showErrorScreen(
+          "Error de Conexión",
+          "No hay conexión WebSocket activa. Por favor, recarga la página."
+        );
         return;
       }
 
@@ -413,12 +431,13 @@ class DepositApp {
         monto: TransactionManager.convertToCents(formData.amount),
       };
 
-      console.log("💳 Confirmando pago via WebSocket:", paymentData);
+      window.visualLogger.transaction(
+        `💳 Confirmando pago via WebSocket: ${paymentData.banco} - ${paymentData.referencia}`
+      );
       window.depositoWebSocket.confirmarPagoJugador(paymentData);
 
       // Mostrar pantalla de confirmación
       UI.showConfirmationScreen();
-
     } catch (error) {
       console.error("Error confirmando pago:", error);
       UI.showErrorScreen("Error de Confirmacion", error.message);
