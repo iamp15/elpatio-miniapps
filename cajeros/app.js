@@ -174,15 +174,17 @@ class CajerosApp {
    */
   handleNuevaSolicitudDeposito(data) {
     try {
-      console.log(
-        `📋 Nueva solicitud: ${data.jugador.nombre} - ${data.monto} Bs`
-      );
+      // Los datos del WebSocket pueden no incluir información completa del jugador
+      const jugadorNombre = data.jugador?.nombre || data.jugador?.nickname || `Jugador ${data.jugadorId}`;
+      const montoBs = (data.monto / 100).toFixed(2); // Convertir centavos a bolívares
+      
+      console.log(`📋 Nueva solicitud: ${jugadorNombre} - ${montoBs} Bs`);
 
       // Actualizar UI con la nueva solicitud
       UI.addNewTransaction(data);
 
       // Mostrar notificación
-      UI.showNotification(`Nueva solicitud de ${data.jugador.nombre}`, "info");
+      UI.showNotification(`Nueva solicitud de ${jugadorNombre}`, "info");
     } catch (error) {
       console.error(`Error manejando nueva solicitud: ${error.message}`);
     }
