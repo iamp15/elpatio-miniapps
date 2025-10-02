@@ -92,7 +92,9 @@ class DepositApp {
 
     // Agregar callback para errores de conexión
     window.depositoWebSocket.socket?.on("connect_error", (error) => {
-      window.visualLogger.error(`❌ Error de conexión WebSocket: ${error.message}`);
+      window.visualLogger.error(
+        `❌ Error de conexión WebSocket: ${error.message}`
+      );
     });
 
     window.depositoWebSocket.on("onAuthResult", (result) => {
@@ -115,6 +117,11 @@ class DepositApp {
     window.depositoWebSocket.on("onDepositoCompletado", (data) => {
       window.visualLogger.success("🎉 Depósito completado via WebSocket");
       this.handleDepositoCompletado(data);
+    });
+
+    window.depositoWebSocket.on("onSolicitudCreada", (data) => {
+      window.visualLogger.success("✅ Solicitud de depósito creada via WebSocket");
+      this.handleSolicitudCreada(data);
     });
 
     window.depositoWebSocket.on("onError", (error) => {
@@ -212,6 +219,28 @@ class DepositApp {
   }
 
   /**
+   * Manejar solicitud creada via WebSocket
+   */
+  handleSolicitudCreada(data) {
+    try {
+      window.visualLogger.transaction(`📋 Solicitud creada: ${data.transaccionId}`);
+      
+      // Actualizar UI con información de la transacción
+      UI.updateWaitingTransaction({
+        _id: data.transaccionId,
+        referencia: data.referencia,
+        monto: data.monto,
+        estado: data.estado
+      });
+
+      // Mostrar pantalla de espera
+      UI.showWaitingScreen();
+    } catch (error) {
+      window.visualLogger.error(`Error manejando solicitud creada: ${error.message}`);
+    }
+  }
+
+  /**
    * Manejar depósito completado via WebSocket
    */
   handleDepositoCompletado(data) {
@@ -288,10 +317,10 @@ class DepositApp {
       ) {
         window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
         window.visualLogger.info("🔄 Intentando reconectar...");
-        
+
         // Intentar reconectar
         window.depositoWebSocket.connect();
-        
+
         UI.showErrorScreen(
           "Error de Conexión",
           "No hay conexión WebSocket activa. Intentando reconectar..."
@@ -448,10 +477,10 @@ class DepositApp {
       ) {
         window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
         window.visualLogger.info("🔄 Intentando reconectar...");
-        
+
         // Intentar reconectar
         window.depositoWebSocket.connect();
-        
+
         UI.showErrorScreen(
           "Error de Conexión",
           "No hay conexión WebSocket activa. Intentando reconectar..."

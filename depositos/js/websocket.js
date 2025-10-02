@@ -22,6 +22,7 @@ class DepositoWebSocket {
       onSolicitudAceptada: null,
       onVerificarPago: null,
       onDepositoCompletado: null,
+      onSolicitudCreada: null,
       onError: null,
     };
   }
@@ -37,7 +38,9 @@ class DepositoWebSocket {
 
     // Detectar URL del servidor
     // En Telegram Web App, siempre usar Railway (producción)
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
     const socketUrl = isLocalhost
       ? "http://localhost:3001"
       : "https://elpatio-backend-production.up.railway.app";
@@ -89,9 +92,9 @@ class DepositoWebSocket {
         message: error.message,
         description: error.description,
         context: error.context,
-        type: error.type
+        type: error.type,
       });
-      
+
       // Intentar reconexión automática
       this.attemptReconnect();
     });
@@ -155,6 +158,13 @@ class DepositoWebSocket {
       }
     });
 
+    this.socket.on("solicitud-creada", (data) => {
+      console.log("✅ Solicitud de depósito creada:", data);
+      if (this.callbacks.onSolicitudCreada) {
+        this.callbacks.onSolicitudCreada(data);
+      }
+    });
+
     this.socket.on("error", (error) => {
       console.error("❌ Error en WebSocket:", error);
       if (this.callbacks.onError) {
@@ -215,7 +225,9 @@ class DepositoWebSocket {
     }
 
     this.reconnectAttempts++;
-    console.log(`🔄 Intentando reconexión ${this.reconnectAttempts}/${this.maxReconnectAttempts} en ${this.reconnectDelay}ms...`);
+    console.log(
+      `🔄 Intentando reconexión ${this.reconnectAttempts}/${this.maxReconnectAttempts} en ${this.reconnectDelay}ms...`
+    );
 
     setTimeout(() => {
       this.connect();
