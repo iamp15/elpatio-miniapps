@@ -120,7 +120,9 @@ class DepositApp {
     });
 
     window.depositoWebSocket.on("onSolicitudCreada", (data) => {
-      window.visualLogger.success("✅ Solicitud de depósito creada via WebSocket");
+      window.visualLogger.success(
+        "✅ Solicitud de depósito creada via WebSocket"
+      );
       this.handleSolicitudCreada(data);
     });
 
@@ -223,20 +225,24 @@ class DepositApp {
    */
   handleSolicitudCreada(data) {
     try {
-      window.visualLogger.transaction(`📋 Solicitud creada: ${data.transaccionId}`);
-      
+      window.visualLogger.transaction(
+        `📋 Solicitud creada: ${data.transaccionId}`
+      );
+
       // Actualizar UI con información de la transacción
       UI.updateWaitingTransaction({
         _id: data.transaccionId,
         referencia: data.referencia,
         monto: data.monto,
-        estado: data.estado
+        estado: data.estado,
       });
 
       // Mostrar pantalla de espera
       UI.showWaitingScreen();
     } catch (error) {
-      window.visualLogger.error(`Error manejando solicitud creada: ${error.message}`);
+      window.visualLogger.error(
+        `Error manejando solicitud creada: ${error.message}`
+      );
     }
   }
 

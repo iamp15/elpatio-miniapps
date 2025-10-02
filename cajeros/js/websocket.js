@@ -8,6 +8,9 @@ class CajeroWebSocket {
     this.isConnected = false;
     this.isAuthenticated = false;
     this.userData = null;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 5;
+    this.reconnectDelay = 2000;
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -27,10 +30,11 @@ class CajeroWebSocket {
     }
 
     // Detectar URL del servidor
-    const isRailway = window.location.hostname.includes("railway.app");
-    const socketUrl = isRailway
-      ? "https://elpatio-backend-production.up.railway.app"
-      : "http://localhost:3001";
+    // En producción, siempre usar Railway
+    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const socketUrl = isLocalhost
+      ? "http://localhost:3001"
+      : "https://elpatio-backend-production.up.railway.app";
 
     console.log("Conectando a WebSocket:", socketUrl);
 
@@ -55,7 +59,10 @@ class CajeroWebSocket {
   setupEventHandlers() {
     this.socket.on("connect", () => {
       console.log("✅ Conectado al servidor WebSocket");
+      console.log("📡 Socket ID:", this.socket.id);
+      console.log("📡 Transport:", this.socket.io.engine.transport.name);
       this.isConnected = true;
+      this.reconnectAttempts = 0; // Resetear intentos de reconexión
       if (this.callbacks.onConnect) {
         this.callbacks.onConnect();
       }
@@ -68,6 +75,19 @@ class CajeroWebSocket {
       if (this.callbacks.onDisconnect) {
         this.callbacks.onDisconnect(reason);
       }
+    });
+
+    this.socket.on("connect_error", (error) => {
+      console.error("❌ Error de conexión WebSocket:", error);
+      console.error("❌ Detalles del error:", {
+        message: error.message,
+        description: error.description,
+        context: error.context,
+        type: error.type,
+      });
+      
+      // Intentar reconexión automática
+      this.attemptReconnect();
     });
 
     this.socket.on("auth-result", (result) => {
@@ -104,7 +124,7 @@ class CajeroWebSocket {
     }
 
     console.log("🔐 Autenticando cajero");
-    this.socket.emit("authenticate-cajero", {
+    this.socket.emit("auth-cajero", {
       token,
     });
   }
@@ -158,6 +178,25 @@ class CajeroWebSocket {
   }
 
   /**
+   * Intentar reconexión automática
+   */
+  attemptReconnect() {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      console.error("❌ Máximo número de intentos de reconexión alcanzado");
+      return;
+    }
+
+    this.reconnectAttempts++;
+    console.log(
+      `🔄 Intentando reconexión ${this.reconnectAttempts}/${this.maxReconnectAttempts} en ${this.reconnectDelay}ms...`
+    );
+
+    setTimeout(() => {
+      this.connect();
+    }, this.reconnectDelay);
+  }
+
+  /**
    * Desconectar
    */
   disconnect() {
@@ -167,6 +206,7 @@ class CajeroWebSocket {
       this.isConnected = false;
       this.isAuthenticated = false;
       this.userData = null;
+      this.reconnectAttempts = 0;
     }
   }
 

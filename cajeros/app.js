@@ -19,6 +19,11 @@ class CajerosApp {
     if (this.isInitialized) return;
 
     try {
+      window.visualLogger.info("🚀 Iniciando aplicación de cajeros...");
+
+      // Configurar WebSocket
+      this.setupWebSocket();
+
       // Configurar callbacks de autenticación
       Auth.setCallbacks({
         onLoginSuccess: this.handleLoginSuccess.bind(this),
@@ -47,11 +52,51 @@ class CajerosApp {
       window.CajerosApp = this;
 
       this.isInitialized = true;
-      console.log("✅ Aplicación de cajeros inicializada correctamente");
+      window.visualLogger.success("✅ Aplicación de cajeros inicializada correctamente");
     } catch (error) {
-      console.error("❌ Error inicializando la aplicación:", error);
+      window.visualLogger.error(`Error inicializando la aplicación: ${error.message}`);
       UI.showError("Error al inicializar la aplicación");
     }
+  }
+
+  /**
+   * Configurar WebSocket
+   */
+  setupWebSocket() {
+    // Configurar callbacks de WebSocket
+    window.cajeroWebSocket.on("onConnect", () => {
+      window.visualLogger.websocket("✅ WebSocket conectado");
+    });
+
+    window.cajeroWebSocket.on("onDisconnect", (reason) => {
+      window.visualLogger.websocket(`❌ WebSocket desconectado: ${reason}`);
+    });
+
+    window.cajeroWebSocket.on("onAuthResult", (result) => {
+      if (result.success) {
+        window.visualLogger.success(`🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`);
+      } else {
+        window.visualLogger.error(`🔐 Error de autenticación WebSocket: ${result.message}`);
+      }
+    });
+
+    window.cajeroWebSocket.on("onNuevaSolicitudDeposito", (data) => {
+      window.visualLogger.transaction("💰 Nueva solicitud de depósito recibida");
+      this.handleNuevaSolicitudDeposito(data);
+    });
+
+    window.cajeroWebSocket.on("onError", (error) => {
+      window.visualLogger.error(`❌ Error WebSocket: ${error.message || error}`);
+    });
+
+    // Agregar callback para errores de conexión
+    window.cajeroWebSocket.socket?.on("connect_error", (error) => {
+      window.visualLogger.error(`❌ Error de conexión WebSocket: ${error.message}`);
+    });
+
+    // Conectar WebSocket
+    window.visualLogger.info("🔌 Iniciando conexión WebSocket...");
+    window.cajeroWebSocket.connect();
   }
 
   /**
@@ -84,6 +129,11 @@ class CajerosApp {
    */
   async handleLoginSuccess(cajeroInfo) {
     try {
+      window.visualLogger.success(`✅ Login exitoso: ${cajeroInfo.nombreCompleto}`);
+      
+      // Autenticar con WebSocket
+      this.authenticateWithWebSocket(cajeroInfo);
+
       // Actualizar UI con información del cajero
       UI.updateCajeroDisplay(cajeroInfo);
 
@@ -93,10 +143,43 @@ class CajerosApp {
       // Mostrar dashboard
       UI.showDashboard();
 
-      console.log("✅ Login exitoso para:", cajeroInfo.email);
     } catch (error) {
-      console.error("Error después del login exitoso:", error);
+      window.visualLogger.error(`Error después del login exitoso: ${error.message}`);
       UI.showError("Error al cargar datos del dashboard");
+    }
+  }
+
+  /**
+   * Autenticar con WebSocket
+   */
+  authenticateWithWebSocket(cajeroInfo) {
+    if (window.cajeroWebSocket.isConnected) {
+      const token = Auth.getToken();
+      
+      window.visualLogger.info(`🔐 Autenticando con WebSocket: ${cajeroInfo.nombreCompleto}`);
+      window.cajeroWebSocket.authenticateCajero(token);
+    } else {
+      window.visualLogger.warning("WebSocket no conectado, reintentando en 2 segundos...");
+      setTimeout(() => {
+        this.authenticateWithWebSocket(cajeroInfo);
+      }, 2000);
+    }
+  }
+
+  /**
+   * Manejar nueva solicitud de depósito via WebSocket
+   */
+  handleNuevaSolicitudDeposito(data) {
+    try {
+      window.visualLogger.transaction(`📋 Nueva solicitud: ${data.jugador.nombre} - ${data.monto} Bs`);
+      
+      // Actualizar UI con la nueva solicitud
+      UI.addNewTransaction(data);
+      
+      // Mostrar notificación
+      UI.showNotification(`Nueva solicitud de ${data.jugador.nombre}`, "info");
+    } catch (error) {
+      window.visualLogger.error(`Error manejando nueva solicitud: ${error.message}`);
     }
   }
 
