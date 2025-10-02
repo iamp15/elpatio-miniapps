@@ -24,6 +24,9 @@ class DepositApp {
     try {
       console.log("Iniciando aplicacion de depositos...");
 
+      // Configurar WebSocket
+      this.setupWebSocket();
+
       // Configurar callbacks de autenticacion
       TelegramAuth.setCallbacks({
         onUserDataLoaded: this.handleUserDataLoaded.bind(this),
@@ -71,6 +74,41 @@ class DepositApp {
   }
 
   /**
+   * Configurar WebSocket
+   */
+  setupWebSocket() {
+    // Configurar callbacks de WebSocket
+    window.depositoWebSocket.on("onConnect", () => {
+      console.log("✅ WebSocket conectado");
+    });
+
+    window.depositoWebSocket.on("onDisconnect", (reason) => {
+      console.log("❌ WebSocket desconectado:", reason);
+    });
+
+    window.depositoWebSocket.on("onAuthResult", (result) => {
+      console.log("🔐 Resultado autenticación WebSocket:", result);
+    });
+
+    window.depositoWebSocket.on("onSolicitudAceptada", (data) => {
+      console.log("✅ Solicitud aceptada via WebSocket:", data);
+      this.handleSolicitudAceptada(data);
+    });
+
+    window.depositoWebSocket.on("onDepositoCompletado", (data) => {
+      console.log("🎉 Depósito completado via WebSocket:", data);
+      this.handleDepositoCompletado(data);
+    });
+
+    window.depositoWebSocket.on("onError", (error) => {
+      console.error("❌ Error WebSocket:", error);
+    });
+
+    // Conectar WebSocket
+    window.depositoWebSocket.connect();
+  }
+
+  /**
    * Inicializar Telegram Web App
    */
   async initWithTimeout() {
@@ -90,6 +128,9 @@ class DepositApp {
       this.userData = userData;
       console.log("Datos de usuario cargados:", userData);
 
+      // Autenticar con WebSocket
+      this.authenticateWithWebSocket(userData);
+
       // Cargar saldo del usuario
       await this.loadUserBalance();
 
@@ -101,6 +142,64 @@ class DepositApp {
         "Error de Usuario",
         "No se pudieron cargar los datos del usuario"
       );
+    }
+  }
+
+  /**
+   * Autenticar con WebSocket
+   */
+  authenticateWithWebSocket(userData) {
+    if (window.depositoWebSocket.isConnected) {
+      const telegramId = userData.id.toString();
+      const initData = TelegramAuth.getInitData();
+      
+      console.log("🔐 Autenticando con WebSocket:", telegramId);
+      window.depositoWebSocket.authenticateJugador(telegramId, initData);
+    } else {
+      console.warn("WebSocket no conectado, reintentando en 2 segundos...");
+      setTimeout(() => {
+        this.authenticateWithWebSocket(userData);
+      }, 2000);
+    }
+  }
+
+  /**
+   * Manejar solicitud aceptada via WebSocket
+   */
+  handleSolicitudAceptada(data) {
+    try {
+      console.log("✅ Solicitud aceptada, mostrando datos bancarios");
+      
+      // Actualizar datos bancarios en la UI
+      UI.updateBankInfo({
+        banco: data.cajero.datosPago.banco,
+        telefono: data.cajero.datosPago.telefono,
+        cedula: `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`,
+        monto: data.monto
+      });
+
+      // Mostrar pantalla de datos bancarios
+      UI.showBankInfoScreen();
+    } catch (error) {
+      console.error("Error manejando solicitud aceptada:", error);
+    }
+  }
+
+  /**
+   * Manejar depósito completado via WebSocket
+   */
+  handleDepositoCompletado(data) {
+    try {
+      console.log("🎉 Depósito completado, actualizando saldo");
+      
+      // Actualizar saldo
+      this.loadUserBalance();
+      
+      // Mostrar confirmación final
+      UI.updateFinalInfo(data);
+      UI.showConfirmationScreen();
+    } catch (error) {
+      console.error("Error manejando depósito completado:", error);
     }
   }
 
@@ -152,13 +251,25 @@ class DepositApp {
         return;
       }
 
-      // Crear solicitud de deposito
-      const transaction = await TransactionManager.createDepositRequest(
-        formData.amount,
-        this.userData
-      );
+      // Verificar si WebSocket está conectado y autenticado
+      if (!window.depositoWebSocket.isConnected || !window.depositoWebSocket.isAuthenticated) {
+        UI.showErrorScreen("Error de Conexión", "No hay conexión WebSocket activa. Por favor, recarga la página.");
+        return;
+      }
 
-      console.log("Solicitud de deposito creada:", transaction);
+      // Crear solicitud de depósito via WebSocket
+      const depositoData = {
+        monto: TransactionManager.convertToCents(formData.amount),
+        descripcion: `Depósito de ${formData.amount} Bs`,
+        metodoPago: "pago_movil"
+      };
+
+      console.log("💰 Enviando solicitud de depósito via WebSocket:", depositoData);
+      window.depositoWebSocket.solicitarDeposito(depositoData);
+
+      // Mostrar pantalla de espera
+      UI.showWaitingScreen();
+
     } catch (error) {
       console.error("Error creando solicitud de deposito:", error);
       UI.showErrorScreen("Error de Deposito", error.message);
@@ -287,12 +398,13 @@ class DepositApp {
         return;
       }
 
-      const currentTransaction = TransactionManager.getCurrentTransaction();
-      if (!currentTransaction) {
-        throw new Error("No hay transaccion activa");
+      // Verificar si WebSocket está conectado y autenticado
+      if (!window.depositoWebSocket.isConnected || !window.depositoWebSocket.isAuthenticated) {
+        UI.showErrorScreen("Error de Conexión", "No hay conexión WebSocket activa. Por favor, recarga la página.");
+        return;
       }
 
-      // Confirmar pago
+      // Confirmar pago via WebSocket
       const paymentData = {
         banco: formData.bank,
         telefono: formData.phone,
@@ -301,12 +413,12 @@ class DepositApp {
         monto: TransactionManager.convertToCents(formData.amount),
       };
 
-      await TransactionManager.confirmPayment(
-        currentTransaction._id,
-        paymentData
-      );
+      console.log("💳 Confirmando pago via WebSocket:", paymentData);
+      window.depositoWebSocket.confirmarPagoJugador(paymentData);
 
-      console.log("Pago confirmado");
+      // Mostrar pantalla de confirmación
+      UI.showConfirmationScreen();
+
     } catch (error) {
       console.error("Error confirmando pago:", error);
       UI.showErrorScreen("Error de Confirmacion", error.message);

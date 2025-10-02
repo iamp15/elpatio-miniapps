@@ -15,6 +15,10 @@ class DepositoWebSocket {
       onDepositoAtendido: null,
       onDepositoConfirmado: null,
       onDepositoRechazado: null,
+      onNuevaSolicitudDeposito: null,
+      onSolicitudAceptada: null,
+      onVerificarPago: null,
+      onDepositoCompletado: null,
       onError: null,
     };
   }
@@ -102,6 +106,35 @@ class DepositoWebSocket {
       }
     });
 
+    // Eventos del sistema de depósitos WebSocket
+    this.socket.on("nueva-solicitud-deposito", (data) => {
+      console.log("💰 Nueva solicitud de depósito:", data);
+      if (this.callbacks.onNuevaSolicitudDeposito) {
+        this.callbacks.onNuevaSolicitudDeposito(data);
+      }
+    });
+
+    this.socket.on("solicitud-aceptada", (data) => {
+      console.log("✅ Solicitud aceptada:", data);
+      if (this.callbacks.onSolicitudAceptada) {
+        this.callbacks.onSolicitudAceptada(data);
+      }
+    });
+
+    this.socket.on("verificar-pago", (data) => {
+      console.log("🔍 Verificar pago:", data);
+      if (this.callbacks.onVerificarPago) {
+        this.callbacks.onVerificarPago(data);
+      }
+    });
+
+    this.socket.on("deposito-completado", (data) => {
+      console.log("🎉 Depósito completado:", data);
+      if (this.callbacks.onDepositoCompletado) {
+        this.callbacks.onDepositoCompletado(data);
+      }
+    });
+
     this.socket.on("error", (error) => {
       console.error("❌ Error en WebSocket:", error);
       if (this.callbacks.onError) {
@@ -120,7 +153,7 @@ class DepositoWebSocket {
     }
 
     console.log("🔐 Autenticando jugador:", telegramId);
-    this.socket.emit("authenticate-jugador", {
+    this.socket.emit("auth-jugador", {
       telegramId,
       initData,
     });
@@ -137,6 +170,19 @@ class DepositoWebSocket {
 
     console.log("💰 Solicitando depósito:", depositoData);
     this.socket.emit("solicitar-deposito", depositoData);
+  }
+
+  /**
+   * Confirmar pago del jugador
+   */
+  confirmarPagoJugador(paymentData) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+
+    console.log("💳 Confirmando pago:", paymentData);
+    this.socket.emit("confirmar-pago-jugador", paymentData);
   }
 
   /**
