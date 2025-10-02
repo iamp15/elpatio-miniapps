@@ -31,7 +31,9 @@ class CajeroWebSocket {
 
     // Detectar URL del servidor
     // En producción, siempre usar Railway
-    const isLocalhost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const isLocalhost =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
     const socketUrl = isLocalhost
       ? "http://localhost:3001"
       : "https://elpatio-backend-production.up.railway.app";
@@ -85,7 +87,7 @@ class CajeroWebSocket {
         context: error.context,
         type: error.type,
       });
-      
+
       // Intentar reconexión automática
       this.attemptReconnect();
     });
