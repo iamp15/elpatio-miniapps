@@ -78,30 +78,22 @@ class CajerosApp {
           `🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`
         );
       } else {
-        console.error(
-          `🔐 Error de autenticación WebSocket: ${result.message}`
-        );
+        console.error(`🔐 Error de autenticación WebSocket: ${result.message}`);
       }
     });
 
     window.cajeroWebSocket.on("onNuevaSolicitudDeposito", (data) => {
-      console.log(
-        "💰 Nueva solicitud de depósito recibida"
-      );
+      console.log("💰 Nueva solicitud de depósito recibida");
       this.handleNuevaSolicitudDeposito(data);
     });
 
     window.cajeroWebSocket.on("onError", (error) => {
-      console.error(
-        `❌ Error WebSocket: ${error.message || error}`
-      );
+      console.error(`❌ Error WebSocket: ${error.message || error}`);
     });
 
     // Agregar callback para errores de conexión
     window.cajeroWebSocket.socket?.on("connect_error", (error) => {
-      console.error(
-        `❌ Error de conexión WebSocket: ${error.message}`
-      );
+      console.error(`❌ Error de conexión WebSocket: ${error.message}`);
     });
 
     // Conectar WebSocket
@@ -139,9 +131,7 @@ class CajerosApp {
    */
   async handleLoginSuccess(cajeroInfo) {
     try {
-      console.success(
-        `✅ Login exitoso: ${cajeroInfo.nombreCompleto}`
-      );
+      console.log(`✅ Login exitoso: ${cajeroInfo.nombreCompleto}`);
 
       // Autenticar con WebSocket
       this.authenticateWithWebSocket(cajeroInfo);
@@ -155,9 +145,7 @@ class CajerosApp {
       // Mostrar dashboard
       UI.showDashboard();
     } catch (error) {
-      console.error(
-        `Error después del login exitoso: ${error.message}`
-      );
+      console.error(`Error después del login exitoso: ${error.message}`);
       UI.showError("Error al cargar datos del dashboard");
     }
   }
@@ -169,14 +157,12 @@ class CajerosApp {
     if (window.cajeroWebSocket.isConnected) {
       const token = Auth.getToken();
 
-      console.info(
+      console.log(
         `🔐 Autenticando con WebSocket: ${cajeroInfo.nombreCompleto}`
       );
       window.cajeroWebSocket.authenticateCajero(token);
     } else {
-      console.warn(
-        "WebSocket no conectado, reintentando en 2 segundos..."
-      );
+      console.warn("WebSocket no conectado, reintentando en 2 segundos...");
       setTimeout(() => {
         this.authenticateWithWebSocket(cajeroInfo);
       }, 2000);
@@ -198,9 +184,7 @@ class CajerosApp {
       // Mostrar notificación
       UI.showNotification(`Nueva solicitud de ${data.jugador.nombre}`, "info");
     } catch (error) {
-      console.error(
-        `Error manejando nueva solicitud: ${error.message}`
-      );
+      console.error(`Error manejando nueva solicitud: ${error.message}`);
     }
   }
 
