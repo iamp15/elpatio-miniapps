@@ -309,7 +309,7 @@ class TransactionManager {
 
     UI.showConfirmDialog(MESSAGES.CONFIRM.ASSIGN_TRANSACTION, async () => {
       try {
-        // 1. Asignar cajero a la transacción
+        // 1. Asignar cajero a la transacción via HTTP API
         const asignacionResponse = await API.asignarCajero(
           transaccionId,
           token
@@ -333,6 +333,20 @@ class TransactionManager {
 
         if (transaccionResponse.ok) {
           const transaccionData = await transaccionResponse.json();
+
+          // 3. Enviar aceptación via WebSocket
+          if (
+            window.cajeroWebSocket &&
+            window.cajeroWebSocket.isConnected &&
+            window.cajeroWebSocket.isAuthenticated
+          ) {
+            console.log("📤 Enviando aceptación via WebSocket");
+            window.cajeroWebSocket.aceptarSolicitud(
+              transaccionId,
+              transaccionData.transaccion
+            );
+          }
+
           this.showTransactionDetailsModal(transaccionData.transaccion);
         } else {
           UI.showAlert("✅ " + MESSAGES.SUCCESS.ASSIGN_TRANSACTION);

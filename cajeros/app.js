@@ -202,7 +202,7 @@ class CajerosApp {
 
       // Forzar actualización de la lista de transacciones
       await this.loadTransactions();
-      
+
       // Marcar la transacción como nueva (si tiene transaccionId)
       if (data.transaccionId) {
         this.markTransactionAsNew(data.transaccionId);
@@ -218,16 +218,18 @@ class CajerosApp {
   markTransactionAsNew(transactionId) {
     try {
       // Buscar el elemento de la transacción en el DOM
-      const transactionElement = document.querySelector(`[data-transaction-id="${transactionId}"]`);
-      
+      const transactionElement = document.querySelector(
+        `[data-transaction-id="${transactionId}"]`
+      );
+
       if (transactionElement) {
         // Agregar clase CSS para destacar como nueva
-        transactionElement.classList.add('transaction-new');
-        
+        transactionElement.classList.add("transaction-new");
+
         // Agregar etiqueta "NUEVA" en una esquina
-        const newLabel = document.createElement('div');
-        newLabel.className = 'new-transaction-label';
-        newLabel.textContent = 'NUEVA';
+        const newLabel = document.createElement("div");
+        newLabel.className = "new-transaction-label";
+        newLabel.textContent = "NUEVA";
         newLabel.style.cssText = `
           position: absolute;
           top: 8px;
@@ -241,22 +243,24 @@ class CajerosApp {
           z-index: 10;
           animation: pulse 2s infinite;
         `;
-        
+
         // Asegurar que el contenedor tenga posición relativa
-        transactionElement.style.position = 'relative';
+        transactionElement.style.position = "relative";
         transactionElement.appendChild(newLabel);
-        
+
         // Remover la etiqueta después de 10 segundos
         setTimeout(() => {
           if (newLabel.parentNode) {
             newLabel.parentNode.removeChild(newLabel);
           }
-          transactionElement.classList.remove('transaction-new');
+          transactionElement.classList.remove("transaction-new");
         }, 10000);
-        
+
         console.log(`🏷️ Transacción ${transactionId} marcada como nueva`);
       } else {
-        console.log(`⚠️ No se encontró elemento para transacción ${transactionId}`);
+        console.log(
+          `⚠️ No se encontró elemento para transacción ${transactionId}`
+        );
       }
     } catch (error) {
       console.error(`Error marcando transacción como nueva: ${error.message}`);

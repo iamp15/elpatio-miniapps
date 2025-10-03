@@ -132,6 +132,22 @@ class CajeroWebSocket {
   }
 
   /**
+   * Aceptar solicitud de depósito
+   */
+  aceptarSolicitud(transaccionId, transaccionData) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+
+    console.log("✅ Aceptando solicitud:", { transaccionId, transaccionData });
+    this.socket.emit("aceptar-solicitud", {
+      transaccionId,
+      transaccionData,
+    });
+  }
+
+  /**
    * Atender depósito
    */
   atenderDeposito(jugadorSocketId, depositoData) {
