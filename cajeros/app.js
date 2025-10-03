@@ -10,6 +10,7 @@ import { MESSAGES } from "./js/config.js";
 class CajerosApp {
   constructor() {
     this.isInitialized = false;
+    this.processedTransactions = new Set(); // Para evitar duplicados
   }
 
   /**
@@ -174,6 +175,18 @@ class CajerosApp {
    */
   handleNuevaSolicitudDeposito(data) {
     try {
+      // Usar transaccionId como identificador único para evitar duplicados
+      const transactionId = data.transaccionId || data.jugadorId + '_' + data.monto;
+      
+      // Verificar si ya procesamos esta transacción
+      if (this.processedTransactions.has(transactionId)) {
+        console.log(`🔄 Transacción ya procesada: ${transactionId}`);
+        return;
+      }
+      
+      // Marcar como procesada
+      this.processedTransactions.add(transactionId);
+      
       // Los datos del WebSocket pueden no incluir información completa del jugador
       const jugadorNombre =
         data.jugador?.nombre ||
