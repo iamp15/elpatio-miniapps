@@ -176,17 +176,18 @@ class CajerosApp {
   handleNuevaSolicitudDeposito(data) {
     try {
       // Usar transaccionId como identificador único para evitar duplicados
-      const transactionId = data.transaccionId || data.jugadorId + '_' + data.monto;
-      
+      const transactionId =
+        data.transaccionId || data.jugadorId + "_" + data.monto;
+
       // Verificar si ya procesamos esta transacción
       if (this.processedTransactions.has(transactionId)) {
         console.log(`🔄 Transacción ya procesada: ${transactionId}`);
         return;
       }
-      
+
       // Marcar como procesada
       this.processedTransactions.add(transactionId);
-      
+
       // Los datos del WebSocket pueden no incluir información completa del jugador
       const jugadorNombre =
         data.jugador?.nombre ||
@@ -197,13 +198,68 @@ class CajerosApp {
       console.log(`📋 Nueva solicitud: ${jugadorNombre} - ${montoBs} Bs`);
 
       // Actualizar UI con la nueva solicitud
-      // TODO: Implementar addNewTransaction o usar método existente
       console.log("📋 Datos de solicitud recibidos:", data);
 
-      // Mostrar notificación
-      UI.showAlert(`Nueva solicitud de ${jugadorNombre} - ${montoBs} Bs`);
+      // Forzar actualización de la lista de transacciones
+      await this.loadTransactions();
+      
+      // Marcar la transacción como nueva (si tiene transaccionId)
+      if (data.transaccionId) {
+        this.markTransactionAsNew(data.transaccionId);
+      }
     } catch (error) {
       console.error(`Error manejando nueva solicitud: ${error.message}`);
+    }
+  }
+
+  /**
+   * Marcar transacción como nueva con etiqueta visual
+   */
+  markTransactionAsNew(transactionId) {
+    try {
+      // Buscar el elemento de la transacción en el DOM
+      const transactionElement = document.querySelector(`[data-transaction-id="${transactionId}"]`);
+      
+      if (transactionElement) {
+        // Agregar clase CSS para destacar como nueva
+        transactionElement.classList.add('transaction-new');
+        
+        // Agregar etiqueta "NUEVA" en una esquina
+        const newLabel = document.createElement('div');
+        newLabel.className = 'new-transaction-label';
+        newLabel.textContent = 'NUEVA';
+        newLabel.style.cssText = `
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: #ff4444;
+          color: white;
+          padding: 2px 6px;
+          border-radius: 10px;
+          font-size: 10px;
+          font-weight: bold;
+          z-index: 10;
+          animation: pulse 2s infinite;
+        `;
+        
+        // Asegurar que el contenedor tenga posición relativa
+        transactionElement.style.position = 'relative';
+        transactionElement.appendChild(newLabel);
+        
+        // Remover la etiqueta después de 10 segundos
+        setTimeout(() => {
+          if (newLabel.parentNode) {
+            newLabel.parentNode.removeChild(newLabel);
+          }
+          transactionElement.classList.remove('transaction-new');
+        }, 10000);
+        
+        console.log(`🏷️ Transacción ${transactionId} marcada como nueva`);
+      } else {
+        console.log(`⚠️ No se encontró elemento para transacción ${transactionId}`);
+      }
+    } catch (error) {
+      console.error(`Error marcando transacción como nueva: ${error.message}`);
     }
   }
 
