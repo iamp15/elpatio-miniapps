@@ -173,7 +173,7 @@ class CajerosApp {
   /**
    * Manejar nueva solicitud de depósito via WebSocket
    */
-  handleNuevaSolicitudDeposito(data) {
+  async handleNuevaSolicitudDeposito(data) {
     try {
       // Usar transaccionId como identificador único para evitar duplicados
       const transactionId =
