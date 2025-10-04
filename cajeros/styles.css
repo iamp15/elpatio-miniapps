@@ -702,6 +702,45 @@ body {
   color: white;
 }
 
+.verificar-pago-modal .modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.verificar-pago-modal .btn-success {
+  background: linear-gradient(135deg, #4caf50, #388e3c);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.verificar-pago-modal .btn-success:hover {
+  background: linear-gradient(135deg, #388e3c, #2e7d32);
+  transform: translateY(-2px);
+}
+
+.verificar-pago-modal .btn-danger {
+  background: linear-gradient(135deg, #f44336, #d32f2f);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.verificar-pago-modal .btn-danger:hover {
+  background: linear-gradient(135deg, #d32f2f, #c62828);
+  transform: translateY(-2px);
+}
+
 .verificar-pago-modal .payment-info {
   background: #fff3e0;
   border-radius: 8px;

@@ -223,6 +223,38 @@ class CajeroWebSocket {
   }
 
   /**
+   * Confirmar pago (verificación de pago)
+   */
+  confirmarPagoCajero(transaccionId, notas = null) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+    console.log("✅ Confirmando pago:", { transaccionId, notas });
+    this.socket.emit("verificar-pago-cajero", {
+      transaccionId,
+      accion: "confirmar",
+      notas,
+    });
+  }
+
+  /**
+   * Rechazar pago (verificación de pago)
+   */
+  rechazarPagoCajero(transaccionId, motivo) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+    console.log("❌ Rechazando pago:", { transaccionId, motivo });
+    this.socket.emit("verificar-pago-cajero", {
+      transaccionId,
+      accion: "rechazar",
+      motivo,
+    });
+  }
+
+  /**
    * Intentar reconexión automática
    */
   attemptReconnect() {

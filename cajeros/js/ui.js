@@ -359,6 +359,23 @@ class UIManager {
       );
     }
 
+    // Configurar botones de confirmar y rechazar pago
+    const confirmBtn = overlay.querySelector(".confirm-payment-btn");
+    if (confirmBtn) {
+      confirmBtn.addEventListener("click", () => {
+        const transaccionId = confirmBtn.getAttribute("data-transaction-id");
+        this.handleConfirmPayment(transaccionId);
+      });
+    }
+
+    const rejectBtn = overlay.querySelector(".reject-payment-btn");
+    if (rejectBtn) {
+      rejectBtn.addEventListener("click", () => {
+        const transaccionId = rejectBtn.getAttribute("data-transaction-id");
+        this.handleRejectPayment(transaccionId);
+      });
+    }
+
     // Configurar evento de click en overlay para cerrar
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) {
@@ -416,9 +433,11 @@ class UIManager {
             <p>📱 Por favor verifica en tu cuenta bancaria si el pago fue recibido correctamente.</p>
           </div>
         </div>
-        <div class="modal-actions">
-          <button class="btn btn-secondary close-btn">Cerrar</button>
-        </div>
+          <div class="modal-actions">
+            <button class="btn btn-success confirm-payment-btn" data-transaction-id="${data.transaccionId}">✅ Confirmar Pago</button>
+            <button class="btn btn-danger reject-payment-btn" data-transaction-id="${data.transaccionId}">❌ Rechazar Pago</button>
+            <button class="btn btn-secondary close-btn">Cerrar</button>
+          </div>
       </div>
     `;
 
@@ -561,6 +580,48 @@ class UIManager {
         toScreen.style.opacity = "1";
       }, 50);
     }, UI_CONFIG.ANIMATION_DURATION);
+  }
+
+  /**
+   * Manejar confirmación de pago
+   */
+  handleConfirmPayment(transaccionId) {
+    console.log("✅ Confirmando pago para transacción:", transaccionId);
+    
+    // Cerrar el modal
+    this.closeTransactionDetailsModal();
+    
+    // Enviar confirmación via WebSocket
+    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.isAuthenticated) {
+      window.cajeroWebSocket.confirmarPagoCajero(transaccionId);
+    } else {
+      console.error("No hay conexión WebSocket disponible");
+      this.showAlert("Error: No hay conexión disponible");
+    }
+  }
+
+  /**
+   * Manejar rechazo de pago
+   */
+  handleRejectPayment(transaccionId) {
+    const motivo = prompt("Ingresa el motivo del rechazo:");
+    if (!motivo || motivo.trim() === "") {
+      this.showAlert("Debes ingresar un motivo para rechazar el pago");
+      return;
+    }
+
+    console.log("❌ Rechazando pago para transacción:", transaccionId, "Motivo:", motivo);
+    
+    // Cerrar el modal
+    this.closeTransactionDetailsModal();
+    
+    // Enviar rechazo via WebSocket
+    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.isAuthenticated) {
+      window.cajeroWebSocket.rechazarPagoCajero(transaccionId, motivo.trim());
+    } else {
+      console.error("No hay conexión WebSocket disponible");
+      this.showAlert("Error: No hay conexión disponible");
+    }
   }
 }
 
