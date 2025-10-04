@@ -395,7 +395,9 @@ class UIManager {
             </div>
             <div class="info-row">
               <span class="label">Monto:</span>
-              <span class="value amount">${(data.monto / 100).toFixed(2)} Bs</span>
+              <span class="value amount">${(data.monto / 100).toFixed(
+                2
+              )} Bs</span>
             </div>
             <div class="info-row">
               <span class="label">Banco:</span>
@@ -419,7 +421,7 @@ class UIManager {
         </div>
       </div>
     `;
-    
+
     this.showTransactionDetailsModal(modalHTML);
   }
 
@@ -441,11 +443,15 @@ class UIManager {
             </div>
             <div class="info-row">
               <span class="label">Monto:</span>
-              <span class="value amount">${(data.monto / 100).toFixed(2)} Bs</span>
+              <span class="value amount">${(data.monto / 100).toFixed(
+                2
+              )} Bs</span>
             </div>
             <div class="info-row">
               <span class="label">Nuevo saldo del jugador:</span>
-              <span class="value balance">${(data.saldoNuevo / 100).toFixed(2)} Bs</span>
+              <span class="value balance">${(data.saldoNuevo / 100).toFixed(
+                2
+              )} Bs</span>
             </div>
           </div>
           <div class="success-message">
@@ -458,7 +464,7 @@ class UIManager {
         </div>
       </div>
     `;
-    
+
     this.showTransactionDetailsModal(modalHTML);
   }
 
@@ -493,7 +499,7 @@ class UIManager {
         </div>
       </div>
     `;
-    
+
     this.showTransactionDetailsModal(modalHTML);
   }
 

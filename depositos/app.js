@@ -540,6 +540,8 @@ class DepositApp {
       window.visualLogger.transaction(
         `💳 Confirmando pago via WebSocket: ${paymentData.datosPago.banco} - ${paymentData.datosPago.referencia}`
       );
+      
+      console.log("🔍 [DEBUG] Enviando paymentData:", paymentData);
       window.depositoWebSocket.confirmarPagoJugador(paymentData);
 
       // Mostrar pantalla de confirmación
