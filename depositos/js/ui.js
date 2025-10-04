@@ -334,8 +334,15 @@ class UIManager {
         transaction.monto
       );
     }
+    if (this.elements.finalDate) {
+      // Mostrar la fecha del pago del usuario
+      const paymentDate = transaction.infoPago?.fechaPago || new Date();
+      this.elements.finalDate.textContent = this.formatDate(paymentDate);
+    }
     if (this.elements.finalReference) {
-      this.elements.finalReference.textContent = transaction.referencia || "-";
+      // Mostrar la referencia del pago del usuario (no la referencia de la transacción)
+      const userReference = transaction.infoPago?.numeroReferencia || "-";
+      this.elements.finalReference.textContent = userReference;
     }
     if (this.elements.finalStatus) {
       this.elements.finalStatus.textContent = this.formatStatus(
@@ -352,6 +359,18 @@ class UIManager {
     return `${amountInBs.toLocaleString(TRANSACTION_CONFIG.LOCALE)} ${
       TRANSACTION_CONFIG.CURRENCY_SYMBOL
     }`;
+  }
+
+  /**
+   * Formatear fecha
+   */
+  formatDate(date) {
+    const dateObj = new Date(date);
+    return dateObj.toLocaleDateString('es-VE', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
   }
 
   /**

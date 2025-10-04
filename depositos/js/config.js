@@ -136,6 +136,7 @@ export const DOM_SELECTORS = {
   BANK_ID: "#bank-id",
   BANK_AMOUNT: "#bank-amount",
   FINAL_AMOUNT: "#final-amount",
+  FINAL_DATE: "#final-date",
   FINAL_REFERENCE: "#final-reference",
   FINAL_STATUS: "#final-status",
   ERROR_TITLE: "#error-title",

@@ -544,7 +544,19 @@ class DepositApp {
       console.log("🔍 [DEBUG] Enviando paymentData:", paymentData);
       window.depositoWebSocket.confirmarPagoJugador(paymentData);
 
-      // Mostrar pantalla de confirmación
+      // Actualizar información final con datos del formulario
+      const finalTransactionData = {
+        ...this.currentTransaction,
+        infoPago: {
+          fechaPago: formData.date,
+          numeroReferencia: formData.reference,
+          bancoOrigen: formData.bank,
+          telefonoOrigen: formData.phone
+        },
+        estado: "en_proceso"
+      };
+      
+      UI.updateFinalInfo(finalTransactionData);
       UI.showConfirmationScreen();
     } catch (error) {
       console.error("Error confirmando pago:", error);
