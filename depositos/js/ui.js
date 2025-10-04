@@ -337,6 +337,8 @@ class UIManager {
     if (this.elements.finalDate) {
       // Mostrar la fecha del pago del usuario
       const paymentDate = transaction.infoPago?.fechaPago || new Date();
+      console.log("🔍 [DEBUG] paymentDate:", paymentDate);
+      console.log("🔍 [DEBUG] formatted date:", this.formatDate(paymentDate));
       this.elements.finalDate.textContent = this.formatDate(paymentDate);
     }
     if (this.elements.finalReference) {
@@ -366,10 +368,10 @@ class UIManager {
    */
   formatDate(date) {
     const dateObj = new Date(date);
-    return dateObj.toLocaleDateString('es-VE', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit'
+    return dateObj.toLocaleDateString("es-VE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
     });
   }
 

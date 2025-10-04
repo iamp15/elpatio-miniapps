@@ -223,6 +223,15 @@ body {
   width: 100%;
 }
 
+/* Estilos específicos para pantalla de confirmación */
+.confirmation-info h3 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--tg-theme-text-color);
+}
+
 .info-card {
   background: var(--tg-theme-secondary-bg-color);
   border-radius: 12px;

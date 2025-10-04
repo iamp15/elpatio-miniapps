@@ -551,11 +551,13 @@ class DepositApp {
           fechaPago: formData.date,
           numeroReferencia: formData.reference,
           bancoOrigen: formData.bank,
-          telefonoOrigen: formData.phone
+          telefonoOrigen: formData.phone,
         },
-        estado: "en_proceso"
+        estado: "en_proceso",
       };
-      
+
+      console.log("🔍 [DEBUG] finalTransactionData:", finalTransactionData);
+      console.log("🔍 [DEBUG] formData.date:", formData.date);
       UI.updateFinalInfo(finalTransactionData);
       UI.showConfirmationScreen();
     } catch (error) {
