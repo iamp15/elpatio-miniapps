@@ -347,6 +347,9 @@ class UIManager {
     console.log("🔍 [UI] Creando modal de detalles de transacción");
     console.log("🔍 [UI] Stack trace de creación de modal:", new Error().stack);
     
+    // Cerrar cualquier modal existente antes de crear uno nuevo
+    this.closeTransactionDetailsModal();
+    
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = modalHTML;
@@ -372,7 +375,10 @@ class UIManager {
       // Crear función con contexto
       this.handleConfirmPaymentClick = () => {
         const transaccionId = confirmBtn.getAttribute("data-transaction-id");
-        console.log("🔍 [UI] Botón confirmar clickeado para transacción:", transaccionId);
+        console.log(
+          "🔍 [UI] Botón confirmar clickeado para transacción:",
+          transaccionId
+        );
         console.log("🔍 [UI] Stack trace del click:", new Error().stack);
         this.handleConfirmPayment(transaccionId);
       };
@@ -408,18 +414,23 @@ class UIManager {
   closeTransactionDetailsModal() {
     const overlay = document.querySelector(".modal-overlay");
     if (overlay) {
+      console.log("🔍 [UI] Cerrando modal existente");
+      
       // Limpiar event listeners antes de remover
       const confirmBtn = overlay.querySelector(".confirm-payment-btn");
       if (confirmBtn && this.handleConfirmPaymentClick) {
         confirmBtn.removeEventListener("click", this.handleConfirmPaymentClick);
       }
-
+      
       const rejectBtn = overlay.querySelector(".reject-payment-btn");
       if (rejectBtn && this.handleRejectPaymentClick) {
         rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
       }
-
+      
       overlay.remove();
+      console.log("🔍 [UI] Modal removido del DOM");
+    } else {
+      console.log("🔍 [UI] No hay modal existente para cerrar");
     }
   }
 
@@ -619,8 +630,14 @@ class UIManager {
    * Manejar confirmación de pago
    */
   handleConfirmPayment(transaccionId) {
-    console.log("🔍 [UI] handleConfirmPayment llamado para transacción:", transaccionId);
-    console.log("🔍 [UI] Estado actual processingPayment:", this.processingPayment);
+    console.log(
+      "🔍 [UI] handleConfirmPayment llamado para transacción:",
+      transaccionId
+    );
+    console.log(
+      "🔍 [UI] Estado actual processingPayment:",
+      this.processingPayment
+    );
     console.log("🔍 [UI] Stack trace:", new Error().stack);
 
     // Verificar si ya se está procesando esta transacción
