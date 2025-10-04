@@ -234,16 +234,8 @@ class CajerosApp {
     try {
       console.log("🔍 Datos de verificación de pago:", data);
 
-      // Mostrar notificación al cajero
-      UI.showAlert(
-        `🔍 Verificar Pago\n\n` +
-          `Jugador: ${data.jugador.nombre}\n` +
-          `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
-          `Banco: ${data.datosPago.banco}\n` +
-          `Referencia: ${data.datosPago.referencia}\n` +
-          `Teléfono: ${data.datosPago.telefono}\n\n` +
-          `Por favor verifica en tu cuenta bancaria.`
-      );
+      // Mostrar pop-up de verificación de pago
+      UI.showVerificarPagoPopup(data);
 
       // Actualizar la lista de transacciones para mostrar el estado actualizado
       this.loadTransactions();
@@ -259,16 +251,8 @@ class CajerosApp {
     try {
       console.log("✅ Datos de depósito completado:", data);
 
-      // Mostrar notificación de éxito
-      UI.showAlert(
-        `✅ Depósito Completado\n\n` +
-          `Transacción: ${data.transaccionId}\n` +
-          `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
-          `Nuevo saldo del jugador: ${(data.saldoNuevo / 100).toFixed(
-            2
-          )} Bs\n\n` +
-          `¡Transacción procesada exitosamente!`
-      );
+      // Mostrar pop-up de depósito completado
+      UI.showDepositoCompletadoPopup(data);
 
       // Actualizar la lista de transacciones
       this.loadTransactions();
@@ -284,13 +268,8 @@ class CajerosApp {
     try {
       console.log("❌ Datos de depósito rechazado:", data);
 
-      // Mostrar notificación de rechazo
-      UI.showAlert(
-        `❌ Depósito Rechazado\n\n` +
-          `Transacción: ${data.transaccionId}\n` +
-          `Motivo: ${data.motivo}\n\n` +
-          `La transacción ha sido rechazada.`
-      );
+      // Mostrar pop-up de depósito rechazado
+      UI.showDepositoRechazadoPopup(data);
 
       // Actualizar la lista de transacciones
       this.loadTransactions();
