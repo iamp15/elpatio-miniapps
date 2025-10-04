@@ -337,9 +337,12 @@ class UIManager {
     if (this.elements.finalDate) {
       // Mostrar la fecha del pago del usuario
       const paymentDate = transaction.infoPago?.fechaPago || new Date();
-      console.log("🔍 [DEBUG] paymentDate:", paymentDate);
-      console.log("🔍 [DEBUG] formatted date:", this.formatDate(paymentDate));
+      window.visualLogger.info("🔍 [DEBUG] finalDate element found");
+      window.visualLogger.info("🔍 [DEBUG] paymentDate:", paymentDate);
+      window.visualLogger.info("🔍 [DEBUG] formatted date:", this.formatDate(paymentDate));
       this.elements.finalDate.textContent = this.formatDate(paymentDate);
+    } else {
+      window.visualLogger.error("🔍 [DEBUG] finalDate element NOT found");
     }
     if (this.elements.finalReference) {
       // Mostrar la referencia del pago del usuario (no la referencia de la transacción)

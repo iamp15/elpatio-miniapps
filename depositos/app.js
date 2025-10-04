@@ -556,8 +556,8 @@ class DepositApp {
         estado: "en_proceso",
       };
 
-      console.log("🔍 [DEBUG] finalTransactionData:", finalTransactionData);
-      console.log("🔍 [DEBUG] formData.date:", formData.date);
+      window.visualLogger.info("🔍 [DEBUG] finalTransactionData:", finalTransactionData);
+      window.visualLogger.info("🔍 [DEBUG] formData.date:", formData.date);
       UI.updateFinalInfo(finalTransactionData);
       UI.showConfirmationScreen();
     } catch (error) {
