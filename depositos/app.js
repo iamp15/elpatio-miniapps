@@ -365,10 +365,8 @@ class DepositApp {
       // Mostrar pantalla de espera
       UI.showWaitingScreen();
 
-      // Iniciar polling para verificar estado
-      TransactionManager.startPolling(transaction._id);
-
-      console.log("Transaccion creada, iniciando polling");
+      // WebSocket manejará las actualizaciones en tiempo real
+      console.log("Transaccion creada, esperando notificaciones WebSocket");
     } catch (error) {
       console.error("Error manejando transaccion creada:", error);
       UI.showErrorScreen(

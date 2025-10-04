@@ -14,9 +14,7 @@ import { UI } from "./ui.js";
 class TransactionManager {
   constructor() {
     this.currentTransaction = null;
-    this.pollingInterval = null;
-    this.pollingAttempts = 0;
-    this.maxPollingAttempts = POLLING_CONFIG.MAX_ATTEMPTS;
+    // Variables de polling eliminadas - WebSocket maneja las actualizaciones en tiempo real
     this.callbacks = {
       onTransactionCreated: null,
       onTransactionUpdated: null,
@@ -170,75 +168,11 @@ class TransactionManager {
     }
   }
 
-  /**
-   * Iniciar polling para verificar estado de transacción
-   */
-  startPolling(transaccionId) {
-    if (this.pollingInterval) {
-      this.stopPolling();
-    }
+  // Método startPolling eliminado - WebSocket maneja las actualizaciones en tiempo real
 
-    this.pollingAttempts = 0;
+  // Método stopPolling eliminado - WebSocket maneja las actualizaciones en tiempo real
 
-    this.pollingInterval = setInterval(async () => {
-      try {
-        this.pollingAttempts++;
-
-        const transaction = await this.checkTransactionStatus(transaccionId);
-
-        // Verificar si la transacción ha cambiado de estado
-        if (this.shouldStopPolling(transaction)) {
-          this.stopPolling();
-          return;
-        }
-
-        // Verificar si hemos excedido el número máximo de intentos
-        if (this.pollingAttempts >= this.maxPollingAttempts) {
-          this.stopPolling();
-
-          if (this.callbacks.onTransactionTimeout) {
-            this.callbacks.onTransactionTimeout(transaccionId);
-          }
-          return;
-        }
-      } catch (error) {
-        console.error("Error en polling:", error);
-
-        // Si hay muchos errores consecutivos, detener el polling
-        if (this.pollingAttempts >= this.maxPollingAttempts) {
-          this.stopPolling();
-
-          if (this.callbacks.onTransactionError) {
-            this.callbacks.onTransactionError(error);
-          }
-        }
-      }
-    }, POLLING_CONFIG.INTERVAL);
-  }
-
-  /**
-   * Detener polling
-   */
-  stopPolling() {
-    if (this.pollingInterval) {
-      clearInterval(this.pollingInterval);
-      this.pollingInterval = null;
-    }
-    this.pollingAttempts = 0;
-  }
-
-  /**
-   * Verificar si debe detener el polling
-   */
-  shouldStopPolling(transaction) {
-    const finalStates = [
-      TRANSACTION_STATES.CONFIRMADA,
-      TRANSACTION_STATES.CANCELADA,
-      TRANSACTION_STATES.EXPIRADA,
-    ];
-
-    return finalStates.includes(transaction.estado);
-  }
+  // Método shouldStopPolling eliminado - WebSocket maneja las actualizaciones en tiempo real
 
   /**
    * Cancelar transacción por timeout
@@ -375,7 +309,7 @@ class TransactionManager {
    */
   clearCurrentTransaction() {
     this.currentTransaction = null;
-    this.stopPolling();
+    // stopPolling eliminado - WebSocket maneja las actualizaciones en tiempo real
   }
 
   /**
