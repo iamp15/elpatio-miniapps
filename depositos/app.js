@@ -236,13 +236,16 @@ class DepositApp {
         `📋 Solicitud creada: ${data.transaccionId}`
       );
 
-      // Actualizar UI con información de la transacción
-      UI.updateWaitingTransaction({
+      // Guardar la transacción actual
+      this.currentTransaction = {
         _id: data.transaccionId,
         referencia: data.referencia,
         monto: data.monto,
         estado: data.estado,
-      });
+      };
+
+      // Actualizar UI con información de la transacción
+      UI.updateWaitingTransaction(this.currentTransaction);
 
       // Mostrar pantalla de espera
       UI.showWaitingScreen();
@@ -515,6 +518,11 @@ class DepositApp {
           "No hay conexión WebSocket activa. Intentando reconectar..."
         );
         return;
+      }
+
+      // Validar que tenemos una transacción actual
+      if (!this.currentTransaction || !this.currentTransaction._id) {
+        throw new Error("No hay transacción activa para confirmar");
       }
 
       // Confirmar pago via WebSocket
