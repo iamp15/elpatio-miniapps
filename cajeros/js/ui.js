@@ -362,18 +362,30 @@ class UIManager {
     // Configurar botones de confirmar y rechazar pago
     const confirmBtn = overlay.querySelector(".confirm-payment-btn");
     if (confirmBtn) {
-      confirmBtn.addEventListener("click", () => {
+      // Remover listeners anteriores si existen
+      confirmBtn.removeEventListener("click", this.handleConfirmPaymentClick);
+      
+      // Crear función con contexto
+      this.handleConfirmPaymentClick = () => {
         const transaccionId = confirmBtn.getAttribute("data-transaction-id");
         this.handleConfirmPayment(transaccionId);
-      });
+      };
+      
+      confirmBtn.addEventListener("click", this.handleConfirmPaymentClick);
     }
 
     const rejectBtn = overlay.querySelector(".reject-payment-btn");
     if (rejectBtn) {
-      rejectBtn.addEventListener("click", () => {
+      // Remover listeners anteriores si existen
+      rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
+      
+      // Crear función con contexto
+      this.handleRejectPaymentClick = () => {
         const transaccionId = rejectBtn.getAttribute("data-transaction-id");
         this.handleRejectPayment(transaccionId);
-      });
+      };
+      
+      rejectBtn.addEventListener("click", this.handleRejectPaymentClick);
     }
 
     // Configurar evento de click en overlay para cerrar
@@ -390,6 +402,17 @@ class UIManager {
   closeTransactionDetailsModal() {
     const overlay = document.querySelector(".modal-overlay");
     if (overlay) {
+      // Limpiar event listeners antes de remover
+      const confirmBtn = overlay.querySelector(".confirm-payment-btn");
+      if (confirmBtn && this.handleConfirmPaymentClick) {
+        confirmBtn.removeEventListener("click", this.handleConfirmPaymentClick);
+      }
+      
+      const rejectBtn = overlay.querySelector(".reject-payment-btn");
+      if (rejectBtn && this.handleRejectPaymentClick) {
+        rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
+      }
+      
       overlay.remove();
     }
   }
