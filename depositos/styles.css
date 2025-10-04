@@ -505,6 +505,36 @@ body {
   font-size: 14px;
 }
 
+/* Mensaje de espera */
+.waiting-message {
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--tg-theme-secondary-bg-color, #f8f9fa);
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.waiting-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  opacity: 0.8;
+}
+
+.waiting-message h3 {
+  color: var(--tg-theme-text-color);
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.waiting-message p {
+  color: var(--tg-theme-hint-color);
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 300px;
+  margin: 0 auto;
+}
+
 /* Iconos de estado */
 .success-icon,
 .error-icon {
