@@ -29,6 +29,13 @@ class DepositoWebSocket {
   }
 
   /**
+   * Configurar callbacks
+   */
+  setCallbacks(callbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  /**
    * Conectar al servidor WebSocket
    */
   connect() {

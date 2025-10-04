@@ -121,9 +121,7 @@ class UIManager {
     this.elements.finalAmount = document.querySelector(
       DOM_SELECTORS.FINAL_AMOUNT
     );
-    this.elements.finalDate = document.querySelector(
-      DOM_SELECTORS.FINAL_DATE
-    );
+    this.elements.finalDate = document.querySelector(DOM_SELECTORS.FINAL_DATE);
     this.elements.finalReference = document.querySelector(
       DOM_SELECTORS.FINAL_REFERENCE
     );

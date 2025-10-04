@@ -81,6 +81,15 @@ class DepositApp {
    * Configurar WebSocket
    */
   setupWebSocket() {
+    // Configurar callbacks del WebSocket client
+    window.depositoWebSocket.setCallbacks({
+      onDepositoCompletado: this.handleDepositoCompletado.bind(this),
+      onPagoConfirmado: this.handlePagoConfirmado.bind(this),
+      onSolicitudAceptada: this.handleSolicitudAceptada.bind(this),
+      onSolicitudCreada: this.handleSolicitudCreada.bind(this),
+      onError: this.handleWebSocketError.bind(this)
+    });
+
     // Configurar callbacks de WebSocket
     window.depositoWebSocket.on("onConnect", () => {
       window.visualLogger.websocket("✅ WebSocket conectado");
@@ -109,35 +118,7 @@ class DepositApp {
       }
     });
 
-    window.depositoWebSocket.on("onSolicitudAceptada", (data) => {
-      window.visualLogger.success("✅ Solicitud aceptada via WebSocket");
-      this.handleSolicitudAceptada(data);
-    });
-
-    window.depositoWebSocket.on("onDepositoCompletado", (data) => {
-      window.visualLogger.success("🎉 Depósito completado via WebSocket");
-      this.handleDepositoCompletado(data);
-    });
-
-    window.depositoWebSocket.on("onSolicitudCreada", (data) => {
-      window.visualLogger.success(
-        "✅ Solicitud de depósito creada via WebSocket"
-      );
-      this.handleSolicitudCreada(data);
-    });
-
-    window.depositoWebSocket.on("onPagoConfirmado", (data) => {
-      window.visualLogger.success(
-        "💳 Pago confirmado, esperando verificación del cajero"
-      );
-      this.handlePagoConfirmado(data);
-    });
-
-    window.depositoWebSocket.on("onError", (error) => {
-      window.visualLogger.error(
-        `❌ Error WebSocket: ${error.message || error}`
-      );
-    });
+    // Los callbacks ya están configurados arriba con setCallbacks()
 
     // Conectar WebSocket
     window.visualLogger.info("🔌 Iniciando conexión WebSocket...");
@@ -292,6 +273,15 @@ class DepositApp {
         `Error manejando depósito completado: ${error.message}`
       );
     }
+  }
+
+  /**
+   * Manejar errores de WebSocket
+   */
+  handleWebSocketError(error) {
+    window.visualLogger.error(
+      `❌ Error WebSocket: ${error.message || error}`
+    );
   }
 
   /**
