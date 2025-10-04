@@ -495,6 +495,7 @@ class DepositApp {
 
     try {
       const formData = UI.getPaymentConfirmationFormData();
+      window.visualLogger.info("🔍 [DEBUG] Raw formData:", formData);
       const validation = UI.validatePaymentConfirmationForm(formData);
 
       if (!validation.valid) {
@@ -556,7 +557,10 @@ class DepositApp {
         estado: "en_proceso",
       };
 
-      window.visualLogger.info("🔍 [DEBUG] finalTransactionData:", finalTransactionData);
+      window.visualLogger.info(
+        "🔍 [DEBUG] finalTransactionData:",
+        finalTransactionData
+      );
       window.visualLogger.info("🔍 [DEBUG] formData.date:", formData.date);
       UI.updateFinalInfo(finalTransactionData);
       UI.showConfirmationScreen();

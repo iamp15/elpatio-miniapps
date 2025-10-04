@@ -121,6 +121,9 @@ class UIManager {
     this.elements.finalAmount = document.querySelector(
       DOM_SELECTORS.FINAL_AMOUNT
     );
+    this.elements.finalDate = document.querySelector(
+      DOM_SELECTORS.FINAL_DATE
+    );
     this.elements.finalReference = document.querySelector(
       DOM_SELECTORS.FINAL_REFERENCE
     );
@@ -339,7 +342,10 @@ class UIManager {
       const paymentDate = transaction.infoPago?.fechaPago || new Date();
       window.visualLogger.info("🔍 [DEBUG] finalDate element found");
       window.visualLogger.info("🔍 [DEBUG] paymentDate:", paymentDate);
-      window.visualLogger.info("🔍 [DEBUG] formatted date:", this.formatDate(paymentDate));
+      window.visualLogger.info(
+        "🔍 [DEBUG] formatted date:",
+        this.formatDate(paymentDate)
+      );
       this.elements.finalDate.textContent = this.formatDate(paymentDate);
     } else {
       window.visualLogger.error("🔍 [DEBUG] finalDate element NOT found");
