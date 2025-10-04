@@ -264,7 +264,6 @@ class DepositApp {
 
       // Mostrar pantalla de espera de verificación
       UI.showWaitingVerificationScreen();
-      
     } catch (error) {
       window.visualLogger.error(
         `Error manejando pago confirmado: ${error.message}`
@@ -527,7 +526,7 @@ class DepositApp {
           referencia: formData.reference,
           fecha: formData.date,
           monto: TransactionManager.convertToCents(formData.amount),
-        }
+        },
       };
 
       window.visualLogger.transaction(

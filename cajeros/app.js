@@ -93,6 +93,16 @@ class CajerosApp {
       this.handleVerificarPago(data);
     });
 
+    window.cajeroWebSocket.on("onDepositoCompletado", (data) => {
+      console.log("✅ Depósito completado recibido");
+      this.handleDepositoCompletado(data);
+    });
+
+    window.cajeroWebSocket.on("onDepositoRechazado", (data) => {
+      console.log("❌ Depósito rechazado recibido");
+      this.handleDepositoRechazado(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
     });
@@ -223,23 +233,69 @@ class CajerosApp {
   handleVerificarPago(data) {
     try {
       console.log("🔍 Datos de verificación de pago:", data);
-      
+
       // Mostrar notificación al cajero
       UI.showAlert(
         `🔍 Verificar Pago\n\n` +
-        `Jugador: ${data.jugador.nombre}\n` +
-        `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
-        `Banco: ${data.datosPago.banco}\n` +
-        `Referencia: ${data.datosPago.referencia}\n` +
-        `Teléfono: ${data.datosPago.telefono}\n\n` +
-        `Por favor verifica en tu cuenta bancaria.`
+          `Jugador: ${data.jugador.nombre}\n` +
+          `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
+          `Banco: ${data.datosPago.banco}\n` +
+          `Referencia: ${data.datosPago.referencia}\n` +
+          `Teléfono: ${data.datosPago.telefono}\n\n` +
+          `Por favor verifica en tu cuenta bancaria.`
       );
-      
+
       // Actualizar la lista de transacciones para mostrar el estado actualizado
       this.loadTransactions();
-      
     } catch (error) {
       console.error("Error manejando verificación de pago:", error);
+    }
+  }
+
+  /**
+   * Manejar depósito completado
+   */
+  handleDepositoCompletado(data) {
+    try {
+      console.log("✅ Datos de depósito completado:", data);
+
+      // Mostrar notificación de éxito
+      UI.showAlert(
+        `✅ Depósito Completado\n\n` +
+          `Transacción: ${data.transaccionId}\n` +
+          `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
+          `Nuevo saldo del jugador: ${(data.saldoNuevo / 100).toFixed(
+            2
+          )} Bs\n\n` +
+          `¡Transacción procesada exitosamente!`
+      );
+
+      // Actualizar la lista de transacciones
+      this.loadTransactions();
+    } catch (error) {
+      console.error("Error manejando depósito completado:", error);
+    }
+  }
+
+  /**
+   * Manejar depósito rechazado
+   */
+  handleDepositoRechazado(data) {
+    try {
+      console.log("❌ Datos de depósito rechazado:", data);
+
+      // Mostrar notificación de rechazo
+      UI.showAlert(
+        `❌ Depósito Rechazado\n\n` +
+          `Transacción: ${data.transaccionId}\n` +
+          `Motivo: ${data.motivo}\n\n` +
+          `La transacción ha sido rechazada.`
+      );
+
+      // Actualizar la lista de transacciones
+      this.loadTransactions();
+    } catch (error) {
+      console.error("Error manejando depósito rechazado:", error);
     }
   }
 

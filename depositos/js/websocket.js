@@ -125,7 +125,8 @@ class DepositoWebSocket {
 
     this.socket.on("deposito-rechazado", (data) => {
       console.log("❌ Depósito rechazado:", data);
-      if (this.callbacks.onDepositoRechazado) {
+      // Filtrar por target: solo procesar si es para jugador
+      if (data.target === "jugador" && this.callbacks.onDepositoRechazado) {
         this.callbacks.onDepositoRechazado(data);
       }
     });
@@ -154,7 +155,8 @@ class DepositoWebSocket {
 
     this.socket.on("deposito-completado", (data) => {
       console.log("🎉 Depósito completado:", data);
-      if (this.callbacks.onDepositoCompletado) {
+      // Filtrar por target: solo procesar si es para jugador
+      if (data.target === "jugador" && this.callbacks.onDepositoCompletado) {
         this.callbacks.onDepositoCompletado(data);
       }
     });
@@ -168,7 +170,8 @@ class DepositoWebSocket {
 
     this.socket.on("pago-confirmado", (data) => {
       console.log("💳 Pago confirmado:", data);
-      if (this.callbacks.onPagoConfirmado) {
+      // Filtrar por target: solo procesar si es para jugador
+      if (data.target === "jugador" && this.callbacks.onPagoConfirmado) {
         this.callbacks.onPagoConfirmado(data);
       }
     });

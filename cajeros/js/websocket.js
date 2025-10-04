@@ -17,6 +17,8 @@ class CajeroWebSocket {
       onAuthResult: null,
       onNuevaSolicitudDeposito: null,
       onVerificarPago: null,
+      onDepositoCompletado: null,
+      onDepositoRechazado: null,
       onError: null,
     };
   }
@@ -111,8 +113,25 @@ class CajeroWebSocket {
 
     this.socket.on("verificar-pago", (data) => {
       console.log("🔍 Verificar pago:", data);
-      if (this.callbacks.onVerificarPago) {
+      // Filtrar por target: solo procesar si es para cajero
+      if (data.target === "cajero" && this.callbacks.onVerificarPago) {
         this.callbacks.onVerificarPago(data);
+      }
+    });
+
+    this.socket.on("deposito-completado", (data) => {
+      console.log("✅ Depósito completado:", data);
+      // Filtrar por target: solo procesar si es para cajero
+      if (data.target === "cajero" && this.callbacks.onDepositoCompletado) {
+        this.callbacks.onDepositoCompletado(data);
+      }
+    });
+
+    this.socket.on("deposito-rechazado", (data) => {
+      console.log("❌ Depósito rechazado:", data);
+      // Filtrar por target: solo procesar si es para cajero
+      if (data.target === "cajero" && this.callbacks.onDepositoRechazado) {
+        this.callbacks.onDepositoRechazado(data);
       }
     });
 
