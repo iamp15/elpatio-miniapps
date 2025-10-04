@@ -87,7 +87,7 @@ class DepositApp {
       onPagoConfirmado: this.handlePagoConfirmado.bind(this),
       onSolicitudAceptada: this.handleSolicitudAceptada.bind(this),
       onSolicitudCreada: this.handleSolicitudCreada.bind(this),
-      onError: this.handleWebSocketError.bind(this)
+      onError: this.handleWebSocketError.bind(this),
     });
 
     // Configurar callbacks de WebSocket
@@ -260,18 +260,24 @@ class DepositApp {
    */
   handleDepositoCompletado(data) {
     try {
-      window.visualLogger.success("🎉 Depósito completado, actualizando saldo");
+      window.visualLogger.success("🎉 [APP] handleDepositoCompletado llamado");
+      window.visualLogger.info("🎉 [APP] Datos recibidos:", data);
 
       // Actualizar saldo
+      window.visualLogger.info("🎉 [APP] Actualizando saldo del usuario...");
       this.loadUserBalance();
 
       // Mostrar confirmación final
+      window.visualLogger.info("🎉 [APP] Actualizando información final y mostrando pantalla...");
       UI.updateFinalInfo(data);
       UI.showConfirmationScreen();
+      
+      window.visualLogger.success("🎉 [APP] Depósito completado procesado exitosamente");
     } catch (error) {
       window.visualLogger.error(
-        `Error manejando depósito completado: ${error.message}`
+        `❌ [APP] Error manejando depósito completado: ${error.message}`
       );
+      console.error("❌ [APP] Stack trace:", error);
     }
   }
 
@@ -279,9 +285,7 @@ class DepositApp {
    * Manejar errores de WebSocket
    */
   handleWebSocketError(error) {
-    window.visualLogger.error(
-      `❌ Error WebSocket: ${error.message || error}`
-    );
+    window.visualLogger.error(`❌ Error WebSocket: ${error.message || error}`);
   }
 
   /**

@@ -161,10 +161,21 @@ class DepositoWebSocket {
     });
 
     this.socket.on("deposito-completado", (data) => {
-      console.log("🎉 Depósito completado:", data);
+      console.log("🎉 [WebSocket] Evento deposito-completado recibido:", data);
+      console.log("🎉 [WebSocket] data.target:", data.target);
+      console.log("🎉 [WebSocket] this.callbacks.onDepositoCompletado:", this.callbacks.onDepositoCompletado);
+      
       // Filtrar por target: solo procesar si es para jugador
-      if (data.target === "jugador" && this.callbacks.onDepositoCompletado) {
-        this.callbacks.onDepositoCompletado(data);
+      if (data.target === "jugador") {
+        console.log("🎉 [WebSocket] Target es jugador, verificando callback...");
+        if (this.callbacks.onDepositoCompletado) {
+          console.log("🎉 [WebSocket] Ejecutando callback onDepositoCompletado");
+          this.callbacks.onDepositoCompletado(data);
+        } else {
+          console.error("❌ [WebSocket] Callback onDepositoCompletado no está configurado");
+        }
+      } else {
+        console.log("🎉 [WebSocket] Target no es jugador, ignorando evento");
       }
     });
 
