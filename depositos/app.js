@@ -126,6 +126,13 @@ class DepositApp {
       this.handleSolicitudCreada(data);
     });
 
+    window.depositoWebSocket.on("onPagoConfirmado", (data) => {
+      window.visualLogger.success(
+        "💳 Pago confirmado, esperando verificación del cajero"
+      );
+      this.handlePagoConfirmado(data);
+    });
+
     window.depositoWebSocket.on("onError", (error) => {
       window.visualLogger.error(
         `❌ Error WebSocket: ${error.message || error}`
@@ -242,6 +249,25 @@ class DepositApp {
     } catch (error) {
       window.visualLogger.error(
         `Error manejando solicitud creada: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Manejar pago confirmado via WebSocket
+   */
+  handlePagoConfirmado(data) {
+    try {
+      window.visualLogger.success(
+        "💳 Pago confirmado, esperando verificación del cajero"
+      );
+
+      // Mostrar pantalla de espera de verificación
+      UI.showWaitingVerificationScreen();
+      
+    } catch (error) {
+      window.visualLogger.error(
+        `Error manejando pago confirmado: ${error.message}`
       );
     }
   }
@@ -494,15 +520,18 @@ class DepositApp {
 
       // Confirmar pago via WebSocket
       const paymentData = {
-        banco: formData.bank,
-        telefono: formData.phone,
-        referencia: formData.reference,
-        fecha: formData.date,
-        monto: TransactionManager.convertToCents(formData.amount),
+        transaccionId: this.currentTransaction._id,
+        datosPago: {
+          banco: formData.bank,
+          telefono: formData.phone,
+          referencia: formData.reference,
+          fecha: formData.date,
+          monto: TransactionManager.convertToCents(formData.amount),
+        }
       };
 
       window.visualLogger.transaction(
-        `💳 Confirmando pago via WebSocket: ${paymentData.banco} - ${paymentData.referencia}`
+        `💳 Confirmando pago via WebSocket: ${paymentData.datosPago.banco} - ${paymentData.datosPago.referencia}`
       );
       window.depositoWebSocket.confirmarPagoJugador(paymentData);
 

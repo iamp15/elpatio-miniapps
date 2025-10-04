@@ -88,6 +88,11 @@ class CajerosApp {
       this.handleNuevaSolicitudDeposito(data);
     });
 
+    window.cajeroWebSocket.on("onVerificarPago", (data) => {
+      console.log("🔍 Solicitud de verificación de pago recibida");
+      this.handleVerificarPago(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
     });
@@ -209,6 +214,32 @@ class CajerosApp {
       }
     } catch (error) {
       console.error(`Error manejando nueva solicitud: ${error.message}`);
+    }
+  }
+
+  /**
+   * Manejar solicitud de verificación de pago
+   */
+  handleVerificarPago(data) {
+    try {
+      console.log("🔍 Datos de verificación de pago:", data);
+      
+      // Mostrar notificación al cajero
+      UI.showAlert(
+        `🔍 Verificar Pago\n\n` +
+        `Jugador: ${data.jugador.nombre}\n` +
+        `Monto: ${(data.monto / 100).toFixed(2)} Bs\n` +
+        `Banco: ${data.datosPago.banco}\n` +
+        `Referencia: ${data.datosPago.referencia}\n` +
+        `Teléfono: ${data.datosPago.telefono}\n\n` +
+        `Por favor verifica en tu cuenta bancaria.`
+      );
+      
+      // Actualizar la lista de transacciones para mostrar el estado actualizado
+      this.loadTransactions();
+      
+    } catch (error) {
+      console.error("Error manejando verificación de pago:", error);
     }
   }
 

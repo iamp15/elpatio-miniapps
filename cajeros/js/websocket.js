@@ -16,6 +16,7 @@ class CajeroWebSocket {
       onDisconnect: null,
       onAuthResult: null,
       onNuevaSolicitudDeposito: null,
+      onVerificarPago: null,
       onError: null,
     };
   }
@@ -105,6 +106,13 @@ class CajeroWebSocket {
       console.log("💰 Nueva solicitud de depósito:", data);
       if (this.callbacks.onNuevaSolicitudDeposito) {
         this.callbacks.onNuevaSolicitudDeposito(data);
+      }
+    });
+
+    this.socket.on("verificar-pago", (data) => {
+      console.log("🔍 Verificar pago:", data);
+      if (this.callbacks.onVerificarPago) {
+        this.callbacks.onVerificarPago(data);
       }
     });
 

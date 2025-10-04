@@ -23,6 +23,7 @@ class DepositoWebSocket {
       onVerificarPago: null,
       onDepositoCompletado: null,
       onSolicitudCreada: null,
+      onPagoConfirmado: null,
       onError: null,
     };
   }
@@ -162,6 +163,13 @@ class DepositoWebSocket {
       console.log("✅ Solicitud de depósito creada:", data);
       if (this.callbacks.onSolicitudCreada) {
         this.callbacks.onSolicitudCreada(data);
+      }
+    });
+
+    this.socket.on("pago-confirmado", (data) => {
+      console.log("💳 Pago confirmado:", data);
+      if (this.callbacks.onPagoConfirmado) {
+        this.callbacks.onPagoConfirmado(data);
       }
     });
 
