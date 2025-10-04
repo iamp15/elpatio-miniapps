@@ -434,8 +434,12 @@ class UIManager {
           </div>
         </div>
           <div class="modal-actions">
-            <button class="btn btn-success confirm-payment-btn" data-transaction-id="${data.transaccionId}">✅ Confirmar Pago</button>
-            <button class="btn btn-danger reject-payment-btn" data-transaction-id="${data.transaccionId}">❌ Rechazar Pago</button>
+            <button class="btn btn-success confirm-payment-btn" data-transaction-id="${
+              data.transaccionId
+            }">✅ Confirmar Pago</button>
+            <button class="btn btn-danger reject-payment-btn" data-transaction-id="${
+              data.transaccionId
+            }">❌ Rechazar Pago</button>
             <button class="btn btn-secondary close-btn">Cerrar</button>
           </div>
       </div>
@@ -587,16 +591,30 @@ class UIManager {
    */
   handleConfirmPayment(transaccionId) {
     console.log("✅ Confirmando pago para transacción:", transaccionId);
-    
+
+    // Verificar si ya se está procesando esta transacción
+    if (this.processingPayment === transaccionId) {
+      console.log("⚠️ Ya se está procesando esta transacción");
+      return;
+    }
+
+    // Marcar como procesando
+    this.processingPayment = transaccionId;
+
     // Cerrar el modal
     this.closeTransactionDetailsModal();
-    
+
     // Enviar confirmación via WebSocket
-    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.isAuthenticated) {
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.isConnected &&
+      window.cajeroWebSocket.isAuthenticated
+    ) {
       window.cajeroWebSocket.confirmarPagoCajero(transaccionId);
     } else {
       console.error("No hay conexión WebSocket disponible");
       this.showAlert("Error: No hay conexión disponible");
+      this.processingPayment = null; // Limpiar en caso de error
     }
   }
 
@@ -604,23 +622,42 @@ class UIManager {
    * Manejar rechazo de pago
    */
   handleRejectPayment(transaccionId) {
+    // Verificar si ya se está procesando esta transacción
+    if (this.processingPayment === transaccionId) {
+      console.log("⚠️ Ya se está procesando esta transacción");
+      return;
+    }
+
     const motivo = prompt("Ingresa el motivo del rechazo:");
     if (!motivo || motivo.trim() === "") {
       this.showAlert("Debes ingresar un motivo para rechazar el pago");
       return;
     }
 
-    console.log("❌ Rechazando pago para transacción:", transaccionId, "Motivo:", motivo);
-    
+    console.log(
+      "❌ Rechazando pago para transacción:",
+      transaccionId,
+      "Motivo:",
+      motivo
+    );
+
+    // Marcar como procesando
+    this.processingPayment = transaccionId;
+
     // Cerrar el modal
     this.closeTransactionDetailsModal();
-    
+
     // Enviar rechazo via WebSocket
-    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.isAuthenticated) {
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.isConnected &&
+      window.cajeroWebSocket.isAuthenticated
+    ) {
       window.cajeroWebSocket.rechazarPagoCajero(transaccionId, motivo.trim());
     } else {
       console.error("No hay conexión WebSocket disponible");
       this.showAlert("Error: No hay conexión disponible");
+      this.processingPayment = null; // Limpiar en caso de error
     }
   }
 }

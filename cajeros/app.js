@@ -105,6 +105,8 @@ class CajerosApp {
 
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
+      // Limpiar el estado de procesamiento en caso de error
+      UI.processingPayment = null;
     });
 
     // Agregar callback para errores de conexión
@@ -251,6 +253,9 @@ class CajerosApp {
     try {
       console.log("✅ Datos de depósito completado:", data);
 
+      // Limpiar el estado de procesamiento
+      UI.processingPayment = null;
+
       // Mostrar pop-up de depósito completado
       UI.showDepositoCompletadoPopup(data);
 
@@ -267,6 +272,9 @@ class CajerosApp {
   handleDepositoRechazado(data) {
     try {
       console.log("❌ Datos de depósito rechazado:", data);
+
+      // Limpiar el estado de procesamiento
+      UI.processingPayment = null;
 
       // Mostrar pop-up de depósito rechazado
       UI.showDepositoRechazadoPopup(data);
