@@ -226,11 +226,16 @@ class CajeroWebSocket {
    * Confirmar pago (verificación de pago)
    */
   confirmarPagoCajero(transaccionId, notas = null) {
+    console.log("🔍 [WebSocket] confirmarPagoCajero llamado para transacción:", transaccionId);
+    console.log("🔍 [WebSocket] Estado conexión:", { isConnected: this.isConnected, isAuthenticated: this.isAuthenticated });
+    console.log("🔍 [WebSocket] Stack trace:", new Error().stack);
+    
     if (!this.isConnected || !this.isAuthenticated) {
       console.error("No hay conexión o no está autenticado");
       return;
     }
-    console.log("✅ Confirmando pago:", { transaccionId, notas });
+    
+    console.log("✅ [WebSocket] Enviando evento verificar-pago-cajero:", { transaccionId, accion: "confirmar", notas });
     this.socket.emit("verificar-pago-cajero", {
       transaccionId,
       accion: "confirmar",

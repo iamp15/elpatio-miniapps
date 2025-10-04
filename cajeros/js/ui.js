@@ -344,12 +344,16 @@ class UIManager {
    * Mostrar modal de detalles de transacción
    */
   showTransactionDetailsModal(modalHTML) {
+    console.log("🔍 [UI] Creando modal de detalles de transacción");
+    console.log("🔍 [UI] Stack trace de creación de modal:", new Error().stack);
+    
     const overlay = document.createElement("div");
     overlay.className = "modal-overlay";
     overlay.innerHTML = modalHTML;
     overlay.style.zIndex = UI_CONFIG.MODAL_Z_INDEX;
 
     document.body.appendChild(overlay);
+    console.log("🔍 [UI] Modal agregado al DOM");
 
     // Configurar evento de cierre
     const closeBtn = overlay.querySelector(".close-btn");
@@ -364,13 +368,15 @@ class UIManager {
     if (confirmBtn) {
       // Remover listeners anteriores si existen
       confirmBtn.removeEventListener("click", this.handleConfirmPaymentClick);
-      
+
       // Crear función con contexto
       this.handleConfirmPaymentClick = () => {
         const transaccionId = confirmBtn.getAttribute("data-transaction-id");
+        console.log("🔍 [UI] Botón confirmar clickeado para transacción:", transaccionId);
+        console.log("🔍 [UI] Stack trace del click:", new Error().stack);
         this.handleConfirmPayment(transaccionId);
       };
-      
+
       confirmBtn.addEventListener("click", this.handleConfirmPaymentClick);
     }
 
@@ -378,13 +384,13 @@ class UIManager {
     if (rejectBtn) {
       // Remover listeners anteriores si existen
       rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
-      
+
       // Crear función con contexto
       this.handleRejectPaymentClick = () => {
         const transaccionId = rejectBtn.getAttribute("data-transaction-id");
         this.handleRejectPayment(transaccionId);
       };
-      
+
       rejectBtn.addEventListener("click", this.handleRejectPaymentClick);
     }
 
@@ -407,12 +413,12 @@ class UIManager {
       if (confirmBtn && this.handleConfirmPaymentClick) {
         confirmBtn.removeEventListener("click", this.handleConfirmPaymentClick);
       }
-      
+
       const rejectBtn = overlay.querySelector(".reject-payment-btn");
       if (rejectBtn && this.handleRejectPaymentClick) {
         rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
       }
-      
+
       overlay.remove();
     }
   }
@@ -613,16 +619,19 @@ class UIManager {
    * Manejar confirmación de pago
    */
   handleConfirmPayment(transaccionId) {
-    console.log("✅ Confirmando pago para transacción:", transaccionId);
+    console.log("🔍 [UI] handleConfirmPayment llamado para transacción:", transaccionId);
+    console.log("🔍 [UI] Estado actual processingPayment:", this.processingPayment);
+    console.log("🔍 [UI] Stack trace:", new Error().stack);
 
     // Verificar si ya se está procesando esta transacción
     if (this.processingPayment === transaccionId) {
-      console.log("⚠️ Ya se está procesando esta transacción");
+      console.log("⚠️ [UI] Ya se está procesando esta transacción, ignorando");
       return;
     }
 
     // Marcar como procesando
     this.processingPayment = transaccionId;
+    console.log("🔍 [UI] Marcado como procesando:", this.processingPayment);
 
     // Cerrar el modal
     this.closeTransactionDetailsModal();
@@ -633,6 +642,7 @@ class UIManager {
       window.cajeroWebSocket.isConnected &&
       window.cajeroWebSocket.isAuthenticated
     ) {
+      console.log("🔍 [UI] Enviando confirmación via WebSocket");
       window.cajeroWebSocket.confirmarPagoCajero(transaccionId);
     } else {
       console.error("No hay conexión WebSocket disponible");
