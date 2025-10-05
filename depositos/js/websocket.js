@@ -74,6 +74,11 @@ class DepositoWebSocket {
    * Configurar manejadores de eventos
    */
   setupEventHandlers() {
+    // Log para todos los eventos que llegan
+    this.socket.onAny((eventName, ...args) => {
+      console.log(`🔍 [WebSocket] Evento recibido: ${eventName}`, args);
+    });
+
     this.socket.on("connect", () => {
       console.log("✅ Conectado al servidor WebSocket");
       console.log("📡 Socket ID:", this.socket.id);
@@ -163,16 +168,25 @@ class DepositoWebSocket {
     this.socket.on("deposito-completado", (data) => {
       console.log("🎉 [WebSocket] Evento deposito-completado recibido:", data);
       console.log("🎉 [WebSocket] data.target:", data.target);
-      console.log("🎉 [WebSocket] this.callbacks.onDepositoCompletado:", this.callbacks.onDepositoCompletado);
-      
+      console.log(
+        "🎉 [WebSocket] this.callbacks.onDepositoCompletado:",
+        this.callbacks.onDepositoCompletado
+      );
+
       // Filtrar por target: solo procesar si es para jugador
       if (data.target === "jugador") {
-        console.log("🎉 [WebSocket] Target es jugador, verificando callback...");
+        console.log(
+          "🎉 [WebSocket] Target es jugador, verificando callback..."
+        );
         if (this.callbacks.onDepositoCompletado) {
-          console.log("🎉 [WebSocket] Ejecutando callback onDepositoCompletado");
+          console.log(
+            "🎉 [WebSocket] Ejecutando callback onDepositoCompletado"
+          );
           this.callbacks.onDepositoCompletado(data);
         } else {
-          console.error("❌ [WebSocket] Callback onDepositoCompletado no está configurado");
+          console.error(
+            "❌ [WebSocket] Callback onDepositoCompletado no está configurado"
+          );
         }
       } else {
         console.log("🎉 [WebSocket] Target no es jugador, ignorando evento");

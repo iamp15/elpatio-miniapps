@@ -268,11 +268,15 @@ class DepositApp {
       this.loadUserBalance();
 
       // Mostrar confirmación final
-      window.visualLogger.info("🎉 [APP] Actualizando información final y mostrando pantalla...");
+      window.visualLogger.info(
+        "🎉 [APP] Actualizando información final y mostrando pantalla..."
+      );
       UI.updateFinalInfo(data);
       UI.showConfirmationScreen();
-      
-      window.visualLogger.success("🎉 [APP] Depósito completado procesado exitosamente");
+
+      window.visualLogger.success(
+        "🎉 [APP] Depósito completado procesado exitosamente"
+      );
     } catch (error) {
       window.visualLogger.error(
         `❌ [APP] Error manejando depósito completado: ${error.message}`
