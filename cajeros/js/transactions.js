@@ -79,7 +79,10 @@ class TransactionManager {
     const cajeroId = cajeroInfo?._id;
 
     console.log("🔍 Debug filtro - Cajero ID:", cajeroId);
-    console.log("🔍 Debug filtro - Total transacciones:", this.transactions.length);
+    console.log(
+      "🔍 Debug filtro - Total transacciones:",
+      this.transactions.length
+    );
 
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
@@ -89,19 +92,24 @@ class TransactionManager {
           break;
         case "en_proceso":
           // Solo mostrar las transacciones en proceso asignadas a este cajero
+          const transaccionCajeroId = transaccion.cajeroId?._id || transaccion.cajeroId;
+          const esDelCajero = String(transaccionCajeroId) === String(cajeroId);
+          
           console.log("🔍 Transacción en_proceso encontrada:", {
             transaccionId: transaccion._id,
-            transaccionCajeroId: transaccion.cajeroId,
+            transaccionCajeroId: transaccionCajeroId,
             cajeroLogueadoId: cajeroId,
-            esDelCajero: transaccion.cajeroId === cajeroId
+            esDelCajero: esDelCajero,
           });
-          if (transaccion.cajeroId === cajeroId) {
+          
+          if (esDelCajero) {
             this.filteredTransactions.en_proceso.push(transaccion);
           }
           break;
         case "completada":
           // Solo mostrar las transacciones completadas por este cajero
-          if (transaccion.cajeroId === cajeroId) {
+          const transaccionCajeroIdCompletada = transaccion.cajeroId?._id || transaccion.cajeroId;
+          if (String(transaccionCajeroIdCompletada) === String(cajeroId)) {
             this.filteredTransactions.completadas.push(transaccion);
           }
           break;
