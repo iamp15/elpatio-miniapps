@@ -474,29 +474,18 @@ class UIManager {
             </div>
           </div>
           
-          <div class="payment-info">
-            <h3>📱 Información de Pago Móvil</h3>
-            <div class="payment-details">
-              <div class="payment-item">
-                <strong>Banco:</strong> ${data.datosPago.banco}
-              </div>
-              <div class="payment-item">
-                <strong>Referencia:</strong> ${data.datosPago.referencia}
-              </div>
-              <div class="payment-item">
-                <strong>Teléfono:</strong> ${data.datosPago.telefono}
-              </div>
-            </div>
-          </div>
-          
           <div class="status-message">
             <p>🔍 <strong>Verificación requerida:</strong> Confirma en tu cuenta bancaria si el pago fue recibido correctamente.</p>
           </div>
         </div>
         
         <div class="modal-actions">
-          <button class="btn btn-success confirm-payment-btn" data-transaction-id="${data.transaccionId}">✅ Confirmar Pago</button>
-          <button class="btn btn-danger reject-payment-btn" data-transaction-id="${data.transaccionId}">❌ Rechazar Pago</button>
+          <button class="btn btn-success confirm-payment-btn" data-transaction-id="${
+            data.transaccionId
+          }">✅ Confirmar Pago</button>
+          <button class="btn btn-danger reject-payment-btn" data-transaction-id="${
+            data.transaccionId
+          }">❌ Rechazar Pago</button>
         </div>
       </div>
     `;
