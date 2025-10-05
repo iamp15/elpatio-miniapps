@@ -78,11 +78,7 @@ class TransactionManager {
     const cajeroInfo = window.CajerosApp?.getCajeroInfo();
     const cajeroId = cajeroInfo?._id;
 
-    console.log("🔍 Debug filtro - Cajero ID:", cajeroId);
-    console.log(
-      "🔍 Debug filtro - Total transacciones:",
-      this.transactions.length
-    );
+    // Debug solo para completadas
 
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
@@ -94,16 +90,7 @@ class TransactionManager {
           // Solo mostrar las transacciones en proceso asignadas a este cajero
           const transaccionCajeroId =
             transaccion.cajeroId?._id || transaccion.cajeroId;
-          const esDelCajero = String(transaccionCajeroId) === String(cajeroId);
-
-          console.log("🔍 Transacción en_proceso encontrada:", {
-            transaccionId: transaccion._id,
-            transaccionCajeroId: transaccionCajeroId,
-            cajeroLogueadoId: cajeroId,
-            esDelCajero: esDelCajero,
-          });
-
-          if (esDelCajero) {
+          if (String(transaccionCajeroId) === String(cajeroId)) {
             this.filteredTransactions.en_proceso.push(transaccion);
           }
           break;
@@ -111,15 +98,16 @@ class TransactionManager {
           // Solo mostrar las transacciones completadas por este cajero
           const transaccionCajeroIdCompletada =
             transaccion.cajeroId?._id || transaccion.cajeroId;
-          const esDelCajeroCompletada = String(transaccionCajeroIdCompletada) === String(cajeroId);
-          
+          const esDelCajeroCompletada =
+            String(transaccionCajeroIdCompletada) === String(cajeroId);
+
           console.log("🔍 Transacción completada encontrada:", {
             transaccionId: transaccion._id,
             transaccionCajeroId: transaccionCajeroIdCompletada,
             cajeroLogueadoId: cajeroId,
             esDelCajero: esDelCajeroCompletada,
           });
-          
+
           if (esDelCajeroCompletada) {
             this.filteredTransactions.completadas.push(transaccion);
           }
