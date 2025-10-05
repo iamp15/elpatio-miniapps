@@ -776,3 +776,20 @@ body {
 .logs-container::-webkit-scrollbar-thumb:hover {
   background: #1a6bb3;
 }
+
+/* Mensaje de finalización */
+.completion-message {
+  text-align: center;
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(36, 129, 204, 0.1);
+  border-radius: 8px;
+  border-left: 4px solid #2481cc;
+}
+
+.completion-message p {
+  color: var(--tg-theme-text-color, #000000);
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 0;
+}
