@@ -831,6 +831,16 @@ body {
   border-radius: 4px;
 }
 
+.reference-code {
+  font-family: monospace;
+  background: var(--patio-amarillo-suave);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  color: var(--patio-marron-madera);
+  border: 1px solid var(--patio-amarillo-sol);
+}
+
 .verificar-pago-modal .verification-message {
   background: #e3f2fd;
   border-left: 4px solid #2196f3;

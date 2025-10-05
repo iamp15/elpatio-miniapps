@@ -436,49 +436,68 @@ class UIManager {
    */
   showVerificarPagoPopup(data) {
     const modalHTML = `
-      <div class="verificar-pago-modal">
+      <div class="transaction-details-modal">
         <div class="modal-header">
           <h2>🔍 Verificar Pago</h2>
-          <button class="close-btn">&times;</button>
+          <button onclick="closeTransactionDetails()" class="close-btn">&times;</button>
         </div>
-        <div class="modal-content">
+        
+        <div class="transaction-info">
+          <div class="transaction-header deposito">
+            <div class="transaction-type">
+              💰 Depósito
+            </div>
+            <div class="transaction-amount">
+              ${(data.monto / 100).toFixed(2)} Bs
+            </div>
+          </div>
+          
+          <div class="details-grid">
+            <div class="detail-item">
+              <strong>Jugador:</strong>
+              <span>${data.jugador.nombre}</span>
+            </div>
+            
+            <div class="detail-item">
+              <strong>Banco:</strong>
+              <span>${data.datosPago.banco}</span>
+            </div>
+            
+            <div class="detail-item">
+              <strong>Referencia:</strong>
+              <span class="reference-code">${data.datosPago.referencia}</span>
+            </div>
+            
+            <div class="detail-item">
+              <strong>Teléfono:</strong>
+              <span>${data.datosPago.telefono}</span>
+            </div>
+          </div>
+          
           <div class="payment-info">
-            <div class="info-row">
-              <span class="label">Jugador:</span>
-              <span class="value">${data.jugador.nombre}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Monto:</span>
-              <span class="value amount">${(data.monto / 100).toFixed(
-                2
-              )} Bs</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Banco:</span>
-              <span class="value">${data.datosPago.banco}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Referencia:</span>
-              <span class="value reference">${data.datosPago.referencia}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Teléfono:</span>
-              <span class="value">${data.datosPago.telefono}</span>
+            <h3>📱 Información de Pago Móvil</h3>
+            <div class="payment-details">
+              <div class="payment-item">
+                <strong>Banco:</strong> ${data.datosPago.banco}
+              </div>
+              <div class="payment-item">
+                <strong>Referencia:</strong> ${data.datosPago.referencia}
+              </div>
+              <div class="payment-item">
+                <strong>Teléfono:</strong> ${data.datosPago.telefono}
+              </div>
             </div>
           </div>
-          <div class="verification-message">
-            <p>📱 Por favor verifica en tu cuenta bancaria si el pago fue recibido correctamente.</p>
+          
+          <div class="status-message">
+            <p>🔍 <strong>Verificación requerida:</strong> Confirma en tu cuenta bancaria si el pago fue recibido correctamente.</p>
           </div>
         </div>
-          <div class="modal-actions">
-            <button class="btn btn-success confirm-payment-btn" data-transaction-id="${
-              data.transaccionId
-            }">✅ Confirmar Pago</button>
-            <button class="btn btn-danger reject-payment-btn" data-transaction-id="${
-              data.transaccionId
-            }">❌ Rechazar Pago</button>
-            <button class="btn btn-secondary close-btn">Cerrar</button>
-          </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-success confirm-payment-btn" data-transaction-id="${data.transaccionId}">✅ Confirmar Pago</button>
+          <button class="btn btn-danger reject-payment-btn" data-transaction-id="${data.transaccionId}">❌ Rechazar Pago</button>
+        </div>
       </div>
     `;
 
@@ -586,12 +605,16 @@ class UIManager {
     }
 
     try {
-      const confirmed = await window.notificationManager.confirm(title, message, {
-        confirmText,
-        cancelText,
-        type,
-        icon
-      });
+      const confirmed = await window.notificationManager.confirm(
+        title,
+        message,
+        {
+          confirmText,
+          cancelText,
+          type,
+          icon,
+        }
+      );
 
       if (confirmed) {
         callback();
