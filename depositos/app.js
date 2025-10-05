@@ -246,8 +246,21 @@ class DepositApp {
         "💳 Pago confirmado, esperando verificación del cajero"
       );
 
-      // Actualizar información de pago registrado
-      UI.updateRegisteredInfo(data);
+      // Usar los datos del pago guardados
+      if (this.paymentData) {
+        // Actualizar información de pago registrado
+        UI.updateRegisteredInfo(this.paymentData);
+      } else if (this.currentTransaction) {
+        // Fallback: usar la transacción actual
+        const paymentData = {
+          monto: this.currentTransaction.monto,
+          infoPago: {
+            fechaPago: new Date(),
+            numeroReferencia: "-",
+          }
+        };
+        UI.updateRegisteredInfo(paymentData);
+      }
       
       // Mostrar pantalla de pago registrado
       UI.showPaymentRegisteredScreen();
@@ -557,6 +570,9 @@ class DepositApp {
         },
         estado: "en_proceso",
       };
+
+      // Guardar los datos del pago para usar en la pantalla de pago registrado
+      this.paymentData = finalTransactionData;
 
       window.visualLogger.info(
         "🔍 [DEBUG] finalTransactionData:",

@@ -371,7 +371,7 @@ class UIManager {
     }
     if (this.elements.registeredReference) {
       // Mostrar la referencia del pago del usuario
-      this.elements.registeredReference.textContent = 
+      this.elements.registeredReference.textContent =
         transaction.infoPago?.numeroReferencia || "-";
     }
     if (this.elements.registeredStatus) {
