@@ -564,40 +564,86 @@ class UIManager {
   }
 
   /**
-   * Mostrar alerta con confirmación
+   * Mostrar modal de confirmación
    */
-  showConfirmDialog(message, callback) {
-    if (confirm(message)) {
-      callback();
+  async showConfirmDialog(message, callback) {
+    // Detectar tipo de confirmación basado en el mensaje
+    let title = "Confirmar acción";
+    let icon = "❓";
+    let type = "confirm";
+    let confirmText = "Confirmar";
+    let cancelText = "Cancelar";
+
+    if (message.includes("aceptar") || message.includes("asignar")) {
+      title = "Aceptar transacción";
+      icon = "✅";
+      confirmText = "Aceptar";
+    } else if (message.includes("rechazar") || message.includes("eliminar")) {
+      title = "Confirmar acción";
+      icon = "⚠️";
+      type = "danger";
+      confirmText = "Sí, continuar";
+    }
+
+    try {
+      const confirmed = await window.notificationManager.confirm(title, message, {
+        confirmText,
+        cancelText,
+        type,
+        icon
+      });
+
+      if (confirmed) {
+        callback();
+      }
+    } catch (error) {
+      console.error("Error en modal de confirmación:", error);
+      // Fallback a confirm nativo si hay error
+      if (confirm(message)) {
+        callback();
+      }
     }
   }
 
   /**
    * Mostrar notificación toast
    */
-  showAlert(message, type = 'info') {
+  showAlert(message, type = "info") {
     // Detectar tipo automáticamente basado en el mensaje
-    if (message.includes('✅') || message.includes('exitoso') || message.includes('correctamente')) {
-      type = 'success';
-    } else if (message.includes('❌') || message.includes('Error') || message.includes('error')) {
-      type = 'error';
-    } else if (message.includes('⚠️') || message.includes('advertencia')) {
-      type = 'warning';
+    if (
+      message.includes("✅") ||
+      message.includes("exitoso") ||
+      message.includes("correctamente")
+    ) {
+      type = "success";
+    } else if (
+      message.includes("❌") ||
+      message.includes("Error") ||
+      message.includes("error")
+    ) {
+      type = "error";
+    } else if (message.includes("⚠️") || message.includes("advertencia")) {
+      type = "warning";
     }
 
     // Limpiar emojis del mensaje para el título
-    const cleanMessage = message.replace(/[✅❌⚠️ℹ️]/g, '').trim();
-    
+    const cleanMessage = message.replace(/[✅❌⚠️ℹ️]/g, "").trim();
+
     // Determinar título y mensaje
     let title, msg;
-    if (cleanMessage.includes(':')) {
-      [title, msg] = cleanMessage.split(':', 2);
+    if (cleanMessage.includes(":")) {
+      [title, msg] = cleanMessage.split(":", 2);
       title = title.trim();
       msg = msg.trim();
     } else {
-      title = type === 'success' ? 'Éxito' : 
-              type === 'error' ? 'Error' : 
-              type === 'warning' ? 'Advertencia' : 'Información';
+      title =
+        type === "success"
+          ? "Éxito"
+          : type === "error"
+          ? "Error"
+          : type === "warning"
+          ? "Advertencia"
+          : "Información";
       msg = cleanMessage;
     }
 
