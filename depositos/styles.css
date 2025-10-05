@@ -58,7 +58,7 @@ body {
 .screen {
   display: none;
   flex-direction: column;
-  min-height: 100vh;
+  min-height: auto;
   padding: 20px;
   animation: fadeIn 0.3s ease-in-out;
 }
@@ -125,7 +125,6 @@ body {
 
 /* Formularios */
 .form-container {
-  flex: 1;
   max-width: 400px;
   margin: 0 auto;
   width: 100%;
@@ -248,7 +247,6 @@ body {
 .transaction-info,
 .bank-info,
 .confirmation-info {
-  flex: 1;
   max-width: 400px;
   margin: 0 auto;
   width: 100%;
@@ -590,7 +588,6 @@ body {
 /* Error screen */
 .error-info {
   text-align: center;
-  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
