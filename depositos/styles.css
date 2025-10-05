@@ -781,15 +781,33 @@ body {
 .completion-message {
   text-align: center;
   margin: 20px 0;
-  padding: 15px;
-  background: rgba(36, 129, 204, 0.1);
-  border-radius: 8px;
-  border-left: 4px solid #2481cc;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(36, 129, 204, 0.1), rgba(40, 167, 69, 0.1));
+  border-radius: 12px;
+  border-left: 4px solid #28a745;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  animation: celebration 2s ease-in-out;
 }
 
 .completion-message p {
   color: var(--tg-theme-text-color, #000000);
-  font-size: 16px;
-  line-height: 1.5;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.6;
   margin: 0;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes celebration {
+  0% {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
