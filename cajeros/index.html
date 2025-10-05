@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Patio - Portal de Cajeros</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Pantalla de Login -->
+      <div id="login-screen" class="screen active">
+        <div class="container">
+          <div class="header">
+            <h1>🏦 Portal de Cajeros</h1>
+            <p>El Patio - Sistema de Gestión</p>
+          </div>
+
+          <form id="login-form" class="form">
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="tu@email.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="password">Contraseña:</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                placeholder="Tu contraseña"
+              />
+            </div>
+
+            <button type="submit" id="login-btn" class="btn btn-primary">
+              <span id="login-text">Iniciar Sesión</span>
+              <span id="login-loading" class="loading" style="display: none"
+                >Cargando...</span
+              >
+            </button>
+          </form>
+
+          <div
+            id="error-message"
+            class="error-message"
+            style="display: none"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Dashboard de Transacciones -->
+      <div id="dashboard-screen" class="screen">
+        <div class="container">
+          <div class="header">
+            <h1>🏦 Portal de Cajeros</h1>
+            <p>Bienvenido, <span id="cajero-name">-</span></p>
+          </div>
+
+          <div class="dashboard-content">
+            <!-- Información del cajero -->
+            <div class="cajero-info-card">
+              <h3>👤 Información del Cajero</h3>
+              <div class="info-grid">
+                <div>
+                  <strong>Email:</strong>
+                  <span id="cajero-email-display">-</span>
+                </div>
+                <div>
+                  <strong>Banco:</strong> <span id="cajero-banco">-</span>
+                </div>
+                <div>
+                  <strong>Cédula:</strong> <span id="cajero-cedula">-</span>
+                </div>
+                <div>
+                  <strong>Teléfono Pago Móvil:</strong>
+                  <span id="cajero-telefono-pago">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sección de transacciones con pestañas -->
+            <div class="transactions-section">
+              <div class="section-header">
+                <h3>📋 Gestión de Solicitudes</h3>
+                <button id="refresh-btn" class="btn btn-small">
+                  🔄 Actualizar
+                </button>
+              </div>
+
+              <!-- Sistema de pestañas -->
+              <div class="tabs-container">
+                <div class="tabs-header">
+                  <button class="tab-btn active" data-tab="pendientes">
+                    Pendiente
+                    <span class="tab-count" id="count-pendientes">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="en_proceso">
+                    En proceso
+                    <span class="tab-count" id="count-en_proceso">0</span>
+                  </button>
+                  <button class="tab-btn" data-tab="completadas">
+                    Completadas
+                    <span class="tab-count" id="count-completadas">0</span>
+                  </button>
+                </div>
+
+                <!-- Contenido de pestañas -->
+                <div class="tab-content">
+                  <!-- Pestaña Pendientes -->
+                  <div class="tab-panel active" id="tab-pendientes">
+                    <!-- Estado de carga -->
+                    <div
+                      id="loading-transactions"
+                      class="loading-state"
+                      style="display: none"
+                    >
+                      <div class="spinner"></div>
+                      <p>Cargando solicitudes...</p>
+                    </div>
+
+                    <!-- Lista de transacciones pendientes -->
+                    <div
+                      id="transactions-list-pendientes"
+                      class="transactions-list"
+                    >
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones pendientes -->
+                    <div
+                      id="no-transactions-pendientes"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">📭</div>
+                      <h4>No hay solicitudes pendientes</h4>
+                      <p>
+                        Todas las solicitudes están procesadas o no hay nuevas
+                        solicitudes.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Pestaña En Proceso -->
+                  <div class="tab-panel" id="tab-en_proceso">
+                    <!-- Lista de transacciones en proceso -->
+                    <div
+                      id="transactions-list-en_proceso"
+                      class="transactions-list"
+                    >
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones en proceso -->
+                    <div
+                      id="no-transactions-en_proceso"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">⏳</div>
+                      <h4>No hay transacciones en proceso</h4>
+                      <p>No tienes transacciones asignadas en este momento.</p>
+                    </div>
+                  </div>
+
+                  <!-- Pestaña Completadas -->
+                  <div class="tab-panel" id="tab-completadas">
+                    <!-- Lista de transacciones completadas -->
+                    <div
+                      id="transactions-list-completadas"
+                      class="transactions-list"
+                    >
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones completadas -->
+                    <div
+                      id="no-transactions-completadas"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">🎉</div>
+                      <h4>No hay transacciones completadas</h4>
+                      <p>Aún no has completado ninguna transacción.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Botones de acción -->
+            <div class="action-buttons">
+              <button id="logout-btn" class="btn btn-secondary">
+                🚪 Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/websocket.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

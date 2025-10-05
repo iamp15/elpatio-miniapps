@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Patio - Mini Apps</title>
+    <style>
+      /* Paleta de colores "El Patio" */
+      :root {
+        /* Colores principales del patio */
+        --patio-verde-pasto: #4caf50;
+        --patio-verde-pasto-oscuro: #388e3c;
+        --patio-rojo-ladrillo: #e57373;
+        --patio-rojo-ladrillo-oscuro: #d32f2f;
+        --patio-marron-madera: #8d6e63;
+        --patio-marron-madera-claro: #a1887f;
+
+        /* Colores de acento */
+        --patio-amarillo-sol: #ffc107;
+        --patio-azul-cielo: #2196f3;
+        --patio-gris-piedra: #9e9e9e;
+        --patio-blanco-nube: #fafafa;
+
+        /* Variantes para estados */
+        --patio-verde-suave: rgba(76, 175, 80, 0.1);
+        --patio-rojo-suave: rgba(229, 115, 115, 0.1);
+        --patio-amarillo-suave: rgba(255, 193, 7, 0.1);
+        --patio-azul-suave: rgba(33, 150, 243, 0.1);
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(
+          135deg,
+          var(--patio-verde-pasto) 0%,
+          var(--patio-azul-cielo) 100%
+        );
+        min-height: 100vh;
+      }
+      .container {
+        background: var(--patio-blanco-nube);
+        padding: 40px;
+        border-radius: 15px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      h1 {
+        color: var(--patio-marron-madera);
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .miniapp-list {
+        list-style: none;
+        padding: 0;
+      }
+      .miniapp-list li {
+        margin: 15px 0;
+      }
+      .miniapp-list a {
+        display: block;
+        padding: 15px 20px;
+        background: var(--patio-verde-pasto);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        border: 2px solid transparent;
+      }
+      .miniapp-list a:hover {
+        background: var(--patio-verde-pasto-oscuro);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        border-color: var(--patio-amarillo-sol);
+      }
+      .coming-soon {
+        background: var(--patio-gris-piedra) !important;
+        cursor: not-allowed;
+        box-shadow: 0 4px 15px rgba(158, 158, 158, 0.3) !important;
+      }
+      .coming-soon:hover {
+        background: var(--patio-marron-madera) !important;
+        transform: none !important;
+        box-shadow: 0 4px 15px rgba(158, 158, 158, 0.3) !important;
+        border-color: transparent !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏠 El Patio - Mini Apps</h1>
+      <p>Selecciona una Mini App para continuar:</p>
+
+      <ul class="miniapp-list">
+        <li>
+          <a href="/depositos/">💳 Depósitos</a>
+        </li>
+        <li>
+          <a href="/cajeros/">🏦 Portal de Cajeros</a>
+        </li>
+        <li>
+          <a href="/retiros/" class="coming-soon">💸 Retiros (Próximamente)</a>
+        </li>
+        <li>
+          <a href="/salas/" class="coming-soon">🎮 Salas (Próximamente)</a>
+        </li>
+        <li>
+          <a href="/configuracion/" class="coming-soon"
+            >⚙️ Configuración (Próximamente)</a
+          >
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1531 @@
+// Configuración de la Mini App
+// Actualizado: 2024-01-24 - Integración con Railway backend
+class DepositApp {
+  constructor() {
+    this.tg = window.Telegram.WebApp;
+    this.currentTransaction = null;
+    this.userData = null;
+    // Configuración del backend basada en el ambiente
+    this.backendUrl = this.getBackendUrl();
+    // Estado de logs visuales (inicialmente ocultos)
+    this.logsVisibles = false;
+
+    this.init();
+  }
+
+  // Obtener URL del backend basada en el ambiente
+  getBackendUrl() {
+    // En desarrollo local
+    if (
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ) {
+      return "http://localhost:3001/api";
+    }
+
+    // En Vercel (desarrollo), usar Railway backend
+    if (window.location.hostname.includes("vercel.app")) {
+      // URL del backend en Railway (actualizar con tu URL real)
+      return "https://elpatio-backend-production.up.railway.app/api";
+    }
+
+    // En producción real
+    return "https://elpatio-backend-production.up.railway.app/api";
+  }
+
+  // Inicialización de la app
+  init() {
+    console.log("🚀 Inicializando Mini App de Depósitos");
+
+    // Configurar Telegram Web App
+    this.tg.ready();
+    this.tg.expand();
+
+    // Crear botón toggle de logs
+    this.crearBotonToggleLogs();
+
+    // Obtener datos del usuario
+    this.userData = this.tg.initDataUnsafe?.user;
+
+    if (!this.userData) {
+      this.showError(
+        "Error de autenticación",
+        "No se pudieron obtener los datos del usuario"
+      );
+      return;
+    }
+
+    console.log("👤 Usuario:", this.userData);
+
+    // Configurar tema
+    this.setupTheme();
+
+    // Configurar eventos
+    this.setupEventListeners();
+
+    // Configurar eventos de confirmación de pago
+    this.setupPaymentConfirmationEvents();
+
+    // Cargar saldo inicial
+    this.loadUserBalance();
+
+    // Mostrar pantalla principal
+    this.showScreen("main-screen");
+  }
+
+  // Configurar tema de Telegram
+  setupTheme() {
+    const theme = this.tg.colorScheme;
+    console.log("🎨 Tema:", theme);
+
+    // Aplicar colores del tema
+    document.documentElement.style.setProperty(
+      "--tg-theme-bg-color",
+      this.tg.themeParams.bg_color || "#ffffff"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-text-color",
+      this.tg.themeParams.text_color || "#000000"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-hint-color",
+      this.tg.themeParams.hint_color || "#999999"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-link-color",
+      this.tg.themeParams.link_color || "#2481cc"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-button-color",
+      this.tg.themeParams.button_color || "#2481cc"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-button-text-color",
+      this.tg.themeParams.button_text_color || "#ffffff"
+    );
+    document.documentElement.style.setProperty(
+      "--tg-theme-secondary-bg-color",
+      this.tg.themeParams.secondary_bg_color || "#f1f1f1"
+    );
+  }
+
+  // Configurar event listeners
+  setupEventListeners() {
+    // Formulario de solicitud de depósito
+    document.getElementById("deposit-form").addEventListener("submit", (e) => {
+      e.preventDefault();
+      this.handleDepositRequest();
+    });
+
+    // Cálculo automático de centavos
+    document.getElementById("amount").addEventListener("input", (e) => {
+      this.calculateCents(e.target.value);
+    });
+
+    // Botón "Ya realicé el pago"
+    document
+      .getElementById("payment-done-btn")
+      .addEventListener("click", () => {
+        this.showScreen("payment-confirmation-screen");
+      });
+
+    // Formulario de confirmación de pago
+    document
+      .getElementById("payment-confirmation-form")
+      .addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handlePaymentConfirmation();
+      });
+
+    // Botón volver
+    document
+      .getElementById("back-to-bank-btn")
+      .addEventListener("click", () => {
+        this.showScreen("bank-info-screen");
+      });
+
+    // Botón cerrar app
+    document.getElementById("close-app-btn").addEventListener("click", () => {
+      this.tg.close();
+    });
+
+    // Botones de error
+    document.getElementById("retry-btn").addEventListener("click", () => {
+      this.showScreen("main-screen");
+    });
+
+    document.getElementById("close-error-btn").addEventListener("click", () => {
+      this.tg.close();
+    });
+
+    // Configurar fecha actual por defecto
+    document.getElementById("payment-date").value = new Date()
+      .toISOString()
+      .split("T")[0];
+  }
+
+  // Configurar eventos de confirmación de pago
+  setupPaymentConfirmationEvents() {
+    // El botón "Ya realicé el pago" ya está configurado en setupEventListeners
+    // Aquí podemos agregar configuraciones adicionales si es necesario
+    console.log("✅ Eventos de confirmación de pago configurados");
+  }
+
+  // Mostrar pantalla específica
+  showScreen(screenId) {
+    // Ocultar todas las pantallas
+    document.querySelectorAll(".screen").forEach((screen) => {
+      screen.classList.remove("active");
+    });
+
+    // Mostrar pantalla seleccionada
+    const screen = document.getElementById(screenId);
+    if (screen) {
+      screen.classList.add("active");
+      console.log(`📱 Mostrando pantalla: ${screenId}`);
+    }
+  }
+
+  // Cargar saldo del usuario
+  async loadUserBalance() {
+    try {
+      // Mostrar estado de carga
+      document.getElementById("current-balance").textContent = "Cargando...";
+
+      // Obtener saldo real del backend
+      const balance = await this.getUserBalance();
+
+      // Formatear saldo con separadores de miles
+      const formattedBalance = this.formatCurrency(balance);
+      document.getElementById(
+        "current-balance"
+      ).textContent = `${formattedBalance} Bs`;
+
+      console.log("✅ Saldo cargado exitosamente:", formattedBalance, "Bs");
+    } catch (error) {
+      console.error("❌ Error cargando saldo:", error);
+
+      // Mostrar mensaje de error más específico
+      let errorMessage = "No disponible temporalmente";
+
+      if (error.message.includes("404")) {
+        errorMessage = "Usuario no encontrado";
+      } else if (error.message.includes("Backend no disponible")) {
+        errorMessage = "Backend no disponible";
+      } else if (error.message.includes("fetch")) {
+        errorMessage = "Error de conexión";
+      }
+
+      document.getElementById("current-balance").textContent = errorMessage;
+
+      // Mostrar mensaje de error en la consola para debugging
+      console.warn("⚠️ No se pudo cargar el saldo:", error.message);
+    }
+  }
+
+  // Obtener saldo del usuario desde el backend
+  async getUserBalance() {
+    try {
+      console.log("🔍 Iniciando obtención de saldo...");
+      console.log("🔗 Backend URL:", this.backendUrl);
+      console.log("👤 Usuario ID:", this.userData?.id);
+
+      // Si no hay backend disponible, lanzar error
+      if (!this.backendUrl) {
+        console.error("❌ Backend no disponible");
+        throw new Error("Backend no disponible");
+      }
+
+      // Obtener el ID del jugador desde los datos de Telegram
+      const telegramId = this.userData.id.toString();
+      const fullUrl = `${this.backendUrl}/webapp/jugadores/${telegramId}/saldo`;
+
+      console.log("📡 Haciendo petición a:", fullUrl);
+
+      // Hacer llamada al endpoint del backend con autenticación de Telegram
+      const response = await fetch(fullUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Telegram-ID": telegramId,
+        },
+      });
+
+      console.log(
+        "📊 Respuesta recibida:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.message ||
+            `Error del servidor: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("📊 Datos recibidos:", data);
+
+      if (data.success && data.saldo !== undefined) {
+        // Convertir centavos a bolívares
+        const balanceInBs = data.saldo / 100;
+        console.log(
+          "✅ Saldo obtenido:",
+          data.saldo,
+          "centavos =",
+          balanceInBs,
+          "Bs"
+        );
+        return balanceInBs;
+      } else {
+        throw new Error(data.message || "Error obteniendo saldo");
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo saldo:", error.message);
+      // Lanzar el error para que se muestre el mensaje de error
+      throw error;
+    }
+  }
+
+  // Formatear moneda venezolana
+  formatCurrency(amount) {
+    return new Intl.NumberFormat("es-VE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  }
+
+  // Calcular centavos automáticamente
+  calculateCents(amount) {
+    const cents = Math.round(parseFloat(amount || 0) * 100);
+    document.getElementById("amount-cents").value = cents;
+  }
+
+  // Manejar solicitud de depósito
+  async handleDepositRequest() {
+    const amount = parseFloat(document.getElementById("amount").value);
+    const amountCents = parseInt(document.getElementById("amount-cents").value);
+
+    if (!amount || amount <= 0) {
+      this.showError("Monto inválido", "Por favor ingresa un monto válido");
+      return;
+    }
+
+    try {
+      this.showLoading("Creando solicitud de depósito...");
+
+      // Crear solicitud de depósito
+      const transaction = await this.createDepositRequest(amountCents);
+
+      this.currentTransaction = transaction;
+
+      // Mostrar mensaje de confirmación exitosa
+      this.showSuccessScreen(transaction);
+    } catch (error) {
+      console.error("Error creando solicitud:", error);
+      this.showError("Error en la solicitud", error.message);
+    }
+  }
+
+  // Crear solicitud de depósito
+  async createDepositRequest(amountCents) {
+    try {
+      console.log("🚀 Iniciando creación de solicitud de depósito...");
+      console.log("💰 Monto en centavos:", amountCents);
+      console.log("👤 Usuario:", this.userData);
+
+      // Obtener token de autenticación
+      console.log("🔐 Obteniendo token de autenticación...");
+      const token = await this.getBotToken();
+
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error(
+          "No se pudo obtener un token válido para la autenticación"
+        );
+      }
+
+      console.log("✅ Token obtenido:", token.substring(0, 20) + "...");
+
+      // Obtener el jugador existente
+      console.log("👥 Obteniendo jugador existente...");
+      const jugador = await this.getJugador(token);
+
+      if (!jugador) {
+        throw new Error(
+          "No se pudo obtener el jugador. Verifica que el usuario esté registrado."
+        );
+      }
+
+      if (!jugador._id) {
+        throw new Error("El jugador no tiene un ID válido");
+      }
+
+      console.log("✅ Jugador obtenido:", {
+        id: jugador._id,
+        username: jugador.username,
+        saldo: jugador.saldo,
+      });
+
+      // Crear la transacción de depósito
+      const payload = {
+        jugadorId: jugador._id,
+        telegramId: this.userData.id.toString(),
+        tipo: "credito",
+        categoria: "deposito",
+        monto: amountCents,
+        descripcion: `Depósito de ${(amountCents / 100).toLocaleString(
+          "es-VE"
+        )} Bs`,
+        saldoAnterior: jugador.saldo || 0,
+        referencia: `DEP_${this.userData.id}_${Date.now()}`,
+        estado: "pendiente",
+        infoPago: {
+          metodoPago: "pago_movil",
+        },
+        creadoPor: jugador._id,
+      };
+
+      console.log("📝 Creando transacción de depósito:", payload);
+
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/solicitud`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(
+        "📡 Respuesta del servidor:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Error del servidor:", errorData);
+        throw new Error(
+          errorData.mensaje ||
+            `Error del servidor: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const transactionData = await response.json();
+      console.log("✅ Transacción creada exitosamente:", transactionData);
+
+      return transactionData.transaccion || transactionData;
+    } catch (error) {
+      console.error("❌ Error creando transacción:", error);
+      // Agregar información adicional al error para debugging
+      const errorMessage =
+        error.message +
+        `\n\nDetalles técnicos:\n- Usuario ID: ${
+          this.userData?.id
+        }\n- Backend URL: ${
+          this.backendUrl
+        }\n- Timestamp: ${new Date().toISOString()}`;
+      throw new Error(errorMessage);
+    }
+  }
+
+  // Obtener jugador existente
+  async getJugador(token) {
+    try {
+      console.log("🔍 Obteniendo jugador existente...");
+      console.log("👤 Telegram ID:", this.userData.id);
+
+      // Obtener el jugador existente usando el endpoint correcto
+      const response = await fetch(
+        `${this.backendUrl}/jugadores/${this.userData.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log(
+        "📡 Respuesta del servidor:",
+        response.status,
+        response.statusText
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("❌ Error obteniendo jugador:", errorData);
+
+        if (response.status === 404) {
+          throw new Error(
+            "Jugador no encontrado. Verifica que el usuario esté registrado en el sistema."
+          );
+        } else if (response.status === 401 || response.status === 403) {
+          throw new Error("Error de autenticación. Token inválido o expirado.");
+        } else {
+          throw new Error(
+            errorData.mensaje ||
+              `Error del servidor: ${response.status} - ${response.statusText}`
+          );
+        }
+      }
+
+      const jugadorData = await response.json();
+      console.log("✅ Jugador obtenido:", jugadorData);
+
+      // El endpoint devuelve directamente el objeto jugador, no envuelto
+      if (jugadorData && jugadorData._id) {
+        return jugadorData;
+      } else {
+        throw new Error(
+          "La respuesta del servidor no contiene un jugador válido"
+        );
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo jugador:", error);
+      throw error;
+    }
+  }
+
+  // Obtener token del bot
+  async getBotToken() {
+    // Credenciales del bot (en producción estas vendrían del build)
+    const BOT_EMAIL = "bot@elpatio.games";
+    const BOT_PASSWORD = "BotCl4ve#Sup3rS3gur4!2025";
+
+    try {
+      console.log("🔐 Obteniendo token del bot...");
+
+      const response = await fetch(`${this.backendUrl}/admin/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: BOT_EMAIL,
+          password: BOT_PASSWORD,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Token del bot obtenido exitosamente");
+        return data.token;
+      } else {
+        console.error(
+          "❌ Error en login del bot:",
+          response.status,
+          response.statusText
+        );
+
+        // Fallback: usar token de cajero si el bot no está disponible
+        console.log("🔄 Intentando fallback con cajero...");
+        const fallbackResponse = await fetch(
+          `${this.backendUrl}/cajeros/login`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: "luis@ejemplo.com",
+              password: "clave123",
+            }),
+          }
+        );
+
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json();
+          console.log("✅ Token de cajero obtenido como fallback");
+          return fallbackData.token;
+        }
+      }
+    } catch (error) {
+      console.error("❌ Error obteniendo token:", error);
+    }
+
+    // Si todo falla, usar token placeholder
+    console.warn("⚠️ Usando token placeholder");
+    return "bot_token_placeholder";
+  }
+
+  // Formatear referencia para mostrar solo últimos 6 dígitos
+  formatReference(referencia) {
+    if (!referencia) return "N/A";
+    if (referencia.length <= 6) return referencia;
+    return "..." + referencia.slice(-6);
+  }
+
+  // Método para verificar estado de transacción (usando X-Telegram-ID)
+  async verificarEstadoTransaccion(transaccionId) {
+    try {
+      const telegramId = this.userData.id.toString();
+
+      // LOG TEMPORAL: Mostrar en pantalla
+      this.mostrarLogTemporal(
+        `🔍 Verificando estado de transacción: ${transaccionId}`
+      );
+      this.mostrarLogTemporal(`👤 Telegram ID: ${telegramId}`);
+      this.mostrarLogTemporal(
+        `🔗 URL: ${this.backendUrl}/transacciones/${transaccionId}/estado`
+      );
+
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transaccionId}/estado`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Telegram-ID": telegramId,
+          },
+        }
+      );
+
+      this.mostrarLogTemporal(
+        `📡 Respuesta HTTP: ${response.status} ${response.statusText}`
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        this.mostrarLogTemporal(
+          `✅ Datos recibidos: ${JSON.stringify(data, null, 2)}`
+        );
+        return data;
+      } else {
+        const errorText = await response.text();
+        this.mostrarLogTemporal(`❌ Error HTTP: ${errorText}`);
+        return null;
+      }
+    } catch (error) {
+      this.mostrarLogTemporal(`💥 Error de conexión: ${error.message}`);
+      console.error("Error verificando estado:", error);
+      return null;
+    }
+  }
+
+  // Iniciar polling cuando se crea la transacción
+  iniciarPollingEstado(transaccionId) {
+    this.mostrarLogTemporal(
+      `🔄 Iniciando polling para transacción: ${transaccionId}`
+    );
+
+    const intervalId = setInterval(async () => {
+      this.mostrarLogTemporal(
+        `⏰ Verificando estado... (${new Date().toLocaleTimeString()})`
+      );
+      const estado = await this.verificarEstadoTransaccion(transaccionId);
+
+      if (estado) {
+        this.mostrarLogTemporal(`📊 Estado actual: ${estado.estado}`);
+        this.mostrarLogTemporal(`👤 Cajero asignado: ${estado.cajeroAsignado}`);
+
+        if (estado.estado === "en_proceso" && estado.cajeroAsignado) {
+          // ¡Cajero asignado! Mostrar datos bancarios
+          this.mostrarLogTemporal(
+            `✅ Cajero asignado, mostrando datos bancarios`
+          );
+          this.mostrarDatosCajero(estado);
+          clearInterval(intervalId);
+        } else if (
+          estado.estado === "rechazada" ||
+          estado.estado === "cancelada"
+        ) {
+          // Transacción cancelada
+          this.mostrarLogTemporal(`❌ Transacción cancelada o rechazada`);
+          this.mostrarTransaccionCancelada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "completada") {
+          // Transacción completada
+          this.mostrarLogTemporal(`🎉 Transacción completada`);
+          this.mostrarTransaccionCompletada(estado);
+          clearInterval(intervalId);
+        } else {
+          this.mostrarLogTemporal(
+            `⏳ Esperando cajero... Estado: ${estado.estado}`
+          );
+        }
+      } else {
+        this.mostrarLogTemporal(`❌ No se pudo obtener el estado`);
+      }
+    }, 3000); // Verificar cada 3 segundos
+
+    // Limpiar polling después de 5 minutos
+    setTimeout(() => {
+      this.mostrarLogTemporal(`⏰ Polling expirado después de 5 minutos`);
+      clearInterval(intervalId);
+    }, 300000);
+  }
+
+  // Mostrar pantalla de éxito
+  showSuccessScreen(transaction) {
+    document.getElementById("waiting-amount").textContent = `${
+      transaction.monto / 100
+    } Bs`;
+    document.getElementById("waiting-reference").textContent =
+      this.formatReference(transaction.referencia || transaction._id);
+    document.getElementById("waiting-status").textContent =
+      "Creada exitosamente";
+
+    // Ocultar el spinner de "Buscando cajero"
+    const loadingContainer = document.querySelector(
+      "#waiting-screen .loading-container"
+    );
+    if (loadingContainer) {
+      loadingContainer.style.display = "none";
+    }
+
+    // Actualizar el título de la pantalla
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "✅ Solicitud Creada";
+    }
+
+    // Actualizar el subtítulo con mensaje simple
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Tu solicitud de depósito se creó exitosamente";
+    }
+
+    // Actualizar los detalles de la transacción
+    const amountElement = document.getElementById("waiting-amount");
+    if (amountElement) {
+      amountElement.textContent = `${(transaction.monto / 100).toLocaleString(
+        "es-VE"
+      )} Bs`;
+    }
+
+    const referenceElement = document.getElementById("waiting-reference");
+    if (referenceElement) {
+      referenceElement.textContent = this.formatReference(
+        transaction.referencia || transaction._id
+      );
+    }
+
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Pago Móvil";
+      statusElement.className = "status-pending";
+    }
+
+    // Agregar mensaje de asignación de cajero
+    const transactionInfo = document.querySelector(
+      "#waiting-screen .transaction-info"
+    );
+    if (transactionInfo) {
+      const cajeroMessage = document.createElement("div");
+      cajeroMessage.className = "cajero-message";
+      cajeroMessage.innerHTML = `
+        <div class="info-card">
+          <p>🔄 Se está asignando un cajero para completar tu solicitud</p>
+        </div>
+      `;
+      transactionInfo.appendChild(cajeroMessage);
+    }
+
+    // Iniciar polling para verificar cuando se asigne un cajero
+    this.iniciarPollingEstado(transaction._id);
+
+    this.showScreen("waiting-screen");
+  }
+
+  // Mostrar datos del cajero asignado
+  mostrarDatosCajero(estado) {
+    const cajero = estado.cajero;
+
+    this.mostrarLogTemporal(
+      `🏦 Mostrando datos del cajero: ${JSON.stringify(cajero, null, 2)}`
+    );
+    this.mostrarLogTemporal(
+      `📊 Estado completo: ${JSON.stringify(estado, null, 2)}`
+    );
+
+    // Actualizar la pantalla con los datos del cajero
+    const bankInfoScreen = document.getElementById("bank-info-screen");
+    this.mostrarLogTemporal(
+      `🔍 Buscando pantalla bank-info-screen: ${
+        bankInfoScreen ? "ENCONTRADA" : "NO ENCONTRADA"
+      }`
+    );
+
+    if (bankInfoScreen) {
+      // Actualizar elementos de la pantalla de datos bancarios
+      const cajeroBanco = document.getElementById("bank-name"); // Banco del cajero
+      const cajeroTelefono = document.getElementById("bank-phone"); // Teléfono del cajero
+      const cajeroCedula = document.getElementById("bank-id"); // Cédula del cajero
+      const montoPago = document.getElementById("bank-amount"); // Monto a pagar
+
+      this.mostrarLogTemporal(`🔍 Elementos encontrados:`);
+      this.mostrarLogTemporal(
+        `  - bank-name (banco): ${cajeroBanco ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(
+        `  - bank-phone (teléfono): ${cajeroTelefono ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(
+        `  - bank-id (cédula): ${cajeroCedula ? "SÍ" : "NO"}`
+      );
+      this.mostrarLogTemporal(
+        `  - bank-amount (monto): ${montoPago ? "SÍ" : "NO"}`
+      );
+
+      if (cajeroBanco) {
+        cajeroBanco.textContent = cajero.datosPago.banco;
+        this.mostrarLogTemporal(
+          `✅ Banco actualizado: ${cajero.datosPago.banco}`
+        );
+      }
+      if (cajeroTelefono) {
+        cajeroTelefono.textContent = cajero.telefono;
+        this.mostrarLogTemporal(`✅ Teléfono actualizado: ${cajero.telefono}`);
+      }
+      if (cajeroCedula) {
+        cajeroCedula.textContent = `${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`;
+        this.mostrarLogTemporal(
+          `✅ Cédula actualizada: ${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`
+        );
+      }
+      if (montoPago) {
+        montoPago.textContent = `${(estado.monto / 100).toLocaleString(
+          "es-VE"
+        )} Bs`;
+        this.mostrarLogTemporal(
+          `✅ Monto actualizado: ${(estado.monto / 100).toLocaleString(
+            "es-VE"
+          )} Bs`
+        );
+      }
+
+      this.mostrarLogTemporal(`🔄 Cambiando a pantalla bank-info-screen`);
+      this.showScreen("bank-info-screen");
+    } else {
+      this.mostrarLogTemporal(
+        `⚠️ No se encontró la pantalla bank-info-screen, usando fallback`
+      );
+      // Fallback: mostrar en la pantalla de espera
+      this.actualizarPantallaEsperaConCajero(estado);
+    }
+  }
+
+  // Actualizar pantalla de espera con datos del cajero (fallback)
+  actualizarPantallaEsperaConCajero(estado) {
+    const cajero = estado.cajero;
+
+    // Actualizar el título de la pantalla
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "✅ Cajero Asignado";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Realiza el pago móvil con los datos del cajero";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Cajero Asignado";
+      statusElement.className = "status-assigned";
+    }
+
+    // Agregar información del cajero
+    const transactionInfo = document.querySelector(
+      "#waiting-screen .transaction-info"
+    );
+    if (transactionInfo) {
+      // Limpiar mensaje anterior
+      const cajeroMessage = transactionInfo.querySelector(".cajero-message");
+      if (cajeroMessage) {
+        cajeroMessage.remove();
+      }
+
+      // Agregar nueva información del cajero
+      const nuevaInfoCajero = document.createElement("div");
+      nuevaInfoCajero.className = "cajero-message";
+      nuevaInfoCajero.innerHTML = `
+        <div class="info-card cajero-info">
+          <h3>🏦 Datos del Cajero</h3>
+          <p><strong>Nombre:</strong> ${cajero.nombre}</p>
+          <p><strong>Teléfono:</strong> ${cajero.telefono}</p>
+          <p><strong>Banco:</strong> ${cajero.datosPago.banco}</p>
+          <p><strong>Cédula:</strong> ${cajero.datosPago.cedula.prefijo}-${
+        cajero.datosPago.cedula.numero
+      }</p>
+          <p><strong>Monto:</strong> ${(estado.monto / 100).toLocaleString(
+            "es-VE"
+          )} Bs</p>
+          <p><strong>Referencia:</strong> ${estado.referencia}</p>
+        </div>
+      `;
+      transactionInfo.appendChild(nuevaInfoCajero);
+    }
+  }
+
+  // Mostrar transacción cancelada
+  mostrarTransaccionCancelada(estado) {
+    console.log("❌ Mostrando transacción cancelada:", estado);
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "❌ Transacción Cancelada";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Tu transacción ha sido cancelada o rechazada";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent =
+        estado.estado === "rechazada" ? "Rechazada" : "Cancelada";
+      statusElement.className = "status-cancelled";
+    }
+  }
+
+  // Mostrar transacción completada
+  mostrarTransaccionCompletada(estado) {
+    console.log("🎉 Mostrando transacción completada:", estado);
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "🎉 ¡Transacción Completada!";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "Tu depósito ha sido procesado exitosamente";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Completada";
+      statusElement.className = "status-completed";
+    }
+  }
+
+  // Mostrar transacción rechazada
+  mostrarTransaccionRechazada(estado) {
+    this.mostrarLogTemporal(
+      `❌ Mostrando transacción rechazada: ${JSON.stringify(estado, null, 2)}`
+    );
+
+    // Actualizar el título
+    const headerTitle = document.querySelector("#waiting-screen .header h1");
+    if (headerTitle) {
+      headerTitle.textContent = "❌ Transacción Rechazada";
+    }
+
+    // Actualizar el subtítulo
+    const subtitle = document.querySelector(
+      "#waiting-screen .header .subtitle"
+    );
+    if (subtitle) {
+      subtitle.textContent = "El cajero rechazó tu transacción";
+    }
+
+    // Actualizar el estado
+    const statusElement = document.getElementById("waiting-status");
+    if (statusElement) {
+      statusElement.textContent = "Rechazada";
+      statusElement.className = "status-rejected";
+    }
+
+    // Mostrar pantalla de espera con estado rechazado
+    this.showScreen("waiting-screen");
+  }
+
+  // Manejar confirmación de pago
+  async handlePaymentConfirmation() {
+    const formData = new FormData(
+      document.getElementById("payment-confirmation-form")
+    );
+
+    const paymentData = {
+      banco: formData.get("payment-bank"),
+      telefono: formData.get("payment-phone"),
+      referencia: formData.get("payment-reference"),
+      fecha: formData.get("payment-date"),
+    };
+
+    try {
+      this.showLoading("Confirmando pago...");
+
+      // Confirmar pago del usuario
+      await this.confirmUserPayment(this.currentTransaction._id, paymentData);
+
+      // Mostrar pantalla de confirmación final
+      this.showConfirmationScreen();
+    } catch (error) {
+      console.error("Error confirmando pago:", error);
+      this.showError("Error confirmando pago", error.message);
+    }
+  }
+
+  // Confirmar pago del usuario
+  async confirmUserPayment(transactionId, paymentData) {
+    try {
+      this.mostrarLogTemporal(
+        `💳 Confirmando pago para transacción: ${transactionId}`
+      );
+      this.mostrarLogTemporal(
+        `📊 Datos del pago: ${JSON.stringify(paymentData, null, 2)}`
+      );
+
+      // Preparar datos para el endpoint
+      const payload = {
+        bancoOrigen: paymentData.banco,
+        telefonoOrigen: paymentData.telefono,
+        numeroReferencia: paymentData.referencia,
+        fechaPago: paymentData.fecha,
+        metodoPago: "pago_movil",
+      };
+
+      this.mostrarLogTemporal(
+        `📤 Enviando datos al backend: ${JSON.stringify(payload, null, 2)}`
+      );
+
+      // Obtener token del bot para autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener token de autenticación");
+      }
+
+      // Hacer llamada al endpoint de confirmación de pago
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transactionId}/confirmar-pago-usuario`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      this.mostrarLogTemporal(
+        `📡 Respuesta HTTP: ${response.status} ${response.statusText}`
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          errorData.mensaje ||
+            `Error del servidor: ${response.status} - ${response.statusText}`
+        );
+      }
+
+      const result = await response.json();
+      this.mostrarLogTemporal(
+        `✅ Pago confirmado exitosamente: ${JSON.stringify(result, null, 2)}`
+      );
+
+      // Actualizar estado de la transacción
+      this.currentTransaction.estado = "en_proceso";
+      this.currentTransaction.infoPago = payload;
+
+      // Iniciar polling para esperar confirmación del cajero
+      this.iniciarPollingConfirmacionCajero(transactionId);
+
+      return result;
+    } catch (error) {
+      this.mostrarLogTemporal(`❌ Error confirmando pago: ${error.message}`);
+      throw error;
+    }
+  }
+
+  // Iniciar polling para esperar confirmación del cajero
+  iniciarPollingConfirmacionCajero(transaccionId) {
+    this.mostrarLogTemporal(
+      `🔄 Iniciando polling para confirmación del cajero: ${transaccionId}`
+    );
+
+    // Mostrar pantalla de confirmación mientras esperamos
+    this.showConfirmationScreen();
+
+    const intervalId = setInterval(async () => {
+      this.mostrarLogTemporal(
+        `⏰ Verificando confirmación del cajero... (${new Date().toLocaleTimeString()})`
+      );
+      const estado = await this.verificarEstadoTransaccion(transaccionId);
+
+      if (estado) {
+        this.mostrarLogTemporal(`📊 Estado actual: ${estado.estado}`);
+
+        if (estado.estado === "completada") {
+          this.mostrarLogTemporal(`🎉 Transacción completada por el cajero`);
+          this.mostrarTransaccionCompletada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "rechazada") {
+          this.mostrarLogTemporal(`❌ Transacción rechazada por el cajero`);
+          this.mostrarTransaccionRechazada(estado);
+          clearInterval(intervalId);
+        } else if (estado.estado === "confirmada") {
+          this.mostrarLogTemporal(
+            `✅ Transacción confirmada, esperando procesamiento`
+          );
+          // Continuar polling hasta que se complete
+        } else {
+          this.mostrarLogTemporal(
+            `⏳ Esperando confirmación del cajero... Estado: ${estado.estado}`
+          );
+        }
+      } else {
+        this.mostrarLogTemporal(`❌ No se pudo obtener el estado`);
+      }
+    }, 5000); // Verificar cada 5 segundos
+
+    // Timeout de 30 minutos (1800000 ms)
+    const timeoutId = setTimeout(() => {
+      this.mostrarLogTemporal(
+        `⏰ Timeout de 30 minutos alcanzado, cancelando transacción`
+      );
+      clearInterval(intervalId);
+      this.cancelarTransaccionPorTimeout(transaccionId);
+    }, 1800000); // 30 minutos
+
+    // Guardar IDs para poder limpiarlos si es necesario
+    this.pollingIntervalId = intervalId;
+    this.timeoutId = timeoutId;
+  }
+
+  // Cancelar transacción por timeout
+  async cancelarTransaccionPorTimeout(transaccionId) {
+    try {
+      this.mostrarLogTemporal(
+        `🚫 Cancelando transacción por timeout: ${transaccionId}`
+      );
+
+      // Obtener token del bot para autenticación
+      const token = await this.getBotToken();
+      if (!token || token === "bot_token_placeholder") {
+        throw new Error("No se pudo obtener token de autenticación");
+      }
+
+      // Hacer llamada al endpoint de rechazo
+      const response = await fetch(
+        `${this.backendUrl}/transacciones/${transaccionId}/rechazar`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            motivo: "Timeout: Usuario no completó el pago en 30 minutos",
+          }),
+        }
+      );
+
+      this.mostrarLogTemporal(
+        `📡 Respuesta de cancelación: ${response.status} ${response.statusText}`
+      );
+
+      if (response.ok) {
+        this.mostrarLogTemporal(`✅ Transacción cancelada exitosamente`);
+        this.mostrarTransaccionCancelada({
+          estado: "cancelada",
+          motivo: "Timeout de 30 minutos",
+        });
+      } else {
+        this.mostrarLogTemporal(`❌ Error cancelando transacción`);
+        this.showError(
+          "Error",
+          "No se pudo cancelar la transacción automáticamente"
+        );
+      }
+    } catch (error) {
+      this.mostrarLogTemporal(
+        `❌ Error en cancelación por timeout: ${error.message}`
+      );
+      this.showError("Error", "Error cancelando la transacción por timeout");
+    }
+  }
+
+  // Mostrar pantalla de confirmación final
+  showConfirmationScreen() {
+    document.getElementById("final-amount").textContent = `${
+      this.currentTransaction.monto / 100
+    } Bs`;
+    document.getElementById("final-reference").textContent =
+      this.currentTransaction.referencia;
+    document.getElementById("final-status").textContent = "En verificación";
+
+    this.showScreen("confirmation-screen");
+  }
+
+  // Mostrar loading
+  showLoading(message = "Cargando...") {
+    const loadingScreen = document.getElementById("loading");
+    const loadingText = loadingScreen.querySelector("p");
+    loadingText.textContent = message;
+    this.showScreen("loading");
+  }
+
+  // Mostrar error
+  showError(title, message) {
+    document.getElementById("error-title").textContent = title;
+    document.getElementById("error-message").textContent = message;
+    this.showScreen("error-screen");
+  }
+
+  // Enviar datos al bot (para comunicación con el backend)
+  sendDataToBot(data) {
+    this.tg.sendData(JSON.stringify(data));
+  }
+
+  // Función para copiar texto al portapapeles
+  async copyToClipboard(elementId) {
+    try {
+      const element = document.getElementById(elementId);
+      if (!element) {
+        this.mostrarLogTemporal(`❌ Elemento ${elementId} no encontrado`);
+        return;
+      }
+
+      const textToCopy = element.textContent.trim();
+      if (!textToCopy || textToCopy === "-") {
+        this.mostrarLogTemporal(`❌ No hay texto para copiar en ${elementId}`);
+        return;
+      }
+
+      // Usar la API del portapapeles moderna
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(textToCopy);
+        this.mostrarLogTemporal(`✅ Copiado al portapapeles: ${textToCopy}`);
+        this.showCopyFeedback(elementId, "✅");
+      } else {
+        // Fallback para navegadores más antiguos o contextos no seguros
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand("copy");
+          this.mostrarLogTemporal(`✅ Copiado (fallback): ${textToCopy}`);
+          this.showCopyFeedback(elementId, "✅");
+        } catch (err) {
+          this.mostrarLogTemporal(`❌ Error copiando: ${err.message}`);
+          this.showCopyFeedback(elementId, "❌");
+        }
+
+        document.body.removeChild(textArea);
+      }
+    } catch (error) {
+      this.mostrarLogTemporal(`❌ Error en copyToClipboard: ${error.message}`);
+      this.showCopyFeedback(elementId, "❌");
+    }
+  }
+
+  // Función para copiar todos los datos bancarios
+  async copyAllBankData() {
+    try {
+      const bankName =
+        document.getElementById("bank-name")?.textContent?.trim() || "";
+      const bankPhone =
+        document.getElementById("bank-phone")?.textContent?.trim() || "";
+      const bankId =
+        document.getElementById("bank-id")?.textContent?.trim() || "";
+      const bankAmount =
+        document.getElementById("bank-amount")?.textContent?.trim() || "";
+
+      if (!bankName || bankName === "-") {
+        this.mostrarLogTemporal(`❌ No hay datos bancarios para copiar`);
+        return;
+      }
+
+      const allData = `Banco: ${bankName}\nTeléfono: ${bankPhone}\nCédula: ${bankId}\nMonto: ${bankAmount}`;
+
+      // Usar la API del portapapeles moderna
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(allData);
+        this.mostrarLogTemporal(`✅ Todos los datos copiados al portapapeles`);
+        this.showCopyAllFeedback("✅");
+      } else {
+        // Fallback para navegadores más antiguos
+        const textArea = document.createElement("textarea");
+        textArea.value = allData;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+
+        try {
+          document.execCommand("copy");
+          this.mostrarLogTemporal(`✅ Todos los datos copiados (fallback)`);
+          this.showCopyAllFeedback("✅");
+        } catch (err) {
+          this.mostrarLogTemporal(
+            `❌ Error copiando todos los datos: ${err.message}`
+          );
+          this.showCopyAllFeedback("❌");
+        }
+
+        document.body.removeChild(textArea);
+      }
+    } catch (error) {
+      this.mostrarLogTemporal(`❌ Error en copyAllBankData: ${error.message}`);
+      this.showCopyAllFeedback("❌");
+    }
+  }
+
+  // Mostrar feedback visual para copiado individual
+  showCopyFeedback(elementId, status) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const originalText = element.textContent;
+    const originalClass = element.className;
+
+    // Cambiar temporalmente el texto y estilo
+    element.textContent = status === "✅" ? "¡Copiado!" : "Error";
+    element.className =
+      originalClass + (status === "✅" ? " copy-success" : " copy-error");
+
+    // Restaurar después de 2 segundos
+    setTimeout(() => {
+      element.textContent = originalText;
+      element.className = originalClass;
+    }, 2000);
+  }
+
+  // Mostrar feedback visual para copiado de todos los datos
+  showCopyAllFeedback(status) {
+    const button = document.getElementById("copy-all-btn");
+    if (!button) return;
+
+    const originalText = button.textContent;
+    const originalClass = button.className;
+
+    // Cambiar temporalmente el texto y estilo
+    button.textContent =
+      status === "✅" ? "¡Todos copiados!" : "Error al copiar";
+    button.className =
+      originalClass + (status === "✅" ? " copy-success" : " copy-error");
+
+    // Restaurar después de 3 segundos
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.className = originalClass;
+    }, 3000);
+  }
+
+  // Función temporal para mostrar logs en pantalla (para debugging)
+  mostrarLogTemporal(mensaje) {
+    console.log(mensaje); // Siempre en consola
+
+    // Solo mostrar logs visuales si están habilitados
+    if (!this.logsVisibles) {
+      return;
+    }
+
+    // Crear o obtener el contenedor de logs
+    let logContainer = document.getElementById("debug-logs");
+    if (!logContainer) {
+      logContainer = document.createElement("div");
+      logContainer.id = "debug-logs";
+      logContainer.style.cssText = `
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        width: 300px;
+        max-height: 400px;
+        background: rgba(0, 0, 0, 0.9);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        font-family: monospace;
+        font-size: 11px;
+        z-index: 10000;
+        overflow-y: auto;
+        border: 2px solid #ff6b6b;
+        display: none;
+      `;
+      document.body.appendChild(logContainer);
+    }
+
+    // Agregar el mensaje con timestamp
+    const timestamp = new Date().toLocaleTimeString();
+    const logEntry = document.createElement("div");
+    logEntry.style.cssText = `
+      margin-bottom: 5px;
+      padding: 2px;
+      border-bottom: 1px solid #333;
+      word-wrap: break-word;
+    `;
+    logEntry.textContent = `[${timestamp}] ${mensaje}`;
+
+    logContainer.appendChild(logEntry);
+
+    // Mantener solo los últimos 20 logs
+    while (logContainer.children.length > 20) {
+      logContainer.removeChild(logContainer.firstChild);
+    }
+
+    // Auto-scroll al final
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
+
+  // Toggle para mostrar/ocultar logs visuales
+  toggleLogs() {
+    this.logsVisibles = !this.logsVisibles;
+    const logContainer = document.getElementById("debug-logs");
+    const toggleButton = document.getElementById("logs-toggle-btn");
+
+    if (logContainer) {
+      logContainer.style.display = this.logsVisibles ? "block" : "none";
+    }
+
+    if (toggleButton) {
+      toggleButton.textContent = this.logsVisibles ? "🔍" : "📋";
+      toggleButton.title = this.logsVisibles ? "Ocultar logs" : "Mostrar logs";
+    }
+
+    console.log(
+      `Logs visuales ${this.logsVisibles ? "habilitados" : "deshabilitados"}`
+    );
+  }
+
+  // Crear botón toggle de logs
+  crearBotonToggleLogs() {
+    const toggleButton = document.createElement("button");
+    toggleButton.id = "logs-toggle-btn";
+    toggleButton.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--tg-theme-button-color, #2481cc);
+      color: white;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10001;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    `;
+
+    toggleButton.textContent = "📋";
+    toggleButton.title = "Mostrar logs";
+
+    // Efectos hover
+    toggleButton.addEventListener("mouseenter", () => {
+      toggleButton.style.transform = "scale(1.1)";
+      toggleButton.style.boxShadow = "0 6px 16px rgba(0, 0, 0, 0.4)";
+    });
+
+    toggleButton.addEventListener("mouseleave", () => {
+      toggleButton.style.transform = "scale(1)";
+      toggleButton.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.3)";
+    });
+
+    // Click handler
+    toggleButton.addEventListener("click", () => {
+      this.toggleLogs();
+    });
+
+    document.body.appendChild(toggleButton);
+  }
+
+  // Método para comunicación con el bot
+  async communicateWithBot(action, data) {
+    try {
+      // Enviar datos al bot
+      this.sendDataToBot({
+        action,
+        data,
+        userId: this.userData.id,
+        timestamp: new Date().toISOString(),
+      });
+
+      // También hacer llamada HTTP directa al backend del bot
+      const response = await fetch(`${this.backendUrl}/webapp/deposito`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action,
+          data,
+          userId: this.userData.id,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("Error comunicándose con el bot:", error);
+      throw error;
+    }
+  }
+}
+
+// Hacer las funciones de copiado globales para que funcionen desde el HTML
+window.copyToClipboard = function (elementId) {
+  if (window.depositApp) {
+    window.depositApp.copyToClipboard(elementId);
+  }
+};
+
+window.copyAllBankData = function () {
+  if (window.depositApp) {
+    window.depositApp.copyAllBankData();
+  }
+};
+
+// Inicializar la app cuando se carga la página
+document.addEventListener("DOMContentLoaded", () => {
+  window.depositApp = new DepositApp();
+});
+
+// Manejar eventos de Telegram Web App
+window.Telegram.WebApp.onEvent("mainButtonClicked", () => {
+  console.log("Main button clicked");
+  // Lógica adicional si es necesario
+});
+
+window.Telegram.WebApp.onEvent("backButtonClicked", () => {
+  console.log("Back button clicked");
+  // Lógica de navegación hacia atrás
+});
+
+// Exportar para uso global
+window.DepositApp = DepositApp;
