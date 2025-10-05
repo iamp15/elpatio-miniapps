@@ -491,8 +491,7 @@ class TransactionManager {
         </div>
         
         <div class="modal-actions">
-          <button onclick="closeTransactionDetails()" class="btn btn-primary">Cerrar</button>
-          <button onclick="refreshTransactions(); closeTransactionDetails();" class="btn btn-secondary">Ver Lista</button>
+          <button onclick="refreshTransactions(); closeTransactionDetails();" class="btn btn-primary">Cerrar</button>
         </div>
       </div>
     `;
