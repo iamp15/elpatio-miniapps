@@ -573,10 +573,41 @@ class UIManager {
   }
 
   /**
-   * Mostrar alerta simple
+   * Mostrar notificación toast
    */
-  showAlert(message) {
-    alert(message);
+  showAlert(message, type = 'info') {
+    // Detectar tipo automáticamente basado en el mensaje
+    if (message.includes('✅') || message.includes('exitoso') || message.includes('correctamente')) {
+      type = 'success';
+    } else if (message.includes('❌') || message.includes('Error') || message.includes('error')) {
+      type = 'error';
+    } else if (message.includes('⚠️') || message.includes('advertencia')) {
+      type = 'warning';
+    }
+
+    // Limpiar emojis del mensaje para el título
+    const cleanMessage = message.replace(/[✅❌⚠️ℹ️]/g, '').trim();
+    
+    // Determinar título y mensaje
+    let title, msg;
+    if (cleanMessage.includes(':')) {
+      [title, msg] = cleanMessage.split(':', 2);
+      title = title.trim();
+      msg = msg.trim();
+    } else {
+      title = type === 'success' ? 'Éxito' : 
+              type === 'error' ? 'Error' : 
+              type === 'warning' ? 'Advertencia' : 'Información';
+      msg = cleanMessage;
+    }
+
+    // Usar el sistema de notificaciones toast
+    if (window.notificationManager) {
+      window.notificationManager.show(type, title, msg);
+    } else {
+      // Fallback a alert si no está disponible
+      alert(message);
+    }
   }
 
   /**

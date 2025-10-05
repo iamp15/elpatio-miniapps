@@ -6,6 +6,7 @@ import { Auth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
 import { MESSAGES } from "./js/config.js";
+import "./js/notifications.js"; // Importar sistema de notificaciones
 
 class CajerosApp {
   constructor() {

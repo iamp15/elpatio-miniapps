@@ -62,7 +62,6 @@ class TransactionManager {
         this.transactions = this.transactions.concat(data.transacciones || []);
       }
 
-
       this.filterTransactionsByStatus();
       this.displayTransactionsByTab();
       this.updateTabCounts();
@@ -104,7 +103,6 @@ class TransactionManager {
           this.filteredTransactions.pendientes.push(transaccion);
       }
     });
-
   }
 
   /**
