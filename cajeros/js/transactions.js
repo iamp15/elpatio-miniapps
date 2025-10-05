@@ -74,6 +74,7 @@ class TransactionManager {
 
   /**
    * Filtrar transacciones por estado
+   * Nota: El backend ya filtra por cajero para estados "en_proceso" y "completada"
    */
   filterTransactionsByStatus() {
     this.filteredTransactions = {
@@ -82,10 +83,6 @@ class TransactionManager {
       completadas: [],
     };
 
-    // Obtener ID del cajero logueado
-    const cajeroInfo = window.CajerosApp?.getCajeroInfo();
-    const cajeroId = cajeroInfo?._id;
-
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
         case "pendiente":
@@ -93,20 +90,12 @@ class TransactionManager {
           this.filteredTransactions.pendientes.push(transaccion);
           break;
         case "en_proceso":
-          // Solo mostrar las transacciones en proceso asignadas a este cajero
-          const transaccionCajeroId =
-            transaccion.cajeroId?._id || transaccion.cajeroId;
-          if (String(transaccionCajeroId) === String(cajeroId)) {
-            this.filteredTransactions.en_proceso.push(transaccion);
-          }
+          // El backend ya filtra por cajero, solo agregar a la lista
+          this.filteredTransactions.en_proceso.push(transaccion);
           break;
         case "completada":
-          // Solo mostrar las transacciones completadas por este cajero
-          const transaccionCajeroIdCompletada =
-            transaccion.cajeroId?._id || transaccion.cajeroId;
-          if (String(transaccionCajeroIdCompletada) === String(cajeroId)) {
-            this.filteredTransactions.completadas.push(transaccion);
-          }
+          // El backend ya filtra por cajero, solo agregar a la lista
+          this.filteredTransactions.completadas.push(transaccion);
           break;
         default:
           // Por defecto, considerar como pendiente
