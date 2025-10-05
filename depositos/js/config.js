@@ -140,7 +140,7 @@ export const DOM_SELECTORS = {
   FINAL_AMOUNT: "#final-amount",
   FINAL_DATE: "#final-date",
   FINAL_REFERENCE: "#final-reference",
-  FINAL_STATUS: "#final-status",
+  FINAL_BALANCE: "#final-balance",
   REGISTERED_AMOUNT: "#registered-amount",
   REGISTERED_DATE: "#registered-date",
   REGISTERED_REFERENCE: "#registered-reference",

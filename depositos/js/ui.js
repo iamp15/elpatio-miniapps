@@ -128,8 +128,8 @@ class UIManager {
     this.elements.finalReference = document.querySelector(
       DOM_SELECTORS.FINAL_REFERENCE
     );
-    this.elements.finalStatus = document.querySelector(
-      DOM_SELECTORS.FINAL_STATUS
+    this.elements.finalBalance = document.querySelector(
+      DOM_SELECTORS.FINAL_BALANCE
     );
     this.elements.registeredAmount = document.querySelector(
       DOM_SELECTORS.REGISTERED_AMOUNT
@@ -407,10 +407,10 @@ class UIManager {
       const userReference = transaction.infoPago?.numeroReferencia || "-";
       this.elements.finalReference.textContent = userReference;
     }
-    if (this.elements.finalStatus) {
-      this.elements.finalStatus.textContent = this.formatStatus(
-        transaction.estado
-      );
+    if (this.elements.finalBalance) {
+      // Mostrar el nuevo saldo del jugador
+      const newBalance = transaction.saldoNuevo || transaction.saldoAnterior + transaction.monto;
+      this.elements.finalBalance.textContent = this.formatCurrency(newBalance);
     }
   }
 

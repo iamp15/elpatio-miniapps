@@ -257,11 +257,11 @@ class DepositApp {
           infoPago: {
             fechaPago: new Date(),
             numeroReferencia: "-",
-          }
+          },
         };
         UI.updateRegisteredInfo(paymentData);
       }
-      
+
       // Mostrar pantalla de pago registrado
       UI.showPaymentRegisteredScreen();
     } catch (error) {
