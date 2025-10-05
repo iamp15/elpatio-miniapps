@@ -9,8 +9,8 @@ class DepositoWebSocket {
     this.isAuthenticated = false;
     this.userData = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 2000;
+    this.maxReconnectAttempts = 10; // Más intentos
+    this.reconnectDelay = 1000; // Menos delay
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -63,8 +63,13 @@ class DepositoWebSocket {
 
     this.socket = io(socketUrl, {
       transports: ["websocket", "polling"],
-      timeout: 20000,
+      timeout: 30000, // Más tiempo para conectar
       forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      maxReconnectionAttempts: 10,
     });
 
     this.setupEventHandlers();

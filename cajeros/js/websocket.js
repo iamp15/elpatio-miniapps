@@ -9,8 +9,8 @@ class CajeroWebSocket {
     this.isAuthenticated = false;
     this.userData = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 5;
-    this.reconnectDelay = 2000;
+    this.maxReconnectAttempts = 10; // Más intentos
+    this.reconnectDelay = 1000; // Menos delay
     this.activeTransactionRooms = new Set(); // Track active transaction rooms
     this.lastAuthToken = null; // Store token for re-authentication
     this.callbacks = {
@@ -52,8 +52,13 @@ class CajeroWebSocket {
 
     this.socket = io(socketUrl, {
       transports: ["websocket", "polling"],
-      timeout: 20000,
+      timeout: 30000, // Más tiempo para conectar
       forceNew: true,
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      maxReconnectionAttempts: 10,
     });
 
     this.setupEventHandlers();
@@ -72,11 +77,37 @@ class CajeroWebSocket {
     });
 
     this.socket.on("disconnect", (reason) => {
+      console.log("❌ Desconectado del servidor WebSocket:", reason);
       this.isConnected = false;
       this.isAuthenticated = false;
       if (this.callbacks.onDisconnect) {
         this.callbacks.onDisconnect(reason);
       }
+    });
+
+    // Reconexión automática de Socket.IO
+    this.socket.on("reconnect", (attemptNumber) => {
+      console.log(`🔄 Reconectado automáticamente (intento ${attemptNumber})`);
+      this.isConnected = true;
+      this.reconnectAttempts = 0; // Resetear contador manual
+      
+      // Re-autenticar y re-unirse a rooms
+      setTimeout(() => {
+        this.reauthenticateAndRejoinRooms();
+      }, 500);
+    });
+
+    this.socket.on("reconnect_attempt", (attemptNumber) => {
+      console.log(`🔄 Intento de reconexión automática ${attemptNumber}`);
+    });
+
+    this.socket.on("reconnect_error", (error) => {
+      console.error("❌ Error en reconexión automática:", error);
+    });
+
+    this.socket.on("reconnect_failed", () => {
+      console.error("❌ Falló la reconexión automática, iniciando reconexión manual");
+      this.attemptReconnect();
     });
 
     this.socket.on("connect_error", (error) => {
@@ -146,7 +177,7 @@ class CajeroWebSocket {
 
     // Guardar token para reconexión
     this.lastAuthToken = token;
-    
+
     console.log("🔐 Autenticando cajero...");
     this.socket.emit("auth-cajero", {
       token,
@@ -164,7 +195,7 @@ class CajeroWebSocket {
 
     // Trackear room de transacción
     this.activeTransactionRooms.add(transaccionId);
-    
+
     console.log("✅ Aceptando solicitud:", { transaccionId, transaccionData });
     this.socket.emit("aceptar-solicitud", {
       transaccionId,
@@ -283,7 +314,7 @@ class CajeroWebSocket {
 
     setTimeout(() => {
       this.connect();
-      
+
       // Después de conectar, re-autenticar y re-unirse a rooms
       setTimeout(() => {
         this.reauthenticateAndRejoinRooms();
@@ -304,7 +335,7 @@ class CajeroWebSocket {
     if (this.lastAuthToken) {
       console.log("🔐 Re-autenticando después de reconexión...");
       this.authenticateCajero(this.lastAuthToken);
-      
+
       // Re-unirse a rooms de transacciones activas
       setTimeout(() => {
         this.rejoinTransactionRooms();
@@ -321,8 +352,10 @@ class CajeroWebSocket {
       return;
     }
 
-    console.log(`🔄 Re-uniéndose a ${this.activeTransactionRooms.size} rooms de transacciones...`);
-    
+    console.log(
+      `🔄 Re-uniéndose a ${this.activeTransactionRooms.size} rooms de transacciones...`
+    );
+
     for (const transaccionId of this.activeTransactionRooms) {
       console.log(`📋 Re-uniéndose a room de transacción: ${transaccionId}`);
       this.socket.emit("unirse-room-transaccion", { transaccionId });
