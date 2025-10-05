@@ -782,7 +782,11 @@ body {
   text-align: center;
   margin: 20px 0;
   padding: 20px;
-  background: linear-gradient(135deg, rgba(36, 129, 204, 0.1), rgba(40, 167, 69, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(36, 129, 204, 0.1),
+    rgba(40, 167, 69, 0.1)
+  );
   border-radius: 12px;
   border-left: 4px solid #28a745;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

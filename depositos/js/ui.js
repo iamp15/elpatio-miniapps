@@ -384,6 +384,9 @@ class UIManager {
    * Actualizar información final
    */
   updateFinalInfo(transaction) {
+    // Log para verificar el estado de la transacción
+    console.log("🔍 [UI] Estado de transacción recibido:", transaction.estado);
+    
     if (this.elements.finalAmount) {
       this.elements.finalAmount.textContent = this.formatCurrency(
         transaction.monto
