@@ -114,13 +114,22 @@ class NotificationManager {
       confirmText = "Confirmar",
       cancelText = "Cancelar",
       type = "confirm", // 'confirm', 'danger'
-      icon = "❓"
+      icon = "❓",
     } = options;
 
     return new Promise((resolve) => {
       const modalId = this.nextId++;
-      const modal = this.createConfirmModal(modalId, title, message, confirmText, cancelText, type, icon, resolve);
-      
+      const modal = this.createConfirmModal(
+        modalId,
+        title,
+        message,
+        confirmText,
+        cancelText,
+        type,
+        icon,
+        resolve
+      );
+
       document.body.appendChild(modal);
       this.toasts.set(modalId, modal);
     });
@@ -129,13 +138,23 @@ class NotificationManager {
   /**
    * Crear modal de confirmación
    */
-  createConfirmModal(id, title, message, confirmText, cancelText, type, icon, resolve) {
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
+  createConfirmModal(
+    id,
+    title,
+    message,
+    confirmText,
+    cancelText,
+    type,
+    icon,
+    resolve
+  ) {
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
     overlay.dataset.modalId = id;
 
-    const confirmBtnClass = type === 'danger' ? 'modal-btn-danger' : 'modal-btn-confirm';
-    
+    const confirmBtnClass =
+      type === "danger" ? "modal-btn-danger" : "modal-btn-confirm";
+
     overlay.innerHTML = `
       <div class="modal">
         <div class="modal-header">
@@ -158,7 +177,7 @@ class NotificationManager {
     `;
 
     // Cerrar al hacer click en el overlay (fuera del modal)
-    overlay.addEventListener('click', (e) => {
+    overlay.addEventListener("click", (e) => {
       if (e.target === overlay) {
         this.closeModal(id, false);
       }
@@ -166,12 +185,12 @@ class NotificationManager {
 
     // Cerrar con tecla Escape
     const handleEscape = (e) => {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         this.closeModal(id, false);
-        document.removeEventListener('keydown', handleEscape);
+        document.removeEventListener("keydown", handleEscape);
       }
     };
-    document.addEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
 
     // Guardar la función resolve para usarla en closeModal
     overlay._resolve = resolve;
@@ -189,7 +208,7 @@ class NotificationManager {
 
     // Remover event listener de escape
     if (modal._handleEscape) {
-      document.removeEventListener('keydown', modal._handleEscape);
+      document.removeEventListener("keydown", modal._handleEscape);
     }
 
     // Ejecutar callback con el resultado
@@ -198,8 +217,8 @@ class NotificationManager {
     }
 
     // Animar cierre
-    const modalElement = modal.querySelector('.modal');
-    modalElement.classList.add('closing');
+    const modalElement = modal.querySelector(".modal");
+    modalElement.classList.add("closing");
 
     setTimeout(() => {
       if (modal.parentNode) {

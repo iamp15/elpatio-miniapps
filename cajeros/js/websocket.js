@@ -11,6 +11,8 @@ class CajeroWebSocket {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.reconnectDelay = 2000;
+    this.activeTransactionRooms = new Set(); // Track active transaction rooms
+    this.lastAuthToken = null; // Store token for re-authentication
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -142,7 +144,10 @@ class CajeroWebSocket {
       return;
     }
 
-    // Autenticando cajero
+    // Guardar token para reconexión
+    this.lastAuthToken = token;
+    
+    console.log("🔐 Autenticando cajero...");
     this.socket.emit("auth-cajero", {
       token,
     });
@@ -157,7 +162,10 @@ class CajeroWebSocket {
       return;
     }
 
-    // Aceptando solicitud
+    // Trackear room de transacción
+    this.activeTransactionRooms.add(transaccionId);
+    
+    console.log("✅ Aceptando solicitud:", { transaccionId, transaccionData });
     this.socket.emit("aceptar-solicitud", {
       transaccionId,
       transaccionData,
@@ -275,7 +283,50 @@ class CajeroWebSocket {
 
     setTimeout(() => {
       this.connect();
+      
+      // Después de conectar, re-autenticar y re-unirse a rooms
+      setTimeout(() => {
+        this.reauthenticateAndRejoinRooms();
+      }, 1000);
     }, this.reconnectDelay);
+  }
+
+  /**
+   * Re-autenticar y re-unirse a rooms después de reconexión
+   */
+  reauthenticateAndRejoinRooms() {
+    if (!this.isConnected) {
+      console.log("⚠️ No hay conexión para re-autenticación");
+      return;
+    }
+
+    // Re-autenticar si tenemos token guardado
+    if (this.lastAuthToken) {
+      console.log("🔐 Re-autenticando después de reconexión...");
+      this.authenticateCajero(this.lastAuthToken);
+      
+      // Re-unirse a rooms de transacciones activas
+      setTimeout(() => {
+        this.rejoinTransactionRooms();
+      }, 500);
+    }
+  }
+
+  /**
+   * Re-unirse a rooms de transacciones activas
+   */
+  rejoinTransactionRooms() {
+    if (this.activeTransactionRooms.size === 0) {
+      console.log("📋 No hay rooms de transacciones activas para re-unirse");
+      return;
+    }
+
+    console.log(`🔄 Re-uniéndose a ${this.activeTransactionRooms.size} rooms de transacciones...`);
+    
+    for (const transaccionId of this.activeTransactionRooms) {
+      console.log(`📋 Re-uniéndose a room de transacción: ${transaccionId}`);
+      this.socket.emit("unirse-room-transaccion", { transaccionId });
+    }
   }
 
   /**
