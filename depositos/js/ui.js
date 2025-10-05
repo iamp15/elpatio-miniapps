@@ -264,6 +264,13 @@ class UIManager {
   }
 
   /**
+   * Mostrar pantalla de espera de verificación
+   */
+  showWaitingVerificationScreen() {
+    this.showScreen(APP_STATES.WAITING);
+  }
+
+  /**
    * Mostrar pantalla de error
    */
   showErrorScreen(title, message) {
