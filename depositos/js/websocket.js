@@ -77,6 +77,10 @@ class DepositoWebSocket {
     // Log para todos los eventos que llegan
     this.socket.onAny((eventName, ...args) => {
       console.log(`🔍 [WebSocket] Evento recibido: ${eventName}`, args);
+      // También mostrar en el panel visual
+      if (window.visualLogger) {
+        window.visualLogger.info(`🔍 [WebSocket] Evento recibido: ${eventName}`, args);
+      }
     });
 
     this.socket.on("connect", () => {
@@ -173,23 +177,43 @@ class DepositoWebSocket {
         this.callbacks.onDepositoCompletado
       );
 
+      // Logs visuales
+      if (window.visualLogger) {
+        window.visualLogger.info("🎉 [WebSocket] Evento deposito-completado recibido:", data);
+        window.visualLogger.info("🎉 [WebSocket] data.target:", data.target);
+        window.visualLogger.info("🎉 [WebSocket] Callback configurado:", !!this.callbacks.onDepositoCompletado);
+      }
+
       // Filtrar por target: solo procesar si es para jugador
       if (data.target === "jugador") {
         console.log(
           "🎉 [WebSocket] Target es jugador, verificando callback..."
         );
+        if (window.visualLogger) {
+          window.visualLogger.info("🎉 [WebSocket] Target es jugador, verificando callback...");
+        }
+        
         if (this.callbacks.onDepositoCompletado) {
           console.log(
             "🎉 [WebSocket] Ejecutando callback onDepositoCompletado"
           );
+          if (window.visualLogger) {
+            window.visualLogger.success("🎉 [WebSocket] Ejecutando callback onDepositoCompletado");
+          }
           this.callbacks.onDepositoCompletado(data);
         } else {
           console.error(
             "❌ [WebSocket] Callback onDepositoCompletado no está configurado"
           );
+          if (window.visualLogger) {
+            window.visualLogger.error("❌ [WebSocket] Callback onDepositoCompletado no está configurado");
+          }
         }
       } else {
         console.log("🎉 [WebSocket] Target no es jugador, ignorando evento");
+        if (window.visualLogger) {
+          window.visualLogger.warn("🎉 [WebSocket] Target no es jugador, ignorando evento");
+        }
       }
     });
 
