@@ -246,8 +246,11 @@ class DepositApp {
         "💳 Pago confirmado, esperando verificación del cajero"
       );
 
-      // Mostrar pantalla de espera de verificación
-      UI.showWaitingVerificationScreen();
+      // Actualizar información de pago registrado
+      UI.updateRegisteredInfo(data);
+      
+      // Mostrar pantalla de pago registrado
+      UI.showPaymentRegisteredScreen();
     } catch (error) {
       window.visualLogger.error(
         `Error manejando pago confirmado: ${error.message}`

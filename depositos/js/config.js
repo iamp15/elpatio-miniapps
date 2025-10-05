@@ -79,6 +79,7 @@ export const APP_STATES = {
   WAITING: "waiting-screen",
   BANK_INFO: "bank-info-screen",
   PAYMENT_CONFIRMATION: "payment-confirmation-screen",
+  PAYMENT_REGISTERED: "payment-registered-screen",
   CONFIRMATION: "confirmation-screen",
   ERROR: "error-screen",
 };
@@ -100,6 +101,7 @@ export const DOM_SELECTORS = {
   WAITING_SCREEN: "#waiting-screen",
   BANK_INFO_SCREEN: "#bank-info-screen",
   PAYMENT_CONFIRMATION_SCREEN: "#payment-confirmation-screen",
+  PAYMENT_REGISTERED_SCREEN: "#payment-registered-screen",
   CONFIRMATION_SCREEN: "#confirmation-screen",
   ERROR_SCREEN: "#error-screen",
 
@@ -139,6 +141,10 @@ export const DOM_SELECTORS = {
   FINAL_DATE: "#final-date",
   FINAL_REFERENCE: "#final-reference",
   FINAL_STATUS: "#final-status",
+  REGISTERED_AMOUNT: "#registered-amount",
+  REGISTERED_DATE: "#registered-date",
+  REGISTERED_REFERENCE: "#registered-reference",
+  REGISTERED_STATUS: "#registered-status",
   ERROR_TITLE: "#error-title",
   ERROR_MESSAGE: "#error-message",
 };

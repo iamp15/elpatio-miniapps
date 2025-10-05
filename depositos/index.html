@@ -276,11 +276,50 @@
         </div>
       </div>
 
+      <!-- Pantalla de pago registrado (esperando verificación) -->
+      <div id="payment-registered-screen" class="screen">
+        <div class="header">
+          <h1>✅ Pago Registrado</h1>
+          <p class="subtitle">Tu pago ha sido registrado exitosamente</p>
+        </div>
+
+        <div class="confirmation-info">
+          <h3>¡Pago registrado correctamente!</h3>
+
+          <div class="info-card">
+            <div class="info-row">
+              <span>Monto:</span>
+              <span id="registered-amount">0 Bs</span>
+            </div>
+            <div class="info-row">
+              <span>Fecha:</span>
+              <span id="registered-date">-</span>
+            </div>
+            <div class="info-row">
+              <span>Referencia:</span>
+              <span id="registered-reference">-</span>
+            </div>
+            <div class="info-row">
+              <span>Estado:</span>
+              <span id="registered-status" class="status-processing">En verificación</span>
+            </div>
+          </div>
+
+          <div class="waiting-message">
+            <div class="waiting-icon">⏳</div>
+            <h3>Verificando pago</h3>
+            <p>
+              El cajero está verificando tu pago. En los próximos minutos se acreditará el depósito a tu saldo.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <!-- Pantalla de confirmación final -->
       <div id="confirmation-screen" class="screen">
         <div class="header">
-          <h1>📝 Pago Registrado</h1>
-          <p class="subtitle">Tu pago ha sido registrado</p>
+          <h1>🎉 Depósito Completado</h1>
+          <p class="subtitle">Tu depósito ha sido acreditado exitosamente</p>
         </div>
 
         <div class="confirmation-info">
@@ -301,8 +340,8 @@
             </div>
             <div class="info-row">
               <span>Estado:</span>
-              <span id="final-status" class="status-processing"
-                >En verificación</span
+              <span id="final-status" class="status-completed"
+                >Completado</span
               >
             </div>
           </div>

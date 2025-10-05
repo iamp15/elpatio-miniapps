@@ -40,6 +40,9 @@ class UIManager {
     this.elements.confirmationScreen = document.querySelector(
       DOM_SELECTORS.CONFIRMATION_SCREEN
     );
+    this.elements.paymentRegisteredScreen = document.querySelector(
+      DOM_SELECTORS.PAYMENT_REGISTERED_SCREEN
+    );
     this.elements.errorScreen = document.querySelector(
       DOM_SELECTORS.ERROR_SCREEN
     );
@@ -127,6 +130,18 @@ class UIManager {
     );
     this.elements.finalStatus = document.querySelector(
       DOM_SELECTORS.FINAL_STATUS
+    );
+    this.elements.registeredAmount = document.querySelector(
+      DOM_SELECTORS.REGISTERED_AMOUNT
+    );
+    this.elements.registeredDate = document.querySelector(
+      DOM_SELECTORS.REGISTERED_DATE
+    );
+    this.elements.registeredReference = document.querySelector(
+      DOM_SELECTORS.REGISTERED_REFERENCE
+    );
+    this.elements.registeredStatus = document.querySelector(
+      DOM_SELECTORS.REGISTERED_STATUS
     );
     this.elements.errorTitle = document.querySelector(
       DOM_SELECTORS.ERROR_TITLE
@@ -271,6 +286,13 @@ class UIManager {
   }
 
   /**
+   * Mostrar pantalla de pago registrado
+   */
+  showPaymentRegisteredScreen() {
+    this.showScreen(APP_STATES.PAYMENT_REGISTERED);
+  }
+
+  /**
    * Mostrar pantalla de error
    */
   showErrorScreen(title, message) {
@@ -330,6 +352,31 @@ class UIManager {
       this.elements.bankAmount.textContent = this.formatCurrency(
         bankData.monto
       );
+    }
+  }
+
+  /**
+   * Actualizar información de pago registrado
+   */
+  updateRegisteredInfo(transaction) {
+    if (this.elements.registeredAmount) {
+      this.elements.registeredAmount.textContent = this.formatCurrency(
+        transaction.monto
+      );
+    }
+    if (this.elements.registeredDate) {
+      // Mostrar la fecha del pago del usuario
+      const paymentDate = transaction.infoPago?.fechaPago || new Date();
+      this.elements.registeredDate.textContent = this.formatDate(paymentDate);
+    }
+    if (this.elements.registeredReference) {
+      // Mostrar la referencia del pago del usuario
+      this.elements.registeredReference.textContent = 
+        transaction.infoPago?.numeroReferencia || "-";
+    }
+    if (this.elements.registeredStatus) {
+      this.elements.registeredStatus.textContent = "En verificación";
+      this.elements.registeredStatus.className = "status-processing";
     }
   }
 
