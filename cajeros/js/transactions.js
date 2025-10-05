@@ -78,6 +78,9 @@ class TransactionManager {
     const cajeroInfo = window.CajerosApp?.getCajeroInfo();
     const cajeroId = cajeroInfo?._id;
 
+    console.log("🔍 Debug filtro - Cajero ID:", cajeroId);
+    console.log("🔍 Debug filtro - Total transacciones:", this.transactions.length);
+
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
         case "pendiente":
@@ -86,6 +89,12 @@ class TransactionManager {
           break;
         case "en_proceso":
           // Solo mostrar las transacciones en proceso asignadas a este cajero
+          console.log("🔍 Transacción en_proceso encontrada:", {
+            transaccionId: transaccion._id,
+            transaccionCajeroId: transaccion.cajeroId,
+            cajeroLogueadoId: cajeroId,
+            esDelCajero: transaccion.cajeroId === cajeroId
+          });
           if (transaccion.cajeroId === cajeroId) {
             this.filteredTransactions.en_proceso.push(transaccion);
           }
