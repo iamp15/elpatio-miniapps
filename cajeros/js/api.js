@@ -75,7 +75,17 @@ class APIManager {
   }
 
   /**
-   * Obtener transacciones pendientes
+   * Obtener transacciones por estado (endpoint genérico)
+   */
+  async getTransaccionesCajero(estado, token) {
+    const url = `${this.baseURL}/api/transacciones/cajero?estado=${estado}`;
+    return this.authenticatedRequest(url, token, {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Obtener transacciones pendientes (mantener compatibilidad)
    */
   async getTransaccionesPendientes(token) {
     const url = `${this.baseURL}${this.endpoints.TRANSACCIONES_PENDIENTES}`;

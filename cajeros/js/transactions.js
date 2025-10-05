@@ -38,24 +38,32 @@ class TransactionManager {
       UI.showLoadingTransactions(true);
       UI.hideNoTransactions();
 
-      const response = await API.getTransaccionesPendientes(token);
+      // Cargar transacciones de todos los estados
+      const estados = ["pendiente", "en_proceso", "completada"];
+      const promesas = estados.map((estado) =>
+        API.getTransaccionesCajero(estado, token)
+      );
 
-      if (response.ok) {
-        const data = await response.json();
-        // Respuesta del endpoint recibida
+      const respuestas = await Promise.all(promesas);
 
-        // El endpoint devuelve { transacciones: [...], total: number }
-        const transacciones = data.transacciones || data;
-        // Transacciones extraídas
-
-        this.transactions = transacciones;
-        this.filterTransactionsByStatus();
-        this.displayTransactionsByTab();
-        this.updateTabCounts();
-      } else {
-        console.error("Error cargando transacciones:", response.status);
-        UI.showNoTransactions();
+      // Verificar que todas las respuestas sean exitosas
+      for (const respuesta of respuestas) {
+        if (!respuesta.ok) {
+          const errorData = await respuesta.json();
+          throw new Error(errorData.mensaje || "Error cargando transacciones");
+        }
       }
+
+      // Combinar todas las transacciones
+      this.transactions = [];
+      for (const respuesta of respuestas) {
+        const data = await respuesta.json();
+        this.transactions = this.transactions.concat(data.transacciones || []);
+      }
+
+      this.filterTransactionsByStatus();
+      this.displayTransactionsByTab();
+      this.updateTabCounts();
     } catch (error) {
       console.error("Error cargando transacciones:", error);
       UI.showNoTransactions();
@@ -78,8 +86,6 @@ class TransactionManager {
     const cajeroInfo = window.CajerosApp?.getCajeroInfo();
     const cajeroId = cajeroInfo?._id;
 
-    // Debug solo para completadas
-
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
         case "pendiente":
@@ -98,17 +104,7 @@ class TransactionManager {
           // Solo mostrar las transacciones completadas por este cajero
           const transaccionCajeroIdCompletada =
             transaccion.cajeroId?._id || transaccion.cajeroId;
-          const esDelCajeroCompletada =
-            String(transaccionCajeroIdCompletada) === String(cajeroId);
-
-          console.log("🔍 Transacción completada encontrada:", {
-            transaccionId: transaccion._id,
-            transaccionCajeroId: transaccionCajeroIdCompletada,
-            cajeroLogueadoId: cajeroId,
-            esDelCajero: esDelCajeroCompletada,
-          });
-
-          if (esDelCajeroCompletada) {
+          if (String(transaccionCajeroIdCompletada) === String(cajeroId)) {
             this.filteredTransactions.completadas.push(transaccion);
           }
           break;
