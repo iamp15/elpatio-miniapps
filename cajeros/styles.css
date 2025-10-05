@@ -139,7 +139,6 @@ body {
 .btn-secondary {
   background: var(--patio-marron-madera);
   color: white;
-  margin-top: 20px;
   box-shadow: 0 2px 4px rgba(141, 110, 99, 0.2);
 }
 
@@ -1215,19 +1214,19 @@ body {
     left: 10px;
     max-width: none;
   }
-  
+
   .toast {
     padding: 14px 16px;
   }
-  
+
   .toast-icon {
     font-size: 20px;
   }
-  
+
   .toast-title {
     font-size: 13px;
   }
-  
+
   .toast-message {
     font-size: 12px;
   }
@@ -1263,7 +1262,11 @@ body {
 }
 
 .modal-header {
-  background: linear-gradient(135deg, var(--patio-azul-cielo) 0%, var(--patio-verde-pasto) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--patio-azul-cielo) 0%,
+    var(--patio-verde-pasto) 100%
+  );
   color: white;
   padding: 20px 24px;
   display: flex;
@@ -1390,23 +1393,23 @@ body {
     width: 95%;
     margin: 20px;
   }
-  
+
   .modal-header {
     padding: 16px 20px;
   }
-  
+
   .modal-title {
     font-size: 16px;
   }
-  
+
   .modal-body {
     padding: 20px;
   }
-  
+
   .modal-actions {
     flex-direction: column;
   }
-  
+
   .modal-btn {
     width: 100%;
   }
