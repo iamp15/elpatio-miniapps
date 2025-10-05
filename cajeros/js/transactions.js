@@ -74,16 +74,27 @@ class TransactionManager {
       completadas: [],
     };
 
+    // Obtener ID del cajero logueado
+    const cajeroInfo = window.CajerosApp?.getCajeroInfo();
+    const cajeroId = cajeroInfo?._id;
+
     this.transactions.forEach((transaccion) => {
       switch (transaccion.estado) {
         case "pendiente":
+          // Las pendientes se muestran a todos los cajeros
           this.filteredTransactions.pendientes.push(transaccion);
           break;
         case "en_proceso":
-          this.filteredTransactions.en_proceso.push(transaccion);
+          // Solo mostrar las transacciones en proceso asignadas a este cajero
+          if (transaccion.cajeroId === cajeroId) {
+            this.filteredTransactions.en_proceso.push(transaccion);
+          }
           break;
         case "confirmada":
-          this.filteredTransactions.completadas.push(transaccion);
+          // Solo mostrar las transacciones completadas por este cajero
+          if (transaccion.cajeroId === cajeroId) {
+            this.filteredTransactions.completadas.push(transaccion);
+          }
           break;
         default:
           // Por defecto, considerar como pendiente
