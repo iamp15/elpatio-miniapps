@@ -90,7 +90,7 @@ class TransactionManager {
             this.filteredTransactions.en_proceso.push(transaccion);
           }
           break;
-        case "confirmada":
+        case "completada":
           // Solo mostrar las transacciones completadas por este cajero
           if (transaccion.cajeroId === cajeroId) {
             this.filteredTransactions.completadas.push(transaccion);
@@ -244,7 +244,8 @@ class TransactionManager {
     const estados = {
       pendiente: "⏳ Pendiente",
       en_proceso: "🔄 En Proceso",
-      confirmada: "✅ Completada",
+      confirmada: "✅ Confirmada",
+      completada: "✅ Completada",
     };
     return estados[estado] || estado;
   }
