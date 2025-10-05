@@ -56,10 +56,23 @@ class TransactionManager {
 
       // Combinar todas las transacciones
       this.transactions = [];
-      for (const respuesta of respuestas) {
-        const data = await respuesta.json();
+      for (let i = 0; i < respuestas.length; i++) {
+        const data = await respuestas[i].json();
+        const estado = estados[i];
+        console.log(`🔍 Respuesta para estado "${estado}":`, {
+          total: data.total,
+          transacciones: data.transacciones?.length || 0,
+          estado: data.estado
+        });
         this.transactions = this.transactions.concat(data.transacciones || []);
       }
+
+      console.log("🔍 Total transacciones combinadas:", this.transactions.length);
+      console.log("🔍 Transacciones por estado:", {
+        pendientes: this.transactions.filter(t => t.estado === "pendiente").length,
+        en_proceso: this.transactions.filter(t => t.estado === "en_proceso").length,
+        completadas: this.transactions.filter(t => t.estado === "completada").length
+      });
 
       this.filterTransactionsByStatus();
       this.displayTransactionsByTab();
@@ -77,6 +90,8 @@ class TransactionManager {
    * Nota: El backend ya filtra por cajero para estados "en_proceso" y "completada"
    */
   filterTransactionsByStatus() {
+    console.log("🔍 Iniciando filtro de transacciones...");
+    
     this.filteredTransactions = {
       pendientes: [],
       en_proceso: [],
@@ -84,6 +99,12 @@ class TransactionManager {
     };
 
     this.transactions.forEach((transaccion) => {
+      console.log(`🔍 Procesando transacción:`, {
+        id: transaccion._id,
+        estado: transaccion.estado,
+        cajeroId: transaccion.cajeroId
+      });
+      
       switch (transaccion.estado) {
         case "pendiente":
           // Las pendientes se muestran a todos los cajeros
@@ -101,6 +122,12 @@ class TransactionManager {
           // Por defecto, considerar como pendiente
           this.filteredTransactions.pendientes.push(transaccion);
       }
+    });
+
+    console.log("🔍 Resultado del filtro:", {
+      pendientes: this.filteredTransactions.pendientes.length,
+      en_proceso: this.filteredTransactions.en_proceso.length,
+      completadas: this.filteredTransactions.completadas.length
     });
   }
 
@@ -125,6 +152,12 @@ class TransactionManager {
    * Actualizar contadores de pestañas
    */
   updateTabCounts() {
+    console.log("🔍 Actualizando contadores de pestañas:", {
+      pendientes: this.filteredTransactions.pendientes.length,
+      en_proceso: this.filteredTransactions.en_proceso.length,
+      completadas: this.filteredTransactions.completadas.length
+    });
+    
     UI.updateTabCount(
       "pendientes",
       this.filteredTransactions.pendientes.length
