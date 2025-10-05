@@ -344,8 +344,7 @@ class UIManager {
    * Mostrar modal de detalles de transacción
    */
   showTransactionDetailsModal(modalHTML) {
-    console.log("🔍 [UI] Creando modal de detalles de transacción");
-    console.log("🔍 [UI] Stack trace de creación de modal:", new Error().stack);
+    // Creando modal de detalles de transacción
 
     // Cerrar cualquier modal existente antes de crear uno nuevo
     this.closeTransactionDetailsModal();
@@ -356,7 +355,7 @@ class UIManager {
     overlay.style.zIndex = UI_CONFIG.MODAL_Z_INDEX;
 
     document.body.appendChild(overlay);
-    console.log("🔍 [UI] Modal agregado al DOM");
+    // Modal agregado al DOM
 
     // Configurar evento de cierre
     const closeBtn = overlay.querySelector(".close-btn");
@@ -414,7 +413,7 @@ class UIManager {
   closeTransactionDetailsModal() {
     const overlay = document.querySelector(".modal-overlay");
     if (overlay) {
-      console.log("🔍 [UI] Cerrando modal existente");
+      // Cerrando modal existente
 
       // Limpiar event listeners antes de remover
       const confirmBtn = overlay.querySelector(".confirm-payment-btn");
@@ -428,9 +427,7 @@ class UIManager {
       }
 
       overlay.remove();
-      console.log("🔍 [UI] Modal removido del DOM");
-    } else {
-      console.log("🔍 [UI] No hay modal existente para cerrar");
+      // Modal removido del DOM
     }
   }
 
@@ -630,25 +627,15 @@ class UIManager {
    * Manejar confirmación de pago
    */
   handleConfirmPayment(transaccionId) {
-    console.log(
-      "🔍 [UI] handleConfirmPayment llamado para transacción:",
-      transaccionId
-    );
-    console.log(
-      "🔍 [UI] Estado actual processingPayment:",
-      this.processingPayment
-    );
-    console.log("🔍 [UI] Stack trace:", new Error().stack);
+    // handleConfirmPayment llamado
 
     // Verificar si ya se está procesando esta transacción
     if (this.processingPayment === transaccionId) {
-      console.log("⚠️ [UI] Ya se está procesando esta transacción, ignorando");
       return;
     }
 
     // Marcar como procesando
     this.processingPayment = transaccionId;
-    console.log("🔍 [UI] Marcado como procesando:", this.processingPayment);
 
     // Cerrar el modal
     this.closeTransactionDetailsModal();
@@ -659,7 +646,7 @@ class UIManager {
       window.cajeroWebSocket.isConnected &&
       window.cajeroWebSocket.isAuthenticated
     ) {
-      console.log("🔍 [UI] Enviando confirmación via WebSocket");
+      // Enviando confirmación via WebSocket
       window.cajeroWebSocket.confirmarPagoCajero(transaccionId);
     } else {
       console.error("No hay conexión WebSocket disponible");
@@ -674,7 +661,7 @@ class UIManager {
   handleRejectPayment(transaccionId) {
     // Verificar si ya se está procesando esta transacción
     if (this.processingPayment === transaccionId) {
-      console.log("⚠️ Ya se está procesando esta transacción");
+      // Ya se está procesando esta transacción
       return;
     }
 

@@ -28,7 +28,6 @@ class CajeroWebSocket {
    */
   connect() {
     if (this.socket && this.isConnected) {
-      console.log("Ya hay una conexión activa");
       return;
     }
 
@@ -41,7 +40,7 @@ class CajeroWebSocket {
       ? "http://localhost:3001"
       : "https://elpatio-backend-production.up.railway.app";
 
-    console.log("Conectando a WebSocket:", socketUrl);
+    // Conectando a WebSocket
 
     // Importar Socket.IO dinámicamente
     if (typeof io === "undefined") {
@@ -63,9 +62,6 @@ class CajeroWebSocket {
    */
   setupEventHandlers() {
     this.socket.on("connect", () => {
-      console.log("✅ Conectado al servidor WebSocket");
-      console.log("📡 Socket ID:", this.socket.id);
-      console.log("📡 Transport:", this.socket.io.engine.transport.name);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
       if (this.callbacks.onConnect) {
@@ -74,7 +70,6 @@ class CajeroWebSocket {
     });
 
     this.socket.on("disconnect", (reason) => {
-      console.log("❌ Desconectado del servidor WebSocket:", reason);
       this.isConnected = false;
       this.isAuthenticated = false;
       if (this.callbacks.onDisconnect) {
@@ -96,7 +91,6 @@ class CajeroWebSocket {
     });
 
     this.socket.on("auth-result", (result) => {
-      console.log("🔐 Resultado de autenticación:", result);
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
       if (this.callbacks.onAuthResult) {
@@ -105,14 +99,12 @@ class CajeroWebSocket {
     });
 
     this.socket.on("nueva-solicitud-deposito", (data) => {
-      console.log("💰 Nueva solicitud de depósito:", data);
       if (this.callbacks.onNuevaSolicitudDeposito) {
         this.callbacks.onNuevaSolicitudDeposito(data);
       }
     });
 
     this.socket.on("verificar-pago", (data) => {
-      console.log("🔍 Verificar pago:", data);
       // Filtrar por target: solo procesar si es para cajero
       if (data.target === "cajero" && this.callbacks.onVerificarPago) {
         this.callbacks.onVerificarPago(data);
@@ -120,7 +112,6 @@ class CajeroWebSocket {
     });
 
     this.socket.on("deposito-completado", (data) => {
-      console.log("✅ Depósito completado:", data);
       // Filtrar por target: solo procesar si es para cajero
       if (data.target === "cajero" && this.callbacks.onDepositoCompletado) {
         this.callbacks.onDepositoCompletado(data);
@@ -128,7 +119,6 @@ class CajeroWebSocket {
     });
 
     this.socket.on("deposito-rechazado", (data) => {
-      console.log("❌ Depósito rechazado:", data);
       // Filtrar por target: solo procesar si es para cajero
       if (data.target === "cajero" && this.callbacks.onDepositoRechazado) {
         this.callbacks.onDepositoRechazado(data);
@@ -152,7 +142,7 @@ class CajeroWebSocket {
       return;
     }
 
-    console.log("🔐 Autenticando cajero");
+    // Autenticando cajero
     this.socket.emit("auth-cajero", {
       token,
     });
@@ -167,7 +157,7 @@ class CajeroWebSocket {
       return;
     }
 
-    console.log("✅ Aceptando solicitud:", { transaccionId, transaccionData });
+    // Aceptando solicitud
     this.socket.emit("aceptar-solicitud", {
       transaccionId,
       transaccionData,
@@ -183,7 +173,7 @@ class CajeroWebSocket {
       return;
     }
 
-    console.log("🏦 Atendiendo depósito:", { jugadorSocketId, depositoData });
+    // Atendiendo depósito
     this.socket.emit("atender-deposito", {
       jugadorSocketId,
       ...depositoData,

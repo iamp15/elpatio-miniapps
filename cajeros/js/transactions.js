@@ -42,11 +42,11 @@ class TransactionManager {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Respuesta del endpoint:", data);
+        // Respuesta del endpoint recibida
 
         // El endpoint devuelve { transacciones: [...], total: number }
         const transacciones = data.transacciones || data;
-        console.log("Transacciones extraídas:", transacciones);
+        // Transacciones extraídas
 
         this.transactions = transacciones;
         this.filterTransactionsByStatus();
@@ -340,7 +340,7 @@ class TransactionManager {
             window.cajeroWebSocket.isConnected &&
             window.cajeroWebSocket.isAuthenticated
           ) {
-            console.log("📤 Enviando aceptación via WebSocket");
+            // Enviando aceptación via WebSocket
             window.cajeroWebSocket.aceptarSolicitud(
               transaccionId,
               transaccionData.transaccion

@@ -20,8 +20,6 @@ class CajerosApp {
     if (this.isInitialized) return;
 
     try {
-      console.log("🚀 Iniciando aplicación de cajeros...");
-
       // Configurar WebSocket
       this.setupWebSocket();
 
@@ -53,7 +51,6 @@ class CajerosApp {
       window.CajerosApp = this;
 
       this.isInitialized = true;
-      console.log("✅ Aplicación de cajeros inicializada correctamente");
     } catch (error) {
       console.error("Error inicializando la aplicación:", error);
       UI.showError("Error al inicializar la aplicación");
@@ -66,7 +63,7 @@ class CajerosApp {
   setupWebSocket() {
     // Configurar callbacks de WebSocket
     window.cajeroWebSocket.on("onConnect", () => {
-      console.log("✅ WebSocket conectado");
+      // WebSocket conectado
     });
 
     window.cajeroWebSocket.on("onDisconnect", (reason) => {
@@ -74,11 +71,7 @@ class CajerosApp {
     });
 
     window.cajeroWebSocket.on("onAuthResult", (result) => {
-      if (result.success) {
-        console.log(
-          `🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`
-        );
-      } else {
+      if (!result.success) {
         console.error(`🔐 Error de autenticación WebSocket: ${result.message}`);
       }
     });
@@ -115,7 +108,6 @@ class CajerosApp {
     });
 
     // Conectar WebSocket
-    console.log("🔌 Iniciando conexión WebSocket...");
     window.cajeroWebSocket.connect();
   }
 
@@ -149,8 +141,6 @@ class CajerosApp {
    */
   async handleLoginSuccess(cajeroInfo) {
     try {
-      console.log(`✅ Login exitoso: ${cajeroInfo.nombreCompleto}`);
-
       // Autenticar con WebSocket
       this.authenticateWithWebSocket(cajeroInfo);
 
@@ -174,13 +164,8 @@ class CajerosApp {
   authenticateWithWebSocket(cajeroInfo) {
     if (window.cajeroWebSocket.isConnected) {
       const token = Auth.getToken();
-
-      console.log(
-        `🔐 Autenticando con WebSocket: ${cajeroInfo.nombreCompleto}`
-      );
       window.cajeroWebSocket.authenticateCajero(token);
     } else {
-      console.warn("WebSocket no conectado, reintentando en 2 segundos...");
       setTimeout(() => {
         this.authenticateWithWebSocket(cajeroInfo);
       }, 2000);
@@ -198,7 +183,6 @@ class CajerosApp {
 
       // Verificar si ya procesamos esta transacción
       if (this.processedTransactions.has(transactionId)) {
-        console.log(`🔄 Transacción ya procesada: ${transactionId}`);
         return;
       }
 
@@ -213,9 +197,6 @@ class CajerosApp {
       const montoBs = (data.monto / 100).toFixed(2); // Convertir centavos a bolívares
 
       console.log(`📋 Nueva solicitud: ${jugadorNombre} - ${montoBs} Bs`);
-
-      // Actualizar UI con la nueva solicitud
-      console.log("📋 Datos de solicitud recibidos:", data);
 
       // Forzar actualización de la lista de transacciones
       await this.loadTransactions();
@@ -234,8 +215,6 @@ class CajerosApp {
    */
   handleVerificarPago(data) {
     try {
-      console.log("🔍 Datos de verificación de pago:", data);
-
       // Mostrar pop-up de verificación de pago
       UI.showVerificarPagoPopup(data);
 
@@ -251,8 +230,6 @@ class CajerosApp {
    */
   handleDepositoCompletado(data) {
     try {
-      console.log("✅ Datos de depósito completado:", data);
-
       // Limpiar el estado de procesamiento
       UI.processingPayment = null;
 
@@ -271,8 +248,6 @@ class CajerosApp {
    */
   handleDepositoRechazado(data) {
     try {
-      console.log("❌ Datos de depósito rechazado:", data);
-
       // Limpiar el estado de procesamiento
       UI.processingPayment = null;
 
@@ -330,11 +305,7 @@ class CajerosApp {
           transactionElement.classList.remove("transaction-new");
         }, 10000);
 
-        console.log(`🏷️ Transacción ${transactionId} marcada como nueva`);
-      } else {
-        console.log(
-          `⚠️ No se encontró elemento para transacción ${transactionId}`
-        );
+        // Transacción marcada como nueva
       }
     } catch (error) {
       console.error(`Error marcando transacción como nueva: ${error.message}`);
@@ -353,8 +324,6 @@ class CajerosApp {
 
     // Limpiar transacciones
     TransactionManager.clearTransactions();
-
-    console.log("👋 Usuario cerró sesión");
   }
 
   /**
@@ -364,7 +333,6 @@ class CajerosApp {
     UI.showLoginScreen();
     TransactionManager.clearTransactions();
     UI.showError("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
-    console.log("⏰ Token expirado");
   }
 
   /**
@@ -381,7 +349,6 @@ class CajerosApp {
    */
   handleTabSwitch(tabName) {
     TransactionManager.switchTab(tabName);
-    console.log(`🔄 Cambiando a pestaña: ${tabName}`);
   }
 
   /**
