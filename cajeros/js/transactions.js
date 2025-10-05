@@ -318,10 +318,9 @@ class TransactionManager {
    * Aceptar transacción (tomar la transacción)
    */
   async acceptTransaction(transaccionId, token) {
-    // Mostrar estado de loading en el botón
-    this.setButtonLoading(transaccionId, true);
-
     UI.showConfirmDialog(MESSAGES.CONFIRM.ASSIGN_TRANSACTION, async () => {
+      // Mostrar estado de loading en el botón solo después de confirmar
+      this.setButtonLoading(transaccionId, true);
       try {
         // 1. Asignar cajero a la transacción via HTTP API
         const asignacionResponse = await API.asignarCajero(
