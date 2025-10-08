@@ -166,6 +166,41 @@ class CajeroWebSocket {
         this.callbacks.onError(error);
       }
     });
+
+    // Nuevos eventos de recuperación
+    this.socket.on("transaction-state-recovered", (data) => {
+      console.log("✅ [RECOVERY] Estado de transacción recuperado:", data);
+      // El cajero puede ver el estado actual de transacciones recuperadas
+    });
+
+    this.socket.on("reconnection-successful", (data) => {
+      console.log("✅ [RECOVERY] Reconexión exitosa:", data);
+      // Notificar al cajero que se recuperaron transacciones
+    });
+
+    this.socket.on("participant-disconnected", (data) => {
+      console.log("⚠️ [RECOVERY] Participante desconectado:", data);
+      if (data.tipo === "jugador") {
+        console.log(`⚠️ Jugador desconectado en transacción ${data.transaccionId}`);
+        // El cajero puede mostrar un indicador de que el jugador se desconectó
+      }
+    });
+
+    this.socket.on("participant-reconnected", (data) => {
+      console.log("✅ [RECOVERY] Participante reconectado:", data);
+      if (data.tipo === "jugador") {
+        console.log(`✅ Jugador reconectado en transacción ${data.transaccionId}`);
+        // El cajero puede ocultar el indicador de desconexión
+      }
+    });
+
+    this.socket.on("participant-disconnected-timeout", (data) => {
+      console.log("❌ [RECOVERY] Participante no pudo reconectar:", data);
+      if (data.tipo === "jugador") {
+        console.log(`❌ Jugador no reconectó en transacción ${data.transaccionId}`);
+        // El cajero debe verificar el estado de la transacción manualmente
+      }
+    });
   }
 
   /**
