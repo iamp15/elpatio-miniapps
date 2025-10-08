@@ -90,7 +90,7 @@ class CajeroWebSocket {
       console.log(`🔄 Reconectado automáticamente (intento ${attemptNumber})`);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear contador manual
-      
+
       // Re-autenticar y re-unirse a rooms
       setTimeout(() => {
         this.reauthenticateAndRejoinRooms();
@@ -106,7 +106,9 @@ class CajeroWebSocket {
     });
 
     this.socket.on("reconnect_failed", () => {
-      console.error("❌ Falló la reconexión automática, iniciando reconexión manual");
+      console.error(
+        "❌ Falló la reconexión automática, iniciando reconexión manual"
+      );
       this.attemptReconnect();
     });
 

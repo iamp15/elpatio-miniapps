@@ -683,6 +683,15 @@ body {
   color: #856404;
 }
 
+.transaction-card[data-status="realizada"] {
+  border-left: 4px solid #17a2b8;
+}
+
+.transaction-card[data-status="realizada"] .transaction-type {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
 .transaction-card[data-status="confirmada"] {
   border-left: 4px solid #28a745;
 }

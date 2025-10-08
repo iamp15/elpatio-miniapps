@@ -386,7 +386,7 @@ class UIManager {
   updateFinalInfo(transaction) {
     // Log para verificar el estado de la transacción
     console.log("🔍 [UI] Estado de transacción recibido:", transaction.estado);
-    
+
     if (this.elements.finalAmount) {
       this.elements.finalAmount.textContent = this.formatCurrency(
         transaction.monto
@@ -412,7 +412,8 @@ class UIManager {
     }
     if (this.elements.finalBalance) {
       // Mostrar el nuevo saldo del jugador
-      const newBalance = transaction.saldoNuevo || transaction.saldoAnterior + transaction.monto;
+      const newBalance =
+        transaction.saldoNuevo || transaction.saldoAnterior + transaction.monto;
       this.elements.finalBalance.textContent = this.formatCurrency(newBalance);
     }
   }
@@ -446,6 +447,7 @@ class UIManager {
     const statusMap = {
       pendiente: "Pendiente",
       en_proceso: "En Proceso",
+      realizada: "Pago Realizado",
       confirmada: "Confirmada",
       cancelada: "Cancelada",
       expirada: "Expirada",

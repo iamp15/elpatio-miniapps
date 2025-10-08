@@ -106,6 +106,10 @@
                     En proceso
                     <span class="tab-count" id="count-en_proceso">0</span>
                   </button>
+                  <button class="tab-btn" data-tab="realizada">
+                    Pago Realizado
+                    <span class="tab-count" id="count-realizada">0</span>
+                  </button>
                   <button class="tab-btn" data-tab="completadas">
                     Completadas
                     <span class="tab-count" id="count-completadas">0</span>
@@ -168,6 +172,30 @@
                       <div class="no-data-icon">⏳</div>
                       <h4>No hay transacciones en proceso</h4>
                       <p>No tienes transacciones asignadas en este momento.</p>
+                    </div>
+                  </div>
+
+                  <!-- Pestaña Pago Realizado -->
+                  <div class="tab-panel" id="tab-realizada">
+                    <!-- Lista de transacciones con pago realizado -->
+                    <div
+                      id="transactions-list-realizada"
+                      class="transactions-list"
+                    >
+                      <!-- Las transacciones se cargarán dinámicamente aquí -->
+                    </div>
+
+                    <!-- Mensaje cuando no hay transacciones con pago realizado -->
+                    <div
+                      id="no-transactions-realizada"
+                      class="no-transactions"
+                      style="display: none"
+                    >
+                      <div class="no-data-icon">💳</div>
+                      <h4>No hay pagos pendientes de verificar</h4>
+                      <p>
+                        No hay transacciones esperando verificación de pago.
+                      </p>
                     </div>
                   </div>
 

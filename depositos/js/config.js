@@ -88,6 +88,7 @@ export const APP_STATES = {
 export const TRANSACTION_STATES = {
   PENDIENTE: "pendiente",
   EN_PROCESO: "en_proceso",
+  REALIZADA: "realizada",
   CONFIRMADA: "confirmada",
   CANCELADA: "cancelada",
   EXPIRADA: "expirada",

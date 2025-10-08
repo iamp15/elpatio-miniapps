@@ -12,6 +12,7 @@ class TransactionManager {
     this.filteredTransactions = {
       pendientes: [],
       en_proceso: [],
+      realizada: [],
       completadas: [],
     };
     this.currentTab = "pendientes";
@@ -39,7 +40,7 @@ class TransactionManager {
       UI.hideNoTransactions();
 
       // Cargar transacciones de todos los estados
-      const estados = ["pendiente", "en_proceso", "completada"];
+      const estados = ["pendiente", "en_proceso", "realizada", "completada"];
       const promesas = estados.map((estado) =>
         API.getTransaccionesCajero(estado, token)
       );
@@ -75,12 +76,13 @@ class TransactionManager {
 
   /**
    * Filtrar transacciones por estado
-   * Nota: El backend ya filtra por cajero para estados "en_proceso" y "completada"
+   * Nota: El backend ya filtra por cajero para estados "en_proceso", "realizada" y "completada"
    */
   filterTransactionsByStatus() {
     this.filteredTransactions = {
       pendientes: [],
       en_proceso: [],
+      realizada: [],
       completadas: [],
     };
 
@@ -93,6 +95,10 @@ class TransactionManager {
         case "en_proceso":
           // El backend ya filtra por cajero, solo agregar a la lista
           this.filteredTransactions.en_proceso.push(transaccion);
+          break;
+        case "realizada":
+          // Usuario ya reportó que hizo el pago, cajero debe verificar
+          this.filteredTransactions.realizada.push(transaccion);
           break;
         case "completada":
           // El backend ya filtra por cajero, solo agregar a la lista
@@ -134,6 +140,7 @@ class TransactionManager {
       "en_proceso",
       this.filteredTransactions.en_proceso.length
     );
+    UI.updateTabCount("realizada", this.filteredTransactions.realizada.length);
     UI.updateTabCount(
       "completadas",
       this.filteredTransactions.completadas.length
@@ -246,6 +253,7 @@ class TransactionManager {
     const estados = {
       pendiente: "⏳ Pendiente",
       en_proceso: "🔄 En Proceso",
+      realizada: "💳 Pago Realizado",
       confirmada: "✅ Confirmada",
       completada: "✅ Completada",
     };
@@ -268,6 +276,12 @@ class TransactionManager {
         return `
           <button class="btn-action btn-view" onclick="viewTransactionDetails('${transaccion._id}')">
             👁️ Ver Detalles
+          </button>
+        `;
+      case "realizada":
+        return `
+          <button class="btn-action btn-confirm" onclick="verifyPayment('${transaccion._id}')">
+            🔍 Verificar Pago
           </button>
         `;
       case "confirmada":
