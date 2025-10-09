@@ -662,16 +662,23 @@ class DepositApp {
    * Manejar recuperación de transacción
    */
   handleTransactionRecovered(data) {
-    console.log("✅ Transacción recuperada:", data);
+    console.log("🔄 [APP] handleTransactionRecovered LLAMADO");
+    console.log("🔄 [APP] Data recibida:", data);
+    console.log("🔄 [APP] Estado:", data.estado);
+    console.log("🔄 [APP] Cajero:", data.cajero);
+    
     window.visualLogger.success(
       "¡Conexión recuperada! Continuando con tu depósito..."
     );
 
     // Establecer la transacción activa recuperada
     window.depositoWebSocket.setActiveTransaction(data.transaccionId);
+    console.log("🔄 [APP] Transacción activa establecida:", data.transaccionId);
 
     // Restaurar UI según el estado de la transacción
+    console.log("🔄 [APP] Llamando a restoreUIFromState con estado:", data.estado);
     this.restoreUIFromState(data.estado, data);
+    console.log("🔄 [APP] restoreUIFromState completado");
   }
 
   /**
@@ -718,11 +725,13 @@ class DepositApp {
    * Restaurar UI desde estado de transacción
    */
   restoreUIFromState(estado, data) {
-    console.log(`🔄 Restaurando UI desde estado: ${estado}`);
+    console.log(`🔄 [RESTORE] Restaurando UI desde estado: ${estado}`);
+    console.log(`🔄 [RESTORE] Data completa:`, data);
 
     switch (estado) {
       case "pendiente":
         // Transacción pendiente, mostrar pantalla de espera
+        console.log("🔄 [RESTORE] Mostrando pantalla de espera (pendiente)");
         UI.showWaitingScreen();
         window.visualLogger.info(
           "Esperando que un cajero acepte tu solicitud..."
@@ -730,23 +739,36 @@ class DepositApp {
         break;
 
       case "en_proceso":
+        console.log("🔄 [RESTORE] Procesando estado en_proceso");
+        console.log("🔄 [RESTORE] data.cajero existe:", !!data.cajero);
+        console.log("🔄 [RESTORE] data.cajero.datosPago existe:", !!(data.cajero && data.cajero.datosPago));
+        
         // Cajero aceptó, mostrar datos bancarios
         if (data.cajero && data.cajero.datosPago) {
+          console.log("🔄 [RESTORE] Cajero y datos disponibles, preparando UI");
           window.visualLogger.info("Mostrando datos bancarios del cajero...");
           
-          // Actualizar datos bancarios en la UI usando el método correcto
-          UI.updateBankInfo({
+          const bankInfo = {
             banco: data.cajero.datosPago.banco || "N/A",
             telefono: data.cajero.datosPago.telefono || "N/A",
             cedula: data.cajero.datosPago.cedula 
               ? `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`
               : "N/A",
             monto: data.monto / 100, // Convertir centavos a bolívares
-          });
+          };
+          
+          console.log("🔄 [RESTORE] Datos bancarios a mostrar:", bankInfo);
+          
+          // Actualizar datos bancarios en la UI usando el método correcto
+          UI.updateBankInfo(bankInfo);
+          console.log("🔄 [RESTORE] Datos bancarios actualizados, mostrando pantalla");
           
           // Mostrar pantalla de datos bancarios
           UI.showBankInfoScreen();
+          console.log("🔄 [RESTORE] Pantalla de datos bancarios mostrada");
         } else {
+          console.warn("🔄 [RESTORE] Cajero sin datos disponibles");
+          console.log("🔄 [RESTORE] data.cajero:", data.cajero);
           window.visualLogger.warn("Cajero asignado pero datos no disponibles");
           UI.showWaitingScreen();
         }
@@ -779,7 +801,9 @@ class DepositApp {
 
       default:
         console.log(`Estado no manejado para restauración: ${estado}`);
-        window.visualLogger.warn(`Estado desconocido: ${estado}, volviendo a pantalla principal`);
+        window.visualLogger.warn(
+          `Estado desconocido: ${estado}, volviendo a pantalla principal`
+        );
         UI.showMainScreen();
     }
   }

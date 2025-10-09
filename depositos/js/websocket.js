@@ -107,7 +107,7 @@ class DepositoWebSocket {
       console.log("📡 Transport:", this.socket.io.engine.transport.name);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
-      
+
       // Re-autenticar automáticamente si tenemos datos guardados
       // Esto maneja tanto la conexión inicial como las reconexiones
       if (this.lastInitData && !this.isAuthenticated) {
@@ -116,7 +116,7 @@ class DepositoWebSocket {
           this.reauthenticateAndRecover();
         }, 500);
       }
-      
+
       if (this.callbacks.onConnect) {
         this.callbacks.onConnect();
       }
@@ -172,18 +172,23 @@ class DepositoWebSocket {
       console.log("🔐 Resultado de autenticación:", result);
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
-      
+
       if (result.success) {
-        console.log("✅ [AUTH] Autenticación exitosa para:", result.user?.nombre);
-        
+        console.log(
+          "✅ [AUTH] Autenticación exitosa para:",
+          result.user?.nombre
+        );
+
         // Si hay información de recuperación, procesarla
         if (result.recovery && result.recovery.transactionsRecovered) {
-          console.log(`🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`);
+          console.log(
+            `🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`
+          );
         }
       } else {
         console.error("❌ [AUTH] Autenticación fallida:", result.message);
       }
-      
+
       if (this.callbacks.onAuthResult) {
         this.callbacks.onAuthResult(result);
       }
@@ -320,11 +325,20 @@ class DepositoWebSocket {
     // Nuevos eventos de recuperación
     this.socket.on("transaction-state-recovered", (data) => {
       console.log("✅ [RECOVERY] Estado de transacción recuperado:", data);
+      console.log("✅ [RECOVERY] Estado:", data.estado);
+      console.log("✅ [RECOVERY] Cajero:", data.cajero);
+      console.log("✅ [RECOVERY] Callback configurado:", !!this.callbacks.onTransactionRecovered);
+      
       if (window.visualLogger) {
         window.visualLogger.success("Transacción recuperada exitosamente");
+        window.visualLogger.info(`Estado recuperado: ${data.estado}`);
       }
+      
       if (this.callbacks.onTransactionRecovered) {
+        console.log("✅ [RECOVERY] Ejecutando callback onTransactionRecovered");
         this.callbacks.onTransactionRecovered(data);
+      } else {
+        console.error("❌ [RECOVERY] Callback onTransactionRecovered NO está configurado");
       }
     });
 
