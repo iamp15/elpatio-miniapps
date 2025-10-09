@@ -325,20 +325,33 @@ class DepositoWebSocket {
     // Nuevos eventos de recuperación
     this.socket.on("transaction-state-recovered", (data) => {
       console.log("✅ [RECOVERY] Estado de transacción recuperado:", data);
-      console.log("✅ [RECOVERY] Estado:", data.estado);
-      console.log("✅ [RECOVERY] Cajero:", data.cajero);
-      console.log("✅ [RECOVERY] Callback configurado:", !!this.callbacks.onTransactionRecovered);
-      
+
       if (window.visualLogger) {
-        window.visualLogger.success("Transacción recuperada exitosamente");
-        window.visualLogger.info(`Estado recuperado: ${data.estado}`);
+        window.visualLogger.success("✅ [RECOVERY] Evento recibido");
+        window.visualLogger.debug("TransaccionId", data.transaccionId);
+        window.visualLogger.debug("Estado", data.estado);
+        window.visualLogger.debug("Monto", data.monto);
+        window.visualLogger.debug("Cajero existe", !!data.cajero);
+        if (data.cajero) {
+          window.visualLogger.debug("Cajero nombre", data.cajero.nombre);
+          window.visualLogger.debug("Cajero datosPago", data.cajero.datosPago);
+        }
+        window.visualLogger.debug("Callback configurado", !!this.callbacks.onTransactionRecovered);
       }
-      
+
       if (this.callbacks.onTransactionRecovered) {
         console.log("✅ [RECOVERY] Ejecutando callback onTransactionRecovered");
+        if (window.visualLogger) {
+          window.visualLogger.info("✅ Ejecutando callback de recuperación");
+        }
         this.callbacks.onTransactionRecovered(data);
       } else {
-        console.error("❌ [RECOVERY] Callback onTransactionRecovered NO está configurado");
+        console.error(
+          "❌ [RECOVERY] Callback onTransactionRecovered NO está configurado"
+        );
+        if (window.visualLogger) {
+          window.visualLogger.error("❌ Callback NO configurado");
+        }
       }
     });
 

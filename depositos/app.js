@@ -662,23 +662,24 @@ class DepositApp {
    * Manejar recuperación de transacción
    */
   handleTransactionRecovered(data) {
-    console.log("🔄 [APP] handleTransactionRecovered LLAMADO");
-    console.log("🔄 [APP] Data recibida:", data);
-    console.log("🔄 [APP] Estado:", data.estado);
-    console.log("🔄 [APP] Cajero:", data.cajero);
-    
+    window.visualLogger.success("🔄 [APP] handleTransactionRecovered LLAMADO");
+    window.visualLogger.debug("Data recibida", data);
+    window.visualLogger.debug("Estado", data.estado);
+    window.visualLogger.debug("Monto", data.monto);
+    window.visualLogger.debug("Cajero", data.cajero);
+
     window.visualLogger.success(
       "¡Conexión recuperada! Continuando con tu depósito..."
     );
 
     // Establecer la transacción activa recuperada
     window.depositoWebSocket.setActiveTransaction(data.transaccionId);
-    console.log("🔄 [APP] Transacción activa establecida:", data.transaccionId);
+    window.visualLogger.info(`Transacción activa: ${data.transaccionId}`);
 
     // Restaurar UI según el estado de la transacción
-    console.log("🔄 [APP] Llamando a restoreUIFromState con estado:", data.estado);
+    window.visualLogger.info(`Restaurando UI desde estado: ${data.estado}`);
     this.restoreUIFromState(data.estado, data);
-    console.log("🔄 [APP] restoreUIFromState completado");
+    window.visualLogger.success("Restauración de UI completada");
   }
 
   /**
@@ -739,37 +740,37 @@ class DepositApp {
         break;
 
       case "en_proceso":
-        console.log("🔄 [RESTORE] Procesando estado en_proceso");
-        console.log("🔄 [RESTORE] data.cajero existe:", !!data.cajero);
-        console.log("🔄 [RESTORE] data.cajero.datosPago existe:", !!(data.cajero && data.cajero.datosPago));
-        
+        window.visualLogger.info("🔄 [RESTORE] Procesando estado en_proceso");
+        window.visualLogger.debug("Cajero existe", !!data.cajero);
+        window.visualLogger.debug("datosPago existe", !!(data.cajero && data.cajero.datosPago));
+
         // Cajero aceptó, mostrar datos bancarios
         if (data.cajero && data.cajero.datosPago) {
-          console.log("🔄 [RESTORE] Cajero y datos disponibles, preparando UI");
-          window.visualLogger.info("Mostrando datos bancarios del cajero...");
-          
+          window.visualLogger.info("🔄 Cajero y datos disponibles");
+
           const bankInfo = {
             banco: data.cajero.datosPago.banco || "N/A",
             telefono: data.cajero.datosPago.telefono || "N/A",
-            cedula: data.cajero.datosPago.cedula 
+            cedula: data.cajero.datosPago.cedula
               ? `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`
               : "N/A",
             monto: data.monto / 100, // Convertir centavos a bolívares
           };
-          
-          console.log("🔄 [RESTORE] Datos bancarios a mostrar:", bankInfo);
-          
+
+          window.visualLogger.debug("Datos bancarios", bankInfo);
+
           // Actualizar datos bancarios en la UI usando el método correcto
+          window.visualLogger.info("🔄 Actualizando datos bancarios...");
           UI.updateBankInfo(bankInfo);
-          console.log("🔄 [RESTORE] Datos bancarios actualizados, mostrando pantalla");
+          
+          window.visualLogger.info("🔄 Mostrando pantalla de datos bancarios...");
           
           // Mostrar pantalla de datos bancarios
           UI.showBankInfoScreen();
-          console.log("🔄 [RESTORE] Pantalla de datos bancarios mostrada");
+          window.visualLogger.success("✅ Pantalla de datos bancarios mostrada");
         } else {
-          console.warn("🔄 [RESTORE] Cajero sin datos disponibles");
-          console.log("🔄 [RESTORE] data.cajero:", data.cajero);
-          window.visualLogger.warn("Cajero asignado pero datos no disponibles");
+          window.visualLogger.warning("⚠️ Cajero sin datos disponibles");
+          window.visualLogger.debug("data.cajero completo", data.cajero);
           UI.showWaitingScreen();
         }
         break;
