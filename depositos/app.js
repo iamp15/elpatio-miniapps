@@ -220,7 +220,7 @@ class DepositApp {
     try {
       // Establecer transacción activa para sistema de recuperación
       window.depositoWebSocket.setActiveTransaction(data.transaccionId);
-      
+
       window.visualLogger.transaction(
         `📋 Solicitud creada: ${data.transaccionId}`
       );
@@ -286,7 +286,7 @@ class DepositApp {
     try {
       // Limpiar transacción activa (ya completada)
       window.depositoWebSocket.clearActiveTransaction();
-      
+
       window.visualLogger.success("🎉 [APP] handleDepositoCompletado llamado");
       window.visualLogger.info("🎉 [APP] Datos recibidos:", data);
 
@@ -663,7 +663,9 @@ class DepositApp {
    */
   handleTransactionRecovered(data) {
     console.log("✅ Transacción recuperada:", data);
-    window.visualLogger.success("¡Conexión recuperada! Continuando con tu depósito...");
+    window.visualLogger.success(
+      "¡Conexión recuperada! Continuando con tu depósito..."
+    );
 
     // Establecer la transacción activa recuperada
     window.depositoWebSocket.setActiveTransaction(data.transaccionId);
@@ -678,7 +680,7 @@ class DepositApp {
   handleReconnectionSuccessful(data) {
     console.log("✅ Reconexión exitosa:", data);
     const numTransacciones = data.transaccionesRecuperadas?.length || 0;
-    
+
     if (numTransacciones > 0) {
       window.visualLogger.success(
         `¡Reconexión exitosa! ${numTransacciones} transacción(es) recuperada(s)`
@@ -693,7 +695,7 @@ class DepositApp {
    */
   handleParticipantDisconnected(data) {
     console.log("⚠️ Participante desconectado:", data);
-    
+
     if (data.tipo === "cajero") {
       window.visualLogger.warn(
         "El cajero se desconectó temporalmente. Esperando reconexión..."
@@ -706,7 +708,7 @@ class DepositApp {
    */
   handleParticipantReconnected(data) {
     console.log("✅ Participante reconectado:", data);
-    
+
     if (data.tipo === "cajero") {
       window.visualLogger.success("El cajero se reconectó. Continuando...");
     }
@@ -721,49 +723,64 @@ class DepositApp {
     switch (estado) {
       case "pendiente":
         // Transacción pendiente, mostrar pantalla de espera
-        UI.showScreen("waiting");
-        window.visualLogger.info("Esperando que un cajero acepte tu solicitud...");
+        UI.showWaitingScreen();
+        window.visualLogger.info(
+          "Esperando que un cajero acepte tu solicitud..."
+        );
         break;
 
       case "en_proceso":
         // Cajero aceptó, mostrar datos bancarios
-        if (data.cajero) {
-          UI.showScreen("bank-details");
-          // Actualizar datos bancarios en UI
-          TransactionManager.displayBankDetails(data.cajero);
+        if (data.cajero && data.cajero.datosPago) {
           window.visualLogger.info("Mostrando datos bancarios del cajero...");
+          
+          // Actualizar datos bancarios en la UI usando el método correcto
+          UI.updateBankInfo({
+            banco: data.cajero.datosPago.banco || "N/A",
+            telefono: data.cajero.datosPago.telefono || "N/A",
+            cedula: data.cajero.datosPago.cedula 
+              ? `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`
+              : "N/A",
+            monto: data.monto / 100, // Convertir centavos a bolívares
+          });
+          
+          // Mostrar pantalla de datos bancarios
+          UI.showBankInfoScreen();
         } else {
-          UI.showScreen("waiting");
           window.visualLogger.warn("Cajero asignado pero datos no disponibles");
+          UI.showWaitingScreen();
         }
         break;
 
       case "realizada":
         // Usuario ya confirmó pago, esperando verificación
-        UI.showScreen("payment-registered");
-        window.visualLogger.info("Tu pago fue registrado. Esperando verificación del cajero...");
+        UI.showPaymentRegisteredScreen();
+        window.visualLogger.info(
+          "Tu pago fue registrado. Esperando verificación del cajero..."
+        );
         break;
 
       case "confirmada":
       case "completada":
         // Transacción completada
-        UI.showScreen("success");
         if (data.saldoNuevo !== undefined) {
           this.currentBalance = data.saldoNuevo;
           UI.updateBalance(data.saldoNuevo);
         }
+        UI.showConfirmationScreen();
         window.visualLogger.success("¡Depósito completado exitosamente!");
         break;
 
       case "rechazada":
         // Transacción rechazada
-        UI.showScreen("error");
+        UI.showErrorScreen("Tu depósito fue rechazado");
         window.visualLogger.error("Tu depósito fue rechazado");
         break;
 
       default:
         console.log(`Estado no manejado para restauración: ${estado}`);
-        UI.showScreen("main");
+        window.visualLogger.warn(`Estado desconocido: ${estado}, volviendo a pantalla principal`);
+        UI.showMainScreen();
     }
   }
 
