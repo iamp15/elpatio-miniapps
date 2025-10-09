@@ -11,11 +11,11 @@ class DepositoWebSocket {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 10; // Más intentos
     this.reconnectDelay = 1000; // Menos delay
-    
+
     // Sistema de recuperación de transacciones
     this.activeTransactionId = null; // Transacción activa actual
     this.lastInitData = null; // Datos de autenticación para reconexión
-    
+
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -107,6 +107,16 @@ class DepositoWebSocket {
       console.log("📡 Transport:", this.socket.io.engine.transport.name);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
+      
+      // Re-autenticar automáticamente si tenemos datos guardados
+      // Esto maneja tanto la conexión inicial como las reconexiones
+      if (this.lastInitData && !this.isAuthenticated) {
+        console.log("🔐 [RECOVERY] Re-autenticando automáticamente...");
+        setTimeout(() => {
+          this.reauthenticateAndRecover();
+        }, 500);
+      }
+      
       if (this.callbacks.onConnect) {
         this.callbacks.onConnect();
       }
@@ -162,6 +172,18 @@ class DepositoWebSocket {
       console.log("🔐 Resultado de autenticación:", result);
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
+      
+      if (result.success) {
+        console.log("✅ [AUTH] Autenticación exitosa para:", result.user?.nombre);
+        
+        // Si hay información de recuperación, procesarla
+        if (result.recovery && result.recovery.transactionsRecovered) {
+          console.log(`🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`);
+        }
+      } else {
+        console.error("❌ [AUTH] Autenticación fallida:", result.message);
+      }
+      
       if (this.callbacks.onAuthResult) {
         this.callbacks.onAuthResult(result);
       }
@@ -310,7 +332,9 @@ class DepositoWebSocket {
       console.log("✅ [RECOVERY] Reconexión exitosa:", data);
       if (window.visualLogger) {
         window.visualLogger.success(
-          `Reconexión exitosa. ${data.transaccionesRecuperadas?.length || 0} transacciones recuperadas`
+          `Reconexión exitosa. ${
+            data.transaccionesRecuperadas?.length || 0
+          } transacciones recuperadas`
         );
       }
       if (this.callbacks.onReconnectionSuccessful) {
@@ -372,14 +396,18 @@ class DepositoWebSocket {
    */
   setActiveTransaction(transaccionId) {
     this.activeTransactionId = transaccionId;
-    console.log(`📋 [RECOVERY] Transacción activa establecida: ${transaccionId}`);
+    console.log(
+      `📋 [RECOVERY] Transacción activa establecida: ${transaccionId}`
+    );
   }
 
   /**
    * Limpiar transacción activa
    */
   clearActiveTransaction() {
-    console.log(`📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`);
+    console.log(
+      `📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`
+    );
     this.activeTransactionId = null;
   }
 
@@ -419,11 +447,15 @@ class DepositoWebSocket {
     }
 
     if (!this.isConnected || !this.isAuthenticated) {
-      console.log("⚠️ [RECOVERY] No conectado/autenticado para re-unirse a room");
+      console.log(
+        "⚠️ [RECOVERY] No conectado/autenticado para re-unirse a room"
+      );
       return;
     }
 
-    console.log(`🔄 [RECOVERY] Re-uniéndose a room de transacción: ${this.activeTransactionId}`);
+    console.log(
+      `🔄 [RECOVERY] Re-uniéndose a room de transacción: ${this.activeTransactionId}`
+    );
     this.socket.emit("unirse-room-transaccion", {
       transaccionId: this.activeTransactionId,
     });

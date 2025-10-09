@@ -71,6 +71,16 @@ class CajeroWebSocket {
     this.socket.on("connect", () => {
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
+      
+      // Re-autenticar automáticamente si tenemos token guardado
+      // Esto maneja tanto la conexión inicial como las reconexiones
+      if (this.lastAuthToken && !this.isAuthenticated) {
+        console.log("🔐 [RECOVERY] Re-autenticando cajero automáticamente...");
+        setTimeout(() => {
+          this.reauthenticateAndRejoinRooms();
+        }, 500);
+      }
+      
       if (this.callbacks.onConnect) {
         this.callbacks.onConnect();
       }
@@ -128,6 +138,18 @@ class CajeroWebSocket {
     this.socket.on("auth-result", (result) => {
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
+      
+      if (result.success) {
+        console.log("✅ [AUTH] Cajero autenticado:", result.user?.nombre);
+        
+        // Si hay información de recuperación, procesarla
+        if (result.recovery && result.recovery.transactionsRecovered) {
+          console.log(`🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`);
+        }
+      } else {
+        console.error("❌ [AUTH] Autenticación de cajero fallida:", result.message);
+      }
+      
       if (this.callbacks.onAuthResult) {
         this.callbacks.onAuthResult(result);
       }
@@ -181,7 +203,9 @@ class CajeroWebSocket {
     this.socket.on("participant-disconnected", (data) => {
       console.log("⚠️ [RECOVERY] Participante desconectado:", data);
       if (data.tipo === "jugador") {
-        console.log(`⚠️ Jugador desconectado en transacción ${data.transaccionId}`);
+        console.log(
+          `⚠️ Jugador desconectado en transacción ${data.transaccionId}`
+        );
         // El cajero puede mostrar un indicador de que el jugador se desconectó
       }
     });
@@ -189,7 +213,9 @@ class CajeroWebSocket {
     this.socket.on("participant-reconnected", (data) => {
       console.log("✅ [RECOVERY] Participante reconectado:", data);
       if (data.tipo === "jugador") {
-        console.log(`✅ Jugador reconectado en transacción ${data.transaccionId}`);
+        console.log(
+          `✅ Jugador reconectado en transacción ${data.transaccionId}`
+        );
         // El cajero puede ocultar el indicador de desconexión
       }
     });
@@ -197,7 +223,9 @@ class CajeroWebSocket {
     this.socket.on("participant-disconnected-timeout", (data) => {
       console.log("❌ [RECOVERY] Participante no pudo reconectar:", data);
       if (data.tipo === "jugador") {
-        console.log(`❌ Jugador no reconectó en transacción ${data.transaccionId}`);
+        console.log(
+          `❌ Jugador no reconectó en transacción ${data.transaccionId}`
+        );
         // El cajero debe verificar el estado de la transacción manualmente
       }
     });
