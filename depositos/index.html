@@ -100,6 +100,13 @@
             notificaremos tan pronto como sea aceptada.
           </p>
         </div>
+
+        <!-- Botón para cancelar la solicitud -->
+        <div class="action-buttons">
+          <button class="btn btn-cancel" id="cancel-waiting-btn">
+            ❌ Cancelar Solicitud
+          </button>
+        </div>
       </div>
 
       <!-- Pantalla de datos bancarios -->
@@ -180,9 +187,14 @@
             </ol>
           </div>
 
-          <button class="btn btn-success" id="payment-done-btn">
-            ✅ Ya realicé el pago
-          </button>
+          <div class="action-buttons">
+            <button class="btn btn-success" id="payment-done-btn">
+              ✅ Ya realicé el pago
+            </button>
+            <button class="btn btn-cancel" id="cancel-bank-info-btn">
+              ❌ Cancelar Depósito
+            </button>
+          </div>
         </div>
       </div>
 

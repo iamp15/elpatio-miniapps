@@ -53,6 +53,7 @@ class DepositApp {
         onRetry: this.handleRetry.bind(this),
         onCloseError: this.handleCloseError.bind(this),
         onAmountChange: this.handleAmountChange.bind(this),
+        onCancelTransaction: this.handleCancelTransaction.bind(this),
       });
 
       // Hacer disponibles las instancias globalmente para uso en HTML
@@ -638,6 +639,63 @@ class DepositApp {
   }
 
   /**
+   * Manejar cancelación de transacción
+   */
+  async handleCancelTransaction() {
+    try {
+      // Obtener transacción actual
+      const currentTransaction = TransactionManager.getCurrentTransaction();
+
+      if (!currentTransaction || !currentTransaction._id) {
+        window.visualLogger.error("No hay transacción activa para cancelar");
+        return;
+      }
+
+      // Confirmar cancelación
+      const confirmed = confirm(
+        "¿Estás seguro que deseas cancelar esta solicitud de depósito?"
+      );
+
+      if (!confirmed) {
+        window.visualLogger.info("Cancelación abortada por el usuario");
+        return;
+      }
+
+      window.visualLogger.info("Cancelando transacción...");
+
+      // Llamar al API para cancelar
+      const response = await API.cancelarTransaccion(
+        currentTransaction._id,
+        "Cancelada por el usuario"
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.mensaje || "Error cancelando transacción");
+      }
+
+      const data = await response.json();
+
+      window.visualLogger.success("Transacción cancelada exitosamente");
+
+      // Limpiar transacción activa
+      TransactionManager.clearCurrentTransaction();
+      window.depositoWebSocket.clearActiveTransaction();
+
+      // Volver a pantalla principal
+      UI.showMainScreen();
+
+      // Recargar saldo
+      await this.loadUserBalance();
+    } catch (error) {
+      window.visualLogger.error(
+        `Error cancelando transacción: ${error.message}`
+      );
+      alert(`Error al cancelar: ${error.message}`);
+    }
+  }
+
+  /**
    * Manejar cierre de error
    */
   handleCloseError() {
@@ -742,7 +800,10 @@ class DepositApp {
       case "en_proceso":
         window.visualLogger.info("🔄 [RESTORE] Procesando estado en_proceso");
         window.visualLogger.debug("Cajero existe", !!data.cajero);
-        window.visualLogger.debug("datosPago existe", !!(data.cajero && data.cajero.datosPago));
+        window.visualLogger.debug(
+          "datosPago existe",
+          !!(data.cajero && data.cajero.datosPago)
+        );
 
         // Cajero aceptó, mostrar datos bancarios
         if (data.cajero && data.cajero.datosPago) {
@@ -762,12 +823,16 @@ class DepositApp {
           // Actualizar datos bancarios en la UI usando el método correcto
           window.visualLogger.info("🔄 Actualizando datos bancarios...");
           UI.updateBankInfo(bankInfo);
-          
-          window.visualLogger.info("🔄 Mostrando pantalla de datos bancarios...");
-          
+
+          window.visualLogger.info(
+            "🔄 Mostrando pantalla de datos bancarios..."
+          );
+
           // Mostrar pantalla de datos bancarios
           UI.showBankInfoScreen();
-          window.visualLogger.success("✅ Pantalla de datos bancarios mostrada");
+          window.visualLogger.success(
+            "✅ Pantalla de datos bancarios mostrada"
+          );
         } else {
           window.visualLogger.warning("⚠️ Cajero sin datos disponibles");
           window.visualLogger.debug("data.cajero completo", data.cajero);

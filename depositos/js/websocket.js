@@ -92,17 +92,19 @@ class DepositoWebSocket {
     // Log para todos los eventos que llegan
     this.socket.onAny((eventName, ...args) => {
       console.log(`🔍 [WebSocket] Evento recibido: ${eventName}`, args);
-      
+
       // También mostrar en el panel visual
       if (window.visualLogger) {
         window.visualLogger.websocket(`📡 Evento: ${eventName}`);
-        
+
         // Si es el evento de recuperación, mostrar detalles importantes
-        if (eventName === 'transaction-state-recovered') {
-          window.visualLogger.success('🎯 EVENTO TRANSACTION-STATE-RECOVERED RECIBIDO');
+        if (eventName === "transaction-state-recovered") {
+          window.visualLogger.success(
+            "🎯 EVENTO TRANSACTION-STATE-RECOVERED RECIBIDO"
+          );
           if (args[0]) {
-            window.visualLogger.debug('Estado', args[0].estado);
-            window.visualLogger.debug('Cajero', args[0].cajero);
+            window.visualLogger.debug("Estado", args[0].estado);
+            window.visualLogger.debug("Cajero", args[0].cajero);
           }
         }
       }

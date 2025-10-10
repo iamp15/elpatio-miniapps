@@ -96,6 +96,21 @@ class APIManager {
   }
 
   /**
+   * Cancelar transacción por jugador
+   */
+  async cancelarTransaccion(transaccionId, motivo = null) {
+    const url = `${this.baseURL}/api/transacciones/${transaccionId}/cancelar-jugador`;
+    const body = JSON.stringify({
+      motivo: motivo || "Cancelada por el usuario",
+    });
+
+    return this.telegramRequest(url, {
+      method: "PUT",
+      body,
+    });
+  }
+
+  /**
    * Obtener jugador por ID
    */
   async getJugador(telegramId, token) {

@@ -71,7 +71,7 @@ class CajeroWebSocket {
     this.socket.on("connect", () => {
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
-      
+
       // Re-autenticar automáticamente si tenemos token guardado
       // Esto maneja tanto la conexión inicial como las reconexiones
       if (this.lastAuthToken && !this.isAuthenticated) {
@@ -80,7 +80,7 @@ class CajeroWebSocket {
           this.reauthenticateAndRejoinRooms();
         }, 500);
       }
-      
+
       if (this.callbacks.onConnect) {
         this.callbacks.onConnect();
       }
@@ -138,18 +138,23 @@ class CajeroWebSocket {
     this.socket.on("auth-result", (result) => {
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
-      
+
       if (result.success) {
         console.log("✅ [AUTH] Cajero autenticado:", result.user?.nombre);
-        
+
         // Si hay información de recuperación, procesarla
         if (result.recovery && result.recovery.transactionsRecovered) {
-          console.log(`🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`);
+          console.log(
+            `🔄 [RECOVERY] ${result.recovery.transactionsRecovered.length} transacciones recuperadas automáticamente`
+          );
         }
       } else {
-        console.error("❌ [AUTH] Autenticación de cajero fallida:", result.message);
+        console.error(
+          "❌ [AUTH] Autenticación de cajero fallida:",
+          result.message
+        );
       }
-      
+
       if (this.callbacks.onAuthResult) {
         this.callbacks.onAuthResult(result);
       }

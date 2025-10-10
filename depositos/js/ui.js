@@ -78,6 +78,11 @@ class UIManager {
     this.elements.copyAllBtn = document.querySelector(
       DOM_SELECTORS.COPY_ALL_BTN
     );
+    this.elements.cancelWaitingBtn =
+      document.getElementById("cancel-waiting-btn");
+    this.elements.cancelBankInfoBtn = document.getElementById(
+      "cancel-bank-info-btn"
+    );
 
     // Campos de entrada
     this.elements.amountInput = document.querySelector(
@@ -204,6 +209,21 @@ class UIManager {
       this.elements.closeErrorBtn.addEventListener(
         "click",
         eventHandlers.onCloseError
+      );
+    }
+
+    // Botones de cancelar
+    if (this.elements.cancelWaitingBtn && eventHandlers.onCancelTransaction) {
+      this.elements.cancelWaitingBtn.addEventListener(
+        "click",
+        eventHandlers.onCancelTransaction
+      );
+    }
+
+    if (this.elements.cancelBankInfoBtn && eventHandlers.onCancelTransaction) {
+      this.elements.cancelBankInfoBtn.addEventListener(
+        "click",
+        eventHandlers.onCancelTransaction
       );
     }
 

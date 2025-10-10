@@ -226,6 +226,18 @@ body {
   background: var(--patio-verde-pasto-oscuro);
 }
 
+.btn-cancel {
+  background: var(--patio-rojo-ladrillo);
+  color: white;
+  box-shadow: 0 2px 8px rgba(229, 115, 115, 0.3);
+}
+
+.btn-cancel:hover {
+  background: var(--patio-rojo-ladrillo-oscuro);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(229, 115, 115, 0.4);
+}
+
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -237,6 +249,15 @@ body {
   display: flex;
   gap: 12px;
   margin-top: 30px;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  width: 100%;
 }
 
 .form-actions .btn {
