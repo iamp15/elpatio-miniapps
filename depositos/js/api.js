@@ -99,7 +99,7 @@ class APIManager {
    * Cancelar transacción por jugador
    */
   async cancelarTransaccion(transaccionId, motivo = null) {
-    const url = `${this.baseURL}/api/transacciones/${transaccionId}/cancelar-jugador`;
+    const url = `${this.baseURL}/transacciones/${transaccionId}/cancelar-jugador`;
     const body = JSON.stringify({
       motivo: motivo || "Cancelada por el usuario",
     });
