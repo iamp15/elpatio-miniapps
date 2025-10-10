@@ -197,6 +197,15 @@ class DepositApp {
         "✅ Solicitud aceptada, mostrando datos bancarios"
       );
 
+      // Actualizar transacción actual con datos del cajero
+      if (this.currentTransaction) {
+        this.currentTransaction.cajero = data.cajero;
+        this.currentTransaction.estado = "en_proceso";
+
+        // Actualizar en TransactionManager también
+        TransactionManager.setCurrentTransaction(this.currentTransaction);
+      }
+
       // Actualizar datos bancarios en la UI
       UI.updateBankInfo({
         banco: data.cajero.datosPago.banco,
@@ -233,6 +242,9 @@ class DepositApp {
         monto: data.monto,
         estado: data.estado,
       };
+
+      // También guardar en TransactionManager para métodos que lo usen
+      TransactionManager.setCurrentTransaction(this.currentTransaction);
 
       // Actualizar UI con información de la transacción
       UI.updateWaitingTransaction(this.currentTransaction);
@@ -733,6 +745,16 @@ class DepositApp {
     // Establecer la transacción activa recuperada
     window.depositoWebSocket.setActiveTransaction(data.transaccionId);
     window.visualLogger.info(`Transacción activa: ${data.transaccionId}`);
+
+    // Guardar transacción en ambos lugares para consistencia
+    this.currentTransaction = {
+      _id: data.transaccionId,
+      estado: data.estado,
+      monto: data.monto,
+      cajero: data.cajero,
+      infoPago: data.infoPago,
+    };
+    TransactionManager.setCurrentTransaction(this.currentTransaction);
 
     // Restaurar UI según el estado de la transacción
     window.visualLogger.info(`Restaurando UI desde estado: ${data.estado}`);
