@@ -367,6 +367,29 @@ class DepositoWebSocket {
       }
     });
 
+    // Evento cuando la transacción ya finalizó
+    this.socket.on("transaction-already-finished", (data) => {
+      console.log(
+        `ℹ️ [RECOVERY] Transacción ya finalizada (${data.estado}):`,
+        data
+      );
+
+      if (window.visualLogger) {
+        window.visualLogger.info(
+          `ℹ️ Transacción ya finalizada: ${data.estado}`
+        );
+        window.visualLogger.info("No se recupera, limpiando estado local");
+      }
+
+      // Limpiar estado local
+      this.clearActiveTransaction();
+
+      // Mostrar pantalla principal
+      if (window.UI && window.UI.showMainScreen) {
+        window.UI.showMainScreen();
+      }
+    });
+
     this.socket.on("reconnection-successful", (data) => {
       console.log("✅ [RECOVERY] Reconexión exitosa:", data);
       if (window.visualLogger) {
@@ -447,7 +470,19 @@ class DepositoWebSocket {
     console.log(
       `📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`
     );
+    
+    if (window.visualLogger) {
+      window.visualLogger.info(
+        `📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`
+      );
+    }
+    
     this.activeTransactionId = null;
+    
+    // También limpiar de TransactionManager si existe
+    if (window.TransactionManager) {
+      window.TransactionManager.setCurrentTransaction(null);
+    }
   }
 
   /**

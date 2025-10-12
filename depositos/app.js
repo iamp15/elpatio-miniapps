@@ -85,6 +85,7 @@ class DepositApp {
     // Configurar callbacks del WebSocket client
     window.depositoWebSocket.setCallbacks({
       onDepositoCompletado: this.handleDepositoCompletado.bind(this),
+      onDepositoRechazado: this.handleDepositoRechazado.bind(this),
       onPagoConfirmado: this.handlePagoConfirmado.bind(this),
       onSolicitudAceptada: this.handleSolicitudAceptada.bind(this),
       onSolicitudCreada: this.handleSolicitudCreada.bind(this),
@@ -320,6 +321,40 @@ class DepositApp {
     } catch (error) {
       window.visualLogger.error(
         `❌ [APP] Error manejando depósito completado: ${error.message}`
+      );
+      console.error("❌ [APP] Stack trace:", error);
+    }
+  }
+
+  /**
+   * Manejar depósito rechazado
+   */
+  handleDepositoRechazado(data) {
+    try {
+      // Limpiar transacción activa (ya rechazada)
+      window.depositoWebSocket.clearActiveTransaction();
+
+      window.visualLogger.warning("⚠️ [APP] handleDepositoRechazado llamado");
+      window.visualLogger.info("⚠️ [APP] Datos recibidos:", data);
+
+      // Actualizar saldo
+      this.loadUserBalance();
+
+      // Mostrar mensaje de error con razón del rechazo
+      const motivo = data.motivo || "El cajero rechazó la transacción";
+      UI.showError(`Depósito rechazado: ${motivo}`);
+
+      // Volver a pantalla principal después de un delay
+      setTimeout(() => {
+        UI.showMainScreen();
+      }, 3000);
+
+      window.visualLogger.info(
+        "⚠️ [APP] Depósito rechazado procesado"
+      );
+    } catch (error) {
+      window.visualLogger.error(
+        `❌ [APP] Error manejando depósito rechazado: ${error.message}`
       );
       console.error("❌ [APP] Stack trace:", error);
     }
@@ -704,7 +739,7 @@ class DepositApp {
       window.visualLogger.error(
         `Error cancelando transacción: ${error.message}`
       );
-      
+
       // Mostrar modal de error en lugar de alert
       await UI.showConfirmModal(
         "Error al cancelar",
