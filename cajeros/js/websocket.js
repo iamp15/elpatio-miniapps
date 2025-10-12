@@ -195,6 +195,21 @@ class CajeroWebSocket {
       }
     });
 
+    // Evento de transacción cancelada por jugador
+    this.socket.on("transaccion-cancelada-por-jugador", (data) => {
+      console.log("❌ [CANCELACION] Evento recibido - Jugador canceló transacción");
+      console.log("❌ [CANCELACION] Data completa:", data);
+      console.log("❌ [CANCELACION] TransaccionId:", data.transaccionId);
+      console.log("❌ [CANCELACION] Callback existe:", !!this.callbacks.onTransaccionCanceladaPorJugador);
+      
+      if (this.callbacks.onTransaccionCanceladaPorJugador) {
+        console.log("❌ [CANCELACION] Ejecutando callback...");
+        this.callbacks.onTransaccionCanceladaPorJugador(data);
+      } else {
+        console.error("❌ [CANCELACION] Callback NO está configurado!");
+      }
+    });
+
     // Nuevos eventos de recuperación
     this.socket.on("transaction-state-recovered", (data) => {
       console.log("✅ [RECOVERY] Estado de transacción recuperado:", data);
@@ -233,14 +248,6 @@ class CajeroWebSocket {
           `❌ Jugador no reconectó en transacción ${data.transaccionId}`
         );
         // El cajero debe verificar el estado de la transacción manualmente
-      }
-    });
-
-    // Evento de transacción cancelada por jugador
-    this.socket.on("transaccion-cancelada-por-jugador", (data) => {
-      console.log("❌ [CANCELACION] Jugador canceló transacción:", data);
-      if (this.callbacks.onTransaccionCanceladaPorJugador) {
-        this.callbacks.onTransaccionCanceladaPorJugador(data);
       }
     });
   }
