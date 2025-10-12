@@ -187,7 +187,7 @@ body {
   padding: 20px;
   border-radius: 10px;
   margin-bottom: 25px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--patio-verde-pasto);
 }
 
 .cajero-info-card h3 {
@@ -258,7 +258,7 @@ body {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #667eea;
+  border-top: 4px solid var(--patio-verde-pasto);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 15px;
@@ -618,12 +618,12 @@ body {
 }
 
 .tab-btn:hover {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
+  background: var(--patio-verde-suave);
+  color: var(--patio-verde-pasto);
 }
 
 .tab-btn.active {
-  background: #667eea;
+  background: var(--patio-verde-pasto);
   color: white;
   font-weight: 600;
 }
