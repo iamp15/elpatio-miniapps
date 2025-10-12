@@ -40,7 +40,7 @@ class CajeroWebSocket {
       window.location.hostname === "127.0.0.1";
     const socketUrl = isLocalhost
       ? "http://localhost:3001"
-      : "https://elpatio-backend-production.up.railway.app";
+      : "https://elpatio-backend.fly.dev";
 
     // Conectando a WebSocket
 

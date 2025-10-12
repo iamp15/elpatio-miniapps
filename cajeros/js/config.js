@@ -4,7 +4,7 @@
 
 // Configuración de la API
 export const API_CONFIG = {
-  BASE_URL: "https://elpatio-backend-production.up.railway.app",
+  BASE_URL: "https://elpatio-backend.fly.dev",
   ENDPOINTS: {
     LOGIN: "/api/cajeros/login",
     PERFIL: "/api/cajeros/mi-perfil",

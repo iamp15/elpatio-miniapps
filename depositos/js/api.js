@@ -210,8 +210,8 @@ class APIManager {
    * Obtener URL del backend basada en el ambiente
    */
   getBackendUrl() {
-    // Siempre usar Railway backend para consistencia
-    return "https://elpatio-backend-production.up.railway.app/api";
+    // Backend en Fly.io
+    return "https://elpatio-backend.fly.dev/api";
   }
 
   /**
