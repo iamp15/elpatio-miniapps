@@ -272,16 +272,12 @@ class CajerosApp {
    */
   handleTransaccionCanceladaPorJugador(data) {
     try {
-      console.log("❌ [CANCELACION] Transacción cancelada por jugador:", data);
+      console.log("❌ [CANCELACION] Procesando cancelación:", data);
 
-      // Mostrar notificación al cajero
-      UI.showNotification(
-        `El jugador ${data.jugador?.nombre || 'Usuario'} canceló su solicitud de depósito`,
-        "warning"
-      );
-
-      // Actualizar la lista de transacciones para remover la cancelada
+      // Actualizar las listas de transacciones (la transacción cancelada desaparecerá)
       this.loadTransactions();
+
+      console.log("✅ [CANCELACION] Listas actualizadas");
     } catch (error) {
       console.error("Error manejando cancelación por jugador:", error);
     }
