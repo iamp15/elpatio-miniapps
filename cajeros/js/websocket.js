@@ -21,6 +21,7 @@ class CajeroWebSocket {
       onVerificarPago: null,
       onDepositoCompletado: null,
       onDepositoRechazado: null,
+      onTransaccionCanceladaPorJugador: null,
       onError: null,
     };
   }
@@ -232,6 +233,14 @@ class CajeroWebSocket {
           `❌ Jugador no reconectó en transacción ${data.transaccionId}`
         );
         // El cajero debe verificar el estado de la transacción manualmente
+      }
+    });
+
+    // Evento de transacción cancelada por jugador
+    this.socket.on("transaccion-cancelada-por-jugador", (data) => {
+      console.log("❌ [CANCELACION] Jugador canceló transacción:", data);
+      if (this.callbacks.onTransaccionCanceladaPorJugador) {
+        this.callbacks.onTransaccionCanceladaPorJugador(data);
       }
     });
   }

@@ -97,6 +97,11 @@ class CajerosApp {
       this.handleDepositoRechazado(data);
     });
 
+    window.cajeroWebSocket.on("onTransaccionCanceladaPorJugador", (data) => {
+      console.log("❌ Jugador canceló transacción");
+      this.handleTransaccionCanceladaPorJugador(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
       // Limpiar el estado de procesamiento en caso de error
@@ -259,6 +264,26 @@ class CajerosApp {
       this.loadTransactions();
     } catch (error) {
       console.error("Error manejando depósito rechazado:", error);
+    }
+  }
+
+  /**
+   * Manejar transacción cancelada por jugador
+   */
+  handleTransaccionCanceladaPorJugador(data) {
+    try {
+      console.log("❌ [CANCELACION] Transacción cancelada por jugador:", data);
+
+      // Mostrar notificación al cajero
+      UI.showNotification(
+        `El jugador ${data.jugador?.nombre || 'Usuario'} canceló su solicitud de depósito`,
+        "warning"
+      );
+
+      // Actualizar la lista de transacciones para remover la cancelada
+      this.loadTransactions();
+    } catch (error) {
+      console.error("Error manejando cancelación por jugador:", error);
     }
   }
 
