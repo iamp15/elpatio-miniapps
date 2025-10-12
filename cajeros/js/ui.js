@@ -302,7 +302,11 @@ class UIManager {
     const activeButton = document.querySelector(`[data-tab="${tabName}"]`);
     const activePanel = document.querySelector(`#tab-${tabName}`);
 
-    if (activeButton) activeButton.classList.add("active");
+    if (activeButton) {
+      activeButton.classList.add("active");
+      // Remover notificaciones cuando se activa la pestaña
+      activeButton.classList.remove("has-notifications");
+    }
     if (activePanel) activePanel.classList.add("active");
   }
 
@@ -311,8 +315,23 @@ class UIManager {
    */
   updateTabCount(tabName, count) {
     const countElement = document.querySelector(`#count-${tabName}`);
-    if (countElement) {
+    const tabButton = document.querySelector(`[data-tab="${tabName}"]`);
+    
+    if (countElement && tabButton) {
       countElement.textContent = count;
+      
+      // Mostrar/ocultar contador según si hay transacciones
+      if (count > 0) {
+        countElement.style.display = "inline-block";
+        
+        // Agregar clase de notificaciones si la pestaña NO está activa
+        if (!tabButton.classList.contains("active")) {
+          tabButton.classList.add("has-notifications");
+        }
+      } else {
+        countElement.style.display = "none";
+        tabButton.classList.remove("has-notifications");
+      }
     }
   }
 
