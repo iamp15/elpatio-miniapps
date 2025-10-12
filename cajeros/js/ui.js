@@ -315,7 +315,7 @@ class UIManager {
    */
   updateTabCount(tabName, count) {
     const tabButton = document.querySelector(`[data-tab="${tabName}"]`);
-    
+
     if (tabButton) {
       // Mostrar indicador solo si hay transacciones y la pestaña NO está activa
       if (count > 0 && !tabButton.classList.contains("active")) {
