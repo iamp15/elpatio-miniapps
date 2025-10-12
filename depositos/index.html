@@ -398,6 +398,26 @@
       </div>
     </div>
 
+    <!-- Modal de confirmación -->
+    <div id="confirm-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 id="modal-title">Confirmación</h3>
+        </div>
+        <div class="modal-body">
+          <p id="modal-message">¿Estás seguro?</p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="modal-cancel-btn">
+            No, volver
+          </button>
+          <button class="btn btn-cancel" id="modal-confirm-btn">
+            Sí, cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script src="js/logger.js"></script>
     <script src="js/websocket.js"></script>
     <script type="module" src="app.js"></script>

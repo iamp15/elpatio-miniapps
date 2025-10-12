@@ -663,9 +663,10 @@ class DepositApp {
         return;
       }
 
-      // Confirmar cancelación
-      const confirmed = confirm(
-        "¿Estás seguro que deseas cancelar esta solicitud de depósito?"
+      // Mostrar modal de confirmación profesional
+      const confirmed = await UI.showConfirmModal(
+        "¿Cancelar depósito?",
+        "¿Estás seguro que deseas cancelar esta solicitud de depósito? Esta acción no se puede deshacer."
       );
 
       if (!confirmed) {
@@ -703,7 +704,12 @@ class DepositApp {
       window.visualLogger.error(
         `Error cancelando transacción: ${error.message}`
       );
-      alert(`Error al cancelar: ${error.message}`);
+      
+      // Mostrar modal de error en lugar de alert
+      await UI.showConfirmModal(
+        "Error al cancelar",
+        `No se pudo cancelar la transacción: ${error.message}`
+      );
     }
   }
 

@@ -652,6 +652,57 @@ class UIManager {
       }, 50);
     }, UI_CONFIG.ANIMATION_DURATION);
   }
+
+  /**
+   * Mostrar modal de confirmación
+   * Retorna una promesa que se resuelve con true/false
+   */
+  showConfirmModal(title, message) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById("confirm-modal");
+      const modalTitle = document.getElementById("modal-title");
+      const modalMessage = document.getElementById("modal-message");
+      const confirmBtn = document.getElementById("modal-confirm-btn");
+      const cancelBtn = document.getElementById("modal-cancel-btn");
+
+      if (!modal || !modalTitle || !modalMessage || !confirmBtn || !cancelBtn) {
+        console.error("Elementos del modal no encontrados");
+        resolve(false);
+        return;
+      }
+
+      // Establecer contenido
+      modalTitle.textContent = title;
+      modalMessage.textContent = message;
+
+      // Mostrar modal
+      modal.style.display = "flex";
+
+      // Función para cerrar modal
+      const closeModal = (result) => {
+        modal.style.display = "none";
+        // Limpiar listeners
+        confirmBtn.removeEventListener("click", handleConfirm);
+        cancelBtn.removeEventListener("click", handleCancel);
+        modal.removeEventListener("click", handleOverlayClick);
+        resolve(result);
+      };
+
+      // Handlers
+      const handleConfirm = () => closeModal(true);
+      const handleCancel = () => closeModal(false);
+      const handleOverlayClick = (e) => {
+        if (e.target === modal) {
+          closeModal(false);
+        }
+      };
+
+      // Agregar listeners
+      confirmBtn.addEventListener("click", handleConfirm);
+      cancelBtn.addEventListener("click", handleCancel);
+      modal.addEventListener("click", handleOverlayClick);
+    });
+  }
 }
 
 // Crear instancia única del gestor de UI
