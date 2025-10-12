@@ -314,22 +314,13 @@ class UIManager {
    * Actualizar contador de pestaña
    */
   updateTabCount(tabName, count) {
-    const countElement = document.querySelector(`#count-${tabName}`);
     const tabButton = document.querySelector(`[data-tab="${tabName}"]`);
     
-    if (countElement && tabButton) {
-      countElement.textContent = count;
-      
-      // Mostrar/ocultar contador según si hay transacciones
-      if (count > 0) {
-        countElement.style.display = "inline-block";
-        
-        // Agregar clase de notificaciones si la pestaña NO está activa
-        if (!tabButton.classList.contains("active")) {
-          tabButton.classList.add("has-notifications");
-        }
+    if (tabButton) {
+      // Mostrar indicador solo si hay transacciones y la pestaña NO está activa
+      if (count > 0 && !tabButton.classList.contains("active")) {
+        tabButton.classList.add("has-notifications");
       } else {
-        countElement.style.display = "none";
         tabButton.classList.remove("has-notifications");
       }
     }
