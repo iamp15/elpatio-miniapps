@@ -485,9 +485,44 @@ window.viewTransactionDetails = async (transaccionId) => {
 };
 
 window.verifyPayment = async (transaccionId) => {
-  // Mismo comportamiento que viewTransactionDetails
-  // El modal de detalles ya tiene los botones de confirmar/rechazar
-  await window.viewTransactionDetails(transaccionId);
+  const token = app.getToken();
+  if (!token || !window.transactionManager) return;
+
+  try {
+    // Obtener detalles de la transacción
+    const { API } = await import("./js/api.js");
+    const response = await API.getTransaccionDetalle(transaccionId, token);
+    
+    if (response.ok) {
+      const result = await response.json();
+      const transaccion = result.transaccion;
+      
+      // Formatear datos para el popup de verificación
+      const data = {
+        transaccionId: transaccion._id,
+        monto: transaccion.monto,
+        jugador: {
+          nombre: transaccion.jugadorId?.nickname || 
+                  transaccion.jugadorId?.firstName || 
+                  "Usuario"
+        },
+        datosPago: {
+          banco: transaccion.infoPago?.bancoOrigen || "-",
+          referencia: transaccion.infoPago?.numeroReferencia || "-",
+          telefono: transaccion.infoPago?.telefonoOrigen || "-",
+          fecha: transaccion.infoPago?.fechaPago || "-",
+          monto: transaccion.monto
+        }
+      };
+      
+      // Mostrar popup de verificación
+      app.getUI().showVerificarPagoPopup(data);
+    } else {
+      console.error("Error obteniendo transacción:", response.status);
+    }
+  } catch (error) {
+    console.error("Error en verifyPayment:", error);
+  }
 };
 
 // Exportar para uso en otros módulos si es necesario
