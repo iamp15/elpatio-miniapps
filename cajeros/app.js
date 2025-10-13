@@ -484,5 +484,11 @@ window.viewTransactionDetails = async (transaccionId) => {
   }
 };
 
+window.verifyPayment = async (transaccionId) => {
+  // Mismo comportamiento que viewTransactionDetails
+  // El modal de detalles ya tiene los botones de confirmar/rechazar
+  await window.viewTransactionDetails(transaccionId);
+};
+
 // Exportar para uso en otros módulos si es necesario
 export default app;
