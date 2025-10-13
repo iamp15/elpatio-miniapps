@@ -284,8 +284,8 @@ class DepositApp {
         UI.updateRegisteredInfo(paymentData);
       }
 
-      // Mostrar pantalla de pago registrado
-      UI.showPaymentRegisteredScreen();
+      // Mostrar pantalla de pago confirmado por usuario (esperando cajero)
+      UI.showUserPaymentConfirmedScreen();
     } catch (error) {
       window.visualLogger.error(
         `Error manejando pago confirmado: ${error.message}`
@@ -313,7 +313,7 @@ class DepositApp {
         "🎉 [APP] Actualizando información final y mostrando pantalla..."
       );
       UI.updateFinalInfo(data);
-      UI.showConfirmationScreen();
+      UI.showCashierVerifiedScreen();
 
       window.visualLogger.success(
         "🎉 [APP] Depósito completado procesado exitosamente"
@@ -349,9 +349,7 @@ class DepositApp {
         UI.showMainScreen();
       }, 3000);
 
-      window.visualLogger.info(
-        "⚠️ [APP] Depósito rechazado procesado"
-      );
+      window.visualLogger.info("⚠️ [APP] Depósito rechazado procesado");
     } catch (error) {
       window.visualLogger.error(
         `❌ [APP] Error manejando depósito rechazado: ${error.message}`
@@ -498,7 +496,7 @@ class DepositApp {
         case "confirmada":
           // Mostrar confirmacion final
           UI.updateFinalInfo(transaction);
-          UI.showConfirmationScreen();
+          UI.showCashierVerifiedScreen();
           break;
 
         case "cancelada":
@@ -527,7 +525,7 @@ class DepositApp {
 
       // Mostrar confirmacion final
       UI.updateFinalInfo(transaction);
-      UI.showConfirmationScreen();
+      UI.showCashierVerifiedScreen();
     } catch (error) {
       console.error("Error manejando transaccion completada:", error);
     }
@@ -627,7 +625,7 @@ class DepositApp {
           bancoOrigen: formData.bank,
           telefonoOrigen: formData.phone,
         },
-        estado: "en_proceso",
+        estado: "realizada", // El jugador ya reportó que hizo el pago
       };
 
       // Guardar los datos del pago para usar en la pantalla de pago registrado
@@ -638,8 +636,13 @@ class DepositApp {
         finalTransactionData
       );
       window.visualLogger.info("🔍 [DEBUG] formData.date:", formData.date);
-      UI.updateFinalInfo(finalTransactionData);
-      UI.showConfirmationScreen();
+
+      // Mostrar pantalla de pago confirmado por usuario (esperando verificación del cajero)
+      // La pantalla final se mostrará cuando llegue el evento "deposito-completado"
+      UI.updateRegisteredInfo(finalTransactionData);
+      UI.showUserPaymentConfirmedScreen();
+
+      window.visualLogger.info("⏳ Esperando confirmación del cajero...");
     } catch (error) {
       console.error("Error confirmando pago:", error);
       UI.showErrorScreen("Error de Confirmacion", error.message);
@@ -905,7 +908,7 @@ class DepositApp {
 
       case "realizada":
         // Usuario ya confirmó pago, esperando verificación
-        UI.showPaymentRegisteredScreen();
+        UI.showUserPaymentConfirmedScreen();
         window.visualLogger.info(
           "Tu pago fue registrado. Esperando verificación del cajero..."
         );
@@ -918,7 +921,7 @@ class DepositApp {
           this.currentBalance = data.saldoNuevo;
           UI.updateBalance(data.saldoNuevo);
         }
-        UI.showConfirmationScreen();
+        UI.showCashierVerifiedScreen();
         window.visualLogger.success("¡Depósito completado exitosamente!");
         break;
 

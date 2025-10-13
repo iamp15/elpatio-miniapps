@@ -79,8 +79,8 @@ export const APP_STATES = {
   WAITING: "waiting-screen",
   BANK_INFO: "bank-info-screen",
   PAYMENT_CONFIRMATION: "payment-confirmation-screen",
-  PAYMENT_REGISTERED: "payment-registered-screen",
-  CONFIRMATION: "confirmation-screen",
+  USER_PAYMENT_CONFIRMED: "user-payment-confirmed-screen",
+  CASHIER_VERIFIED: "cashier-verified-screen",
   ERROR: "error-screen",
 };
 
@@ -102,8 +102,8 @@ export const DOM_SELECTORS = {
   WAITING_SCREEN: "#waiting-screen",
   BANK_INFO_SCREEN: "#bank-info-screen",
   PAYMENT_CONFIRMATION_SCREEN: "#payment-confirmation-screen",
-  PAYMENT_REGISTERED_SCREEN: "#payment-registered-screen",
-  CONFIRMATION_SCREEN: "#confirmation-screen",
+  USER_PAYMENT_CONFIRMED_SCREEN: "#user-payment-confirmed-screen",
+  CASHIER_VERIFIED_SCREEN: "#cashier-verified-screen",
   ERROR_SCREEN: "#error-screen",
 
   // Formularios

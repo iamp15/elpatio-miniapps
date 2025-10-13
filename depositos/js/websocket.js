@@ -470,15 +470,15 @@ class DepositoWebSocket {
     console.log(
       `📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`
     );
-    
+
     if (window.visualLogger) {
       window.visualLogger.info(
         `📋 [RECOVERY] Limpiando transacción activa: ${this.activeTransactionId}`
       );
     }
-    
+
     this.activeTransactionId = null;
-    
+
     // También limpiar de TransactionManager si existe
     if (window.TransactionManager) {
       window.TransactionManager.setCurrentTransaction(null);

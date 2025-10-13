@@ -37,11 +37,11 @@ class UIManager {
     this.elements.paymentConfirmationScreen = document.querySelector(
       DOM_SELECTORS.PAYMENT_CONFIRMATION_SCREEN
     );
-    this.elements.confirmationScreen = document.querySelector(
-      DOM_SELECTORS.CONFIRMATION_SCREEN
+    this.elements.cashierVerifiedScreen = document.querySelector(
+      DOM_SELECTORS.CASHIER_VERIFIED_SCREEN
     );
-    this.elements.paymentRegisteredScreen = document.querySelector(
-      DOM_SELECTORS.PAYMENT_REGISTERED_SCREEN
+    this.elements.userPaymentConfirmedScreen = document.querySelector(
+      DOM_SELECTORS.USER_PAYMENT_CONFIRMED_SCREEN
     );
     this.elements.errorScreen = document.querySelector(
       DOM_SELECTORS.ERROR_SCREEN
@@ -292,10 +292,10 @@ class UIManager {
   }
 
   /**
-   * Mostrar pantalla de confirmación final
+   * Mostrar pantalla de depósito verificado por cajero (confirmación final)
    */
-  showConfirmationScreen() {
-    this.showScreen(APP_STATES.CONFIRMATION);
+  showCashierVerifiedScreen() {
+    this.showScreen(APP_STATES.CASHIER_VERIFIED);
   }
 
   /**
@@ -306,10 +306,10 @@ class UIManager {
   }
 
   /**
-   * Mostrar pantalla de pago registrado
+   * Mostrar pantalla de pago confirmado por usuario (esperando cajero)
    */
-  showPaymentRegisteredScreen() {
-    this.showScreen(APP_STATES.PAYMENT_REGISTERED);
+  showUserPaymentConfirmedScreen() {
+    this.showScreen(APP_STATES.USER_PAYMENT_CONFIRMED);
   }
 
   /**
