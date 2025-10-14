@@ -857,6 +857,14 @@ class DepositApp {
       case "pendiente":
         // Transacción pendiente, mostrar pantalla de espera
         console.log("🔄 [RESTORE] Mostrando pantalla de espera (pendiente)");
+        
+        // Actualizar información de la transacción en la pantalla de espera
+        UI.updateWaitingTransaction({
+          monto: data.monto,
+          referencia: data.transaccionId,
+          estado: data.estado,
+        });
+        
         UI.showWaitingScreen();
         window.visualLogger.info(
           "Esperando que un cajero acepte tu solicitud..."
