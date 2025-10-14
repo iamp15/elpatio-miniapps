@@ -221,13 +221,19 @@ class CajerosApp {
    */
   handleVerificarPago(data) {
     try {
-      // Mostrar pop-up de verificación de pago
-      UI.showVerificarPagoPopup(data);
-
-      // Actualizar la lista de transacciones para mostrar el estado actualizado
+      console.log("🔍 [VERIFICAR-PAGO] Evento recibido:", data);
+      console.log("🔍 [VERIFICAR-PAGO] Abriendo modal automáticamente...");
+      
+      // PRIMERO actualizar la lista para que muestre el nuevo estado
       this.loadTransactions();
+      
+      // LUEGO mostrar el pop-up de verificación (con un pequeño delay para que no se interrumpa)
+      setTimeout(() => {
+        UI.showVerificarPagoPopup(data);
+        console.log("🔍 [VERIFICAR-PAGO] Modal abierto correctamente");
+      }, 300);
     } catch (error) {
-      console.error("Error manejando verificación de pago:", error);
+      console.error("❌ Error manejando verificación de pago:", error);
     }
   }
 
@@ -492,29 +498,30 @@ window.verifyPayment = async (transaccionId) => {
     // Obtener detalles de la transacción
     const { API } = await import("./js/api.js");
     const response = await API.getTransaccionDetalle(transaccionId, token);
-    
+
     if (response.ok) {
       const result = await response.json();
       const transaccion = result.transaccion;
-      
+
       // Formatear datos para el popup de verificación
       const data = {
         transaccionId: transaccion._id,
         monto: transaccion.monto,
         jugador: {
-          nombre: transaccion.jugadorId?.nickname || 
-                  transaccion.jugadorId?.firstName || 
-                  "Usuario"
+          nombre:
+            transaccion.jugadorId?.nickname ||
+            transaccion.jugadorId?.firstName ||
+            "Usuario",
         },
         datosPago: {
           banco: transaccion.infoPago?.bancoOrigen || "-",
           referencia: transaccion.infoPago?.numeroReferencia || "-",
           telefono: transaccion.infoPago?.telefonoOrigen || "-",
           fecha: transaccion.infoPago?.fechaPago || "-",
-          monto: transaccion.monto
-        }
+          monto: transaccion.monto,
+        },
       };
-      
+
       // Mostrar popup de verificación
       app.getUI().showVerificarPagoPopup(data);
     } else {
