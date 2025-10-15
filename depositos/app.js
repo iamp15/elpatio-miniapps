@@ -95,6 +95,9 @@ class DepositApp {
       onReconnectionSuccessful: this.handleReconnectionSuccessful.bind(this),
       onParticipantDisconnected: this.handleParticipantDisconnected.bind(this),
       onParticipantReconnected: this.handleParticipantReconnected.bind(this),
+      // Callback de timeout
+      onTransaccionCanceladaPorTimeout:
+        this.handleTransaccionCanceladaPorTimeout.bind(this),
     });
 
     // Configurar callbacks de WebSocket
@@ -857,14 +860,14 @@ class DepositApp {
       case "pendiente":
         // Transacción pendiente, mostrar pantalla de espera
         console.log("🔄 [RESTORE] Mostrando pantalla de espera (pendiente)");
-        
+
         // Actualizar información de la transacción en la pantalla de espera
         UI.updateWaitingTransaction({
           monto: data.monto,
           referencia: data.transaccionId,
           estado: data.estado,
         });
-        
+
         UI.showWaitingScreen();
         window.visualLogger.info(
           "Esperando que un cajero acepte tu solicitud..."
@@ -974,6 +977,39 @@ class DepositApp {
    */
   getTransactionManager() {
     return TransactionManager;
+  }
+
+  /**
+   * Manejar cancelación de transacción por timeout
+   */
+  handleTransaccionCanceladaPorTimeout(data) {
+    try {
+      window.visualLogger.warn(
+        `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
+      );
+      window.visualLogger.info(data.mensaje);
+
+      // Limpiar transacción activa
+      this.currentTransaction = null;
+      TransactionManager.clearCurrentTransaction();
+      window.depositoWebSocket.clearActiveTransaction();
+
+      // Mostrar notificación al usuario
+      UI.showError(
+        data.mensaje || "Tu solicitud fue cancelada por inactividad.",
+        5000
+      );
+
+      // Volver a la pantalla principal
+      setTimeout(() => {
+        UI.showMainScreen();
+      }, 3000);
+    } catch (error) {
+      console.error(
+        "Error manejando cancelación por timeout:",
+        error.message
+      );
+    }
   }
 }
 

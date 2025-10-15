@@ -102,6 +102,11 @@ class CajerosApp {
       this.handleTransaccionCanceladaPorJugador(data);
     });
 
+    window.cajeroWebSocket.on("onTransaccionCanceladaPorTimeout", (data) => {
+      console.log("⏱️ Transacción cancelada por timeout");
+      this.handleTransaccionCanceladaPorTimeout(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
       // Limpiar el estado de procesamiento en caso de error
@@ -223,10 +228,10 @@ class CajerosApp {
     try {
       console.log("🔍 [VERIFICAR-PAGO] Evento recibido:", data);
       console.log("🔍 [VERIFICAR-PAGO] Abriendo modal automáticamente...");
-      
+
       // PRIMERO actualizar la lista para que muestre el nuevo estado
       this.loadTransactions();
-      
+
       // LUEGO mostrar el pop-up de verificación (con un pequeño delay para que no se interrumpa)
       setTimeout(() => {
         UI.showVerificarPagoPopup(data);
@@ -286,6 +291,26 @@ class CajerosApp {
       console.log("✅ [CANCELACION] Listas actualizadas");
     } catch (error) {
       console.error("Error manejando cancelación por jugador:", error);
+    }
+  }
+
+  /**
+   * Manejar cancelación de transacción por timeout
+   */
+  handleTransaccionCanceladaPorTimeout(data) {
+    try {
+      console.log("⏱️ [TIMEOUT] Procesando cancelación por timeout:", data);
+      console.log(
+        `⏱️ [TIMEOUT] Transacción ${data.transaccionId} cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
+      );
+
+      // Actualizar las listas de transacciones (la transacción cancelada desaparecerá)
+      this.loadTransactions();
+
+      // Opcional: Mostrar notificación al cajero si está viendo esa transacción
+      console.log("✅ [TIMEOUT] Listas actualizadas");
+    } catch (error) {
+      console.error("Error manejando cancelación por timeout:", error);
     }
   }
 

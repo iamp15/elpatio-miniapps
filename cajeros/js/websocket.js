@@ -188,6 +188,13 @@ class CajeroWebSocket {
       }
     });
 
+    this.socket.on("transaccion-cancelada-por-timeout", (data) => {
+      console.log("⏱️ Transacción cancelada por timeout:", data);
+      if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+        this.callbacks.onTransaccionCanceladaPorTimeout(data);
+      }
+    });
+
     this.socket.on("error", (error) => {
       console.error("❌ Error en WebSocket:", error);
       if (this.callbacks.onError) {

@@ -225,6 +225,18 @@ class DepositoWebSocket {
       }
     });
 
+    this.socket.on("transaccion-cancelada-por-timeout", (data) => {
+      console.log("⏱️ Transacción cancelada por timeout:", data);
+      if (window.visualLogger) {
+        window.visualLogger.warn(
+          `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
+        );
+      }
+      if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+        this.callbacks.onTransaccionCanceladaPorTimeout(data);
+      }
+    });
+
     // Eventos del sistema de depósitos WebSocket
     this.socket.on("nueva-solicitud-deposito", (data) => {
       console.log("💰 Nueva solicitud de depósito:", data);
