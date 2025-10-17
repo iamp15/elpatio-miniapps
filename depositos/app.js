@@ -994,16 +994,18 @@ class DepositApp {
       TransactionManager.clearCurrentTransaction();
       window.depositoWebSocket.clearActiveTransaction();
 
-      // Mostrar notificación al usuario
-      UI.showError(
-        data.mensaje || "Tu solicitud fue cancelada por inactividad.",
-        5000
+      // Mostrar pantalla de error con el mensaje
+      UI.showErrorScreen(
+        "⏱️ Solicitud Cancelada",
+        data.mensaje || "Tu solicitud fue cancelada por inactividad."
       );
 
-      // Volver a la pantalla principal
+      // Volver a la pantalla principal después de 4 segundos
       setTimeout(() => {
         UI.showMainScreen();
-      }, 3000);
+        // Recargar saldo
+        this.loadUserBalance();
+      }, 4000);
     } catch (error) {
       console.error(
         "Error manejando cancelación por timeout:",

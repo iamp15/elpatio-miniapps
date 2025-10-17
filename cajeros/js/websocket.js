@@ -22,6 +22,7 @@ class CajeroWebSocket {
       onDepositoCompletado: null,
       onDepositoRechazado: null,
       onTransaccionCanceladaPorJugador: null,
+      onTransaccionCanceladaPorTimeout: null,
       onError: null,
     };
   }

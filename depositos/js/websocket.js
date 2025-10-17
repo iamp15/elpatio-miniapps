@@ -35,6 +35,8 @@ class DepositoWebSocket {
       onReconnectionSuccessful: null,
       onParticipantDisconnected: null,
       onParticipantReconnected: null,
+      // Callback para timeout
+      onTransaccionCanceladaPorTimeout: null,
     };
   }
 
