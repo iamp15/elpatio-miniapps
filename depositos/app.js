@@ -984,17 +984,25 @@ class DepositApp {
    */
   handleTransaccionCanceladaPorTimeout(data) {
     try {
+      console.log("⏱️ [APP] handleTransaccionCanceladaPorTimeout INICIADO");
+      console.log("⏱️ [APP] Data recibida:", data);
+      
       window.visualLogger.warn(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
-      window.visualLogger.info(data.mensaje);
+      
+      if (data.mensaje) {
+        window.visualLogger.info(data.mensaje);
+      }
 
       // Limpiar transacción activa
+      console.log("⏱️ [APP] Limpiando transacción activa...");
       this.currentTransaction = null;
       TransactionManager.clearCurrentTransaction();
       window.depositoWebSocket.clearActiveTransaction();
 
       // Mostrar pantalla de error con el mensaje
+      console.log("⏱️ [APP] Mostrando pantalla de error...");
       UI.showErrorScreen(
         "⏱️ Solicitud Cancelada",
         data.mensaje || "Tu solicitud fue cancelada por inactividad."
@@ -1002,15 +1010,16 @@ class DepositApp {
 
       // Volver a la pantalla principal después de 4 segundos
       setTimeout(() => {
+        console.log("⏱️ [APP] Volviendo a pantalla principal...");
         UI.showMainScreen();
         // Recargar saldo
         this.loadUserBalance();
       }, 4000);
+      
+      console.log("⏱️ [APP] Handler completado exitosamente");
     } catch (error) {
-      console.error(
-        "Error manejando cancelación por timeout:",
-        error.message
-      );
+      console.error("❌ [APP] Error manejando cancelación por timeout:", error.message);
+      console.error("❌ [APP] Stack:", error.stack);
     }
   }
 }
