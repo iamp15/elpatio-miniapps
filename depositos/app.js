@@ -1,9 +1,6 @@
 /**
  * Aplicacion principal de depositos - Version modular
- * Version: 1.0.7 - Fix basado en v1.0.3 que funcionaba
  */
-
-console.log("🔧 [APP] Cargando DepositApp v1.0.7 - Clean fix");
 
 import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
@@ -13,7 +10,6 @@ import { MESSAGES, APP_STATES, TRANSACTION_CONFIG } from "./js/config.js";
 
 class DepositApp {
   constructor() {
-    console.log("🔧 [APP] Constructor de DepositApp ejecutándose...");
     this.isInitialized = false;
     this.userData = null;
     this.currentBalance = 0;
@@ -27,9 +23,6 @@ class DepositApp {
 
     try {
       window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
-      window.visualLogger.debug(
-        "📦 Versión: v1.0.7 - Clean fix (basado en v1.0.3)"
-      );
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -991,17 +984,6 @@ class DepositApp {
    */
   handleTransaccionCanceladaPorTimeout(data) {
     try {
-      console.log("⏱️ [APP] handleTransaccionCanceladaPorTimeout INICIADO");
-      console.log("⏱️ [APP] Data recibida:", data);
-
-      // Logs visuales en el panel
-      window.visualLogger.warning("⏱️ Handler de timeout INICIADO");
-      window.visualLogger.debug("TransaccionId", data.transaccionId);
-      window.visualLogger.debug("Estado anterior", data.estadoAnterior);
-      window.visualLogger.debug(
-        "Tiempo transcurrido",
-        data.tiempoTranscurrido + " min"
-      );
       window.visualLogger.warning(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
@@ -1011,15 +993,11 @@ class DepositApp {
       }
 
       // Limpiar transacción activa
-      console.log("⏱️ [APP] Limpiando transacción activa...");
-      window.visualLogger.info("Limpiando estado de transacción...");
       this.currentTransaction = null;
       TransactionManager.clearCurrentTransaction();
       window.depositoWebSocket.clearActiveTransaction();
 
       // Mostrar pantalla de error con el mensaje
-      console.log("⏱️ [APP] Mostrando pantalla de error...");
-      window.visualLogger.info("Mostrando mensaje de cancelación...");
       UI.showErrorScreen(
         "⏱️ Solicitud Cancelada",
         data.mensaje || "Tu solicitud fue cancelada por inactividad."
@@ -1027,23 +1005,13 @@ class DepositApp {
 
       // Volver a la pantalla principal después de 4 segundos
       setTimeout(() => {
-        console.log("⏱️ [APP] Volviendo a pantalla principal...");
-        window.visualLogger.info("Regresando a pantalla principal...");
         UI.showMainScreen();
-        // Recargar saldo
         this.loadUserBalance();
       }, 4000);
-
-      console.log("⏱️ [APP] Handler completado exitosamente");
-      window.visualLogger.success("✅ Handler de timeout completado");
     } catch (error) {
-      console.error(
-        "❌ [APP] Error manejando cancelación por timeout:",
-        error.message
-      );
-      console.error("❌ [APP] Stack:", error.stack);
+      console.error("Error manejando cancelación por timeout:", error);
       window.visualLogger.error(
-        "❌ Error en handler de timeout: " + error.message
+        "Error en handler de timeout: " + error.message
       );
     }
   }

@@ -1,13 +1,9 @@
 /**
  * Módulo WebSocket para la app de depósitos
- * Version: 1.0.7 - Fix basado en v1.0.3 que funcionaba
  */
-
-console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.7 - Clean fix");
 
 class DepositoWebSocket {
   constructor() {
-    console.log("🔧 [WS] Constructor ejecutándose...");
     this.socket = null;
     this.isConnected = false;
     this.isAuthenticated = false;
@@ -48,18 +44,7 @@ class DepositoWebSocket {
    * Configurar callbacks
    */
   setCallbacks(callbacks) {
-    console.log("🔧 [WS] Configurando callbacks:", Object.keys(callbacks));
     this.callbacks = { ...this.callbacks, ...callbacks };
-    console.log(
-      "🔧 [WS] Callback onTransaccionCanceladaPorTimeout configurado:",
-      !!this.callbacks.onTransaccionCanceladaPorTimeout
-    );
-    if (window.visualLogger) {
-      window.visualLogger.debug(
-        "Callback timeout configurado: " +
-          !!this.callbacks.onTransaccionCanceladaPorTimeout
-      );
-    }
   }
 
   /**
@@ -242,79 +227,15 @@ class DepositoWebSocket {
       }
     });
 
-    console.log(
-      "🔧 [WS] Registrando listener: transaccion-cancelada-por-timeout"
-    );
-    if (window.visualLogger) {
-      window.visualLogger.debug(
-        "Registrando listener: transaccion-cancelada-por-timeout"
-      );
-    }
-
     this.socket.on("transaccion-cancelada-por-timeout", (data) => {
-      try {
-        // Log INMEDIATO para confirmar que el listener se ejecuta
-        if (window.visualLogger) {
-          window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");
-        }
-        
-        if (window.visualLogger) {
-          window.visualLogger.info("Paso 1: Verificando data...");
-        }
-        
-        console.log("⏱️ [WS] Transacción cancelada por timeout:", data);
-        
-        if (window.visualLogger) {
-          window.visualLogger.info("Paso 2: Data OK, verificando callback...");
-        }
-        
-        const callbackExiste = !!this.callbacks.onTransaccionCanceladaPorTimeout;
-        console.log("⏱️ [WS] Callback existe:", callbackExiste);
-
-        if (window.visualLogger) {
-          window.visualLogger.warning(
-            "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
-          );
-          window.visualLogger.debug("TransaccionId: " + (data?.transaccionId || "N/A"));
-          window.visualLogger.debug("Callback existe: " + callbackExiste);
-          
-          if (data?.tiempoTranscurrido) {
-            window.visualLogger.warning(
-              `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
-            );
-          }
-        }
-
-        if (window.visualLogger) {
-          window.visualLogger.info("Paso 3: Intentando ejecutar callback...");
-        }
-
-        if (this.callbacks.onTransaccionCanceladaPorTimeout) {
-          console.log("⏱️ [WS] Ejecutando callback...");
-          if (window.visualLogger) {
-            window.visualLogger.info("⏱️ [WS] Ejecutando callback...");
-          }
-          
-          this.callbacks.onTransaccionCanceladaPorTimeout(data);
-          
-          console.log("⏱️ [WS] Callback ejecutado");
-          if (window.visualLogger) {
-            window.visualLogger.success(
-              "⏱️ [WS] Callback ejecutado exitosamente"
-            );
-          }
-        } else {
-          console.error("⏱️ [WS] Callback NO está configurado!");
-          if (window.visualLogger) {
-            window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");
-          }
-        }
-      } catch (error) {
-        console.error("❌ Error en listener de timeout:", error);
-        if (window.visualLogger) {
-          window.visualLogger.error("❌ Error en listener: " + error.message);
-          window.visualLogger.error("Stack: " + error.stack);
-        }
+      if (window.visualLogger) {
+        window.visualLogger.warning(
+          `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
+        );
+      }
+      
+      if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+        this.callbacks.onTransaccionCanceladaPorTimeout(data);
       }
     });
 
