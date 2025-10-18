@@ -1,9 +1,9 @@
 /**
  * Módulo WebSocket para la app de depósitos
- * Version: 1.0.2 - Debug listener execution
+ * Version: 1.0.3 - Try-catch + paso a paso
  */
 
-console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.2 - Debug listener");
+console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.3 - Try-catch");
 
 class DepositoWebSocket {
   constructor() {
@@ -50,12 +50,14 @@ class DepositoWebSocket {
   setCallbacks(callbacks) {
     console.log("🔧 [WS] Configurando callbacks:", Object.keys(callbacks));
     this.callbacks = { ...this.callbacks, ...callbacks };
-    console.log("🔧 [WS] Callback onTransaccionCanceladaPorTimeout configurado:", 
-      !!this.callbacks.onTransaccionCanceladaPorTimeout);
+    console.log(
+      "🔧 [WS] Callback onTransaccionCanceladaPorTimeout configurado:",
+      !!this.callbacks.onTransaccionCanceladaPorTimeout
+    );
     if (window.visualLogger) {
       window.visualLogger.debug(
-        "Callback timeout configurado: " + 
-        !!this.callbacks.onTransaccionCanceladaPorTimeout
+        "Callback timeout configurado: " +
+          !!this.callbacks.onTransaccionCanceladaPorTimeout
       );
     }
   }
@@ -240,52 +242,78 @@ class DepositoWebSocket {
       }
     });
 
-    console.log("🔧 [WS] Registrando listener: transaccion-cancelada-por-timeout");
+    console.log(
+      "🔧 [WS] Registrando listener: transaccion-cancelada-por-timeout"
+    );
     if (window.visualLogger) {
-      window.visualLogger.debug("Registrando listener: transaccion-cancelada-por-timeout");
-    }
-    
-    this.socket.on("transaccion-cancelada-por-timeout", (data) => {
-      // Log INMEDIATO para confirmar que el listener se ejecuta
-      if (window.visualLogger) {
-        window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");
-      }
-      console.log("⏱️ [WS] Transacción cancelada por timeout:", data);
-      console.log(
-        "⏱️ [WS] Callback existe:",
-        !!this.callbacks.onTransaccionCanceladaPorTimeout
+      window.visualLogger.debug(
+        "Registrando listener: transaccion-cancelada-por-timeout"
       );
+    }
 
-      if (window.visualLogger) {
-        window.visualLogger.warn(
-          "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
-        );
-        window.visualLogger.debug("TransaccionId", data.transaccionId);
-        window.visualLogger.debug(
-          "Callback existe",
-          !!this.callbacks.onTransaccionCanceladaPorTimeout
-        );
-        window.visualLogger.warn(
-          `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
-        );
-      }
-
-      if (this.callbacks.onTransaccionCanceladaPorTimeout) {
-        console.log("⏱️ [WS] Ejecutando callback...");
+    this.socket.on("transaccion-cancelada-por-timeout", (data) => {
+      try {
+        // Log INMEDIATO para confirmar que el listener se ejecuta
         if (window.visualLogger) {
-          window.visualLogger.info("⏱️ [WS] Ejecutando callback...");
+          window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");
         }
-        this.callbacks.onTransaccionCanceladaPorTimeout(data);
-        console.log("⏱️ [WS] Callback ejecutado");
+        
         if (window.visualLogger) {
-          window.visualLogger.success(
-            "⏱️ [WS] Callback ejecutado exitosamente"
+          window.visualLogger.info("Paso 1: Verificando data...");
+        }
+        
+        console.log("⏱️ [WS] Transacción cancelada por timeout:", data);
+        
+        if (window.visualLogger) {
+          window.visualLogger.info("Paso 2: Data OK, verificando callback...");
+        }
+        
+        const callbackExiste = !!this.callbacks.onTransaccionCanceladaPorTimeout;
+        console.log("⏱️ [WS] Callback existe:", callbackExiste);
+
+        if (window.visualLogger) {
+          window.visualLogger.warn(
+            "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
           );
+          window.visualLogger.debug("TransaccionId: " + (data?.transaccionId || "N/A"));
+          window.visualLogger.debug("Callback existe: " + callbackExiste);
+          
+          if (data?.tiempoTranscurrido) {
+            window.visualLogger.warn(
+              `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
+            );
+          }
         }
-      } else {
-        console.error("⏱️ [WS] Callback NO está configurado!");
+
         if (window.visualLogger) {
-          window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");
+          window.visualLogger.info("Paso 3: Intentando ejecutar callback...");
+        }
+
+        if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+          console.log("⏱️ [WS] Ejecutando callback...");
+          if (window.visualLogger) {
+            window.visualLogger.info("⏱️ [WS] Ejecutando callback...");
+          }
+          
+          this.callbacks.onTransaccionCanceladaPorTimeout(data);
+          
+          console.log("⏱️ [WS] Callback ejecutado");
+          if (window.visualLogger) {
+            window.visualLogger.success(
+              "⏱️ [WS] Callback ejecutado exitosamente"
+            );
+          }
+        } else {
+          console.error("⏱️ [WS] Callback NO está configurado!");
+          if (window.visualLogger) {
+            window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");
+          }
+        }
+      } catch (error) {
+        console.error("❌ Error en listener de timeout:", error);
+        if (window.visualLogger) {
+          window.visualLogger.error("❌ Error en listener: " + error.message);
+          window.visualLogger.error("Stack: " + error.stack);
         }
       }
     });
