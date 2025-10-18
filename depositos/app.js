@@ -1,9 +1,9 @@
 /**
  * Aplicacion principal de depositos - Version modular
- * Version: 1.0.5 - Use .error() en timeout handler
+ * Version: 1.0.6 - Use .warning() metodo correcto
  */
 
-console.log("🔧 [APP] Cargando DepositApp v1.0.5 - Use error()");
+console.log("🔧 [APP] Cargando DepositApp v1.0.6 - Use warning()");
 
 import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
@@ -27,7 +27,7 @@ class DepositApp {
 
     try {
       window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
-      window.visualLogger.debug("📦 Versión: v1.0.5 - Use error() en timeout");
+      window.visualLogger.debug("📦 Versión: v1.0.6 - Use warning() correcto");
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -993,14 +993,14 @@ class DepositApp {
       console.log("⏱️ [APP] Data recibida:", data);
 
       // Logs visuales en el panel
-      window.visualLogger.info("⏱️ Handler de timeout INICIADO");
+      window.visualLogger.warning("⏱️ Handler de timeout INICIADO");
       window.visualLogger.debug("TransaccionId", data.transaccionId);
       window.visualLogger.debug("Estado anterior", data.estadoAnterior);
       window.visualLogger.debug(
         "Tiempo transcurrido",
         data.tiempoTranscurrido + " min"
       );
-      window.visualLogger.info(
+      window.visualLogger.warning(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
 
