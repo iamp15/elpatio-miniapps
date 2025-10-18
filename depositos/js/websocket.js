@@ -229,20 +229,35 @@ class DepositoWebSocket {
 
     this.socket.on("transaccion-cancelada-por-timeout", (data) => {
       console.log("⏱️ [WS] Transacción cancelada por timeout:", data);
-      console.log("⏱️ [WS] Callback existe:", !!this.callbacks.onTransaccionCanceladaPorTimeout);
-      
+      console.log(
+        "⏱️ [WS] Callback existe:",
+        !!this.callbacks.onTransaccionCanceladaPorTimeout
+      );
+
       if (window.visualLogger) {
+        window.visualLogger.warn("⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout");
+        window.visualLogger.debug("TransaccionId", data.transaccionId);
+        window.visualLogger.debug("Callback existe", !!this.callbacks.onTransaccionCanceladaPorTimeout);
         window.visualLogger.warn(
           `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
         );
       }
-      
+
       if (this.callbacks.onTransaccionCanceladaPorTimeout) {
         console.log("⏱️ [WS] Ejecutando callback...");
+        if (window.visualLogger) {
+          window.visualLogger.info("⏱️ [WS] Ejecutando callback...");
+        }
         this.callbacks.onTransaccionCanceladaPorTimeout(data);
         console.log("⏱️ [WS] Callback ejecutado");
+        if (window.visualLogger) {
+          window.visualLogger.success("⏱️ [WS] Callback ejecutado exitosamente");
+        }
       } else {
         console.error("⏱️ [WS] Callback NO está configurado!");
+        if (window.visualLogger) {
+          window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");
+        }
       }
     });
 

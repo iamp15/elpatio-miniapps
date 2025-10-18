@@ -986,23 +986,30 @@ class DepositApp {
     try {
       console.log("⏱️ [APP] handleTransaccionCanceladaPorTimeout INICIADO");
       console.log("⏱️ [APP] Data recibida:", data);
-      
+
+      // Logs visuales en el panel
+      window.visualLogger.warn("⏱️ Handler de timeout INICIADO");
+      window.visualLogger.debug("TransaccionId", data.transaccionId);
+      window.visualLogger.debug("Estado anterior", data.estadoAnterior);
+      window.visualLogger.debug("Tiempo transcurrido", data.tiempoTranscurrido + " min");
       window.visualLogger.warn(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
-      
+
       if (data.mensaje) {
         window.visualLogger.info(data.mensaje);
       }
 
       // Limpiar transacción activa
       console.log("⏱️ [APP] Limpiando transacción activa...");
+      window.visualLogger.info("Limpiando estado de transacción...");
       this.currentTransaction = null;
       TransactionManager.clearCurrentTransaction();
       window.depositoWebSocket.clearActiveTransaction();
 
       // Mostrar pantalla de error con el mensaje
       console.log("⏱️ [APP] Mostrando pantalla de error...");
+      window.visualLogger.info("Mostrando mensaje de cancelación...");
       UI.showErrorScreen(
         "⏱️ Solicitud Cancelada",
         data.mensaje || "Tu solicitud fue cancelada por inactividad."
@@ -1011,15 +1018,21 @@ class DepositApp {
       // Volver a la pantalla principal después de 4 segundos
       setTimeout(() => {
         console.log("⏱️ [APP] Volviendo a pantalla principal...");
+        window.visualLogger.info("Regresando a pantalla principal...");
         UI.showMainScreen();
         // Recargar saldo
         this.loadUserBalance();
       }, 4000);
-      
+
       console.log("⏱️ [APP] Handler completado exitosamente");
+      window.visualLogger.success("✅ Handler de timeout completado");
     } catch (error) {
-      console.error("❌ [APP] Error manejando cancelación por timeout:", error.message);
+      console.error(
+        "❌ [APP] Error manejando cancelación por timeout:",
+        error.message
+      );
       console.error("❌ [APP] Stack:", error.stack);
+      window.visualLogger.error("❌ Error en handler de timeout: " + error.message);
     }
   }
 }
