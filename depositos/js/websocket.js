@@ -1,9 +1,9 @@
 /**
  * Módulo WebSocket para la app de depósitos
- * Version: 1.0.4 - Fix visualLogger.warn
+ * Version: 1.0.5 - Use .error() en timeout handler
  */
 
-console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.4 - Fix warn");
+console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.5 - Use error()");
 
 class DepositoWebSocket {
   constructor() {
@@ -273,7 +273,7 @@ class DepositoWebSocket {
         console.log("⏱️ [WS] Callback existe:", callbackExiste);
 
         if (window.visualLogger) {
-          window.visualLogger.info(
+          window.visualLogger.error(
             "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
           );
           window.visualLogger.debug(
@@ -282,7 +282,7 @@ class DepositoWebSocket {
           window.visualLogger.debug("Callback existe: " + callbackExiste);
 
           if (data?.tiempoTranscurrido) {
-            window.visualLogger.info(
+            window.visualLogger.error(
               `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
             );
           }

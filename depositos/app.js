@@ -1,9 +1,9 @@
 /**
  * Aplicacion principal de depositos - Version modular
- * Version: 1.0.4 - Fix visualLogger.warn
+ * Version: 1.0.5 - Use .error() en timeout handler
  */
 
-console.log("🔧 [APP] Cargando DepositApp v1.0.4 - Fix warn");
+console.log("🔧 [APP] Cargando DepositApp v1.0.5 - Use error()");
 
 import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
@@ -27,7 +27,7 @@ class DepositApp {
 
     try {
       window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
-      window.visualLogger.debug("📦 Versión: v1.0.4 - Fix visualLogger.warn");
+      window.visualLogger.debug("📦 Versión: v1.0.5 - Use error() en timeout");
 
       // Configurar WebSocket
       this.setupWebSocket();

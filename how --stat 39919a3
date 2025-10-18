@@ -1,0 +1,166 @@
+[1mdiff --git a/depositos/js/websocket.js b/depositos/js/websocket.js[m
+[1mindex bd0d02e..a60fd0d 100644[m
+[1m--- a/depositos/js/websocket.js[m
+[1m+++ b/depositos/js/websocket.js[m
+[36m@@ -1,9 +1,9 @@[m
+ /**[m
+  * Módulo WebSocket para la app de depósitos[m
+[31m- * Version: 1.0.2 - Debug listener execution[m
+[32m+[m[32m * Version: 1.0.4 - Fix visualLogger.warn[m
+  */[m
+ [m
+[31m-console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.2 - Debug listener");[m
+[32m+[m[32mconsole.log("🔧 [WS] Cargando DepositoWebSocket v1.0.4 - Fix warn");[m
+ [m
+ class DepositoWebSocket {[m
+   constructor() {[m
+[36m@@ -50,12 +50,14 @@[m [mclass DepositoWebSocket {[m
+   setCallbacks(callbacks) {[m
+     console.log("🔧 [WS] Configurando callbacks:", Object.keys(callbacks));[m
+     this.callbacks = { ...this.callbacks, ...callbacks };[m
+[31m-    console.log("🔧 [WS] Callback onTransaccionCanceladaPorTimeout configurado:", [m
+[31m-      !!this.callbacks.onTransaccionCanceladaPorTimeout);[m
+[32m+[m[32m    console.log([m
+[32m+[m[32m      "🔧 [WS] Callback onTransaccionCanceladaPorTimeout configurado:",[m
+[32m+[m[32m      !!this.callbacks.onTransaccionCanceladaPorTimeout[m
+[32m+[m[32m    );[m
+     if (window.visualLogger) {[m
+       window.visualLogger.debug([m
+[31m-        "Callback timeout configurado: " + [m
+[31m-        !!this.callbacks.onTransaccionCanceladaPorTimeout[m
+[32m+[m[32m        "Callback timeout configurado: " +[m
+[32m+[m[32m          !!this.callbacks.onTransaccionCanceladaPorTimeout[m
+       );[m
+     }[m
+   }[m
+[36m@@ -240,52 +242,81 @@[m [mclass DepositoWebSocket {[m
+       }[m
+     });[m
+ [m
+[31m-    console.log("🔧 [WS] Registrando listener: transaccion-cancelada-por-timeout");[m
+[32m+[m[32m    console.log([m
+[32m+[m[32m      "🔧 [WS] Registrando listener: transaccion-cancelada-por-timeout"[m
+[32m+[m[32m    );[m
+     if (window.visualLogger) {[m
+[31m-      window.visualLogger.debug("Registrando listener: transaccion-cancelada-por-timeout");[m
+[32m+[m[32m      window.visualLogger.debug([m
+[32m+[m[32m        "Registrando listener: transaccion-cancelada-por-timeout"[m
+[32m+[m[32m      );[m
+     }[m
+[31m-    [m
+[32m+[m
+     this.socket.on("transaccion-cancelada-por-timeout", (data) => {[m
+[31m-      // Log INMEDIATO para confirmar que el listener se ejecuta[m
+[31m-      if (window.visualLogger) {[m
+[31m-        window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");[m
+[31m-      }[m
+[31m-      console.log("⏱️ [WS] Transacción cancelada por timeout:", data);[m
+[31m-      console.log([m
+[31m-        "⏱️ [WS] Callback existe:",[m
+[31m-        !!this.callbacks.onTransaccionCanceladaPorTimeout[m
+[31m-      );[m
+[32m+[m[32m      try {[m
+[32m+[m[32m        // Log INMEDIATO para confirmar que el listener se ejecuta[m
+[32m+[m[32m        if (window.visualLogger) {[m
+[32m+[m[32m          window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");[m
+[32m+[m[32m        }[m
+ [m
+[31m-      if (window.visualLogger) {[m
+[31m-        window.visualLogger.warn([m
+[31m-          "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"[m
+[31m-        );[m
+[31m-        window.visualLogger.debug("TransaccionId", data.transaccionId);[m
+[31m-        window.visualLogger.debug([m
+[31m-          "Callback existe",[m
+[31m-          !!this.callbacks.onTransaccionCanceladaPorTimeout[m
+[31m-        );[m
+[31m-        window.visualLogger.warn([m
+[31m-          `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`[m
+[31m-        );[m
+[31m-      }[m
+[32m+[m[32m        if (window.visualLogger) {[m
+[32m+[m[32m          window.visualLogger.info("Paso 1: Verificando data...");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        console.log("⏱️ [WS] Transacción cancelada por timeout:", data);[m
+ [m
+[31m-      if (this.callbacks.onTransaccionCanceladaPorTimeout) {[m
+[31m-        console.log("⏱️ [WS] Ejecutando callback...");[m
+         if (window.visualLogger) {[m
+[31m-          window.visualLogger.info("⏱️ [WS] Ejecutando callback...");[m
+[32m+[m[32m          window.visualLogger.info("Paso 2: Data OK, verificando callback...");[m
+         }[m
+[31m-        this.callbacks.onTransaccionCanceladaPorTimeout(data);[m
+[31m-        console.log("⏱️ [WS] Callback ejecutado");[m
+[32m+[m
+[32m+[m[32m        const callbackExiste =[m
+[32m+[m[32m          !!this.callbacks.onTransaccionCanceladaPorTimeout;[m
+[32m+[m[32m        console.log("⏱️ [WS] Callback existe:", callbackExiste);[m
+[32m+[m
+         if (window.visualLogger) {[m
+[31m-          window.visualLogger.success([m
+[31m-            "⏱️ [WS] Callback ejecutado exitosamente"[m
+[32m+[m[32m          window.visualLogger.info([m
+[32m+[m[32m            "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"[m
+[32m+[m[32m          );[m
+[32m+[m[32m          window.visualLogger.debug([m
+[32m+[m[32m            "TransaccionId: " + (data?.transaccionId || "N/A")[m
+           );[m
+[32m+[m[32m          window.visualLogger.debug("Callback existe: " + callbackExiste);[m
+[32m+[m
+[32m+[m[32m          if (data?.tiempoTranscurrido) {[m
+[32m+[m[32m            window.visualLogger.info([m
+[32m+[m[32m              `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`[m
+[32m+[m[32m            );[m
+[32m+[m[32m          }[m
+         }[m
+[31m-      } else {[m
+[31m-        console.error("⏱️ [WS] Callback NO está configurado!");[m
+[32m+[m
+         if (window.visualLogger) {[m
+[31m-          window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");[m
+[32m+[m[32m          window.visualLogger.info("Paso 3: Intentando ejecutar callback...");[m
+[32m+[m[32m        }[m
+[32m+[m
+[32m+[m[32m        if (this.callbacks.onTransaccionCanceladaPorTimeout) {[m
+[32m+[m[32m          console.log("⏱️ [WS] Ejecutando callback...");[m
+[32m+[m[32m          if (window.visualLogger) {[m
+[32m+[m[32m            window.visualLogger.info("⏱️ [WS] Ejecutando callback...");[m
+[32m+[m[32m          }[m
+[32m+[m
+[32m+[m[32m          this.callbacks.onTransaccionCanceladaPorTimeout(data);[m
+[32m+[m
+[32m+[m[32m          console.log("⏱️ [WS] Callback ejecutado");[m
+[32m+[m[32m          if (window.visualLogger) {[m
+[32m+[m[32m            window.visualLogger.success([m
+[32m+[m[32m              "⏱️ [WS] Callback ejecutado exitosamente"[m
+[32m+[m[32m            );[m
+[32m+[m[32m          }[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m          console.error("⏱️ [WS] Callback NO está configurado!");[m
+[32m+[m[32m          if (window.visualLogger) {[m
+[32m+[m[32m            window.visualLogger.error("⏱️ [WS] Callback NO está configurado!");[m
+[32m+[m[32m          }[m
+[32m+[m[32m        }[m
+[32m+[m[32m      } catch (error) {[m
+[32m+[m[32m        console.error("❌ Error en listener de timeout:", error);[m
+[32m+[m[32m        if (window.visualLogger) {[m
+[32m+[m[32m          window.visualLogger.error("❌ Error en listener: " + error.message);[m
+[32m+[m[32m          window.visualLogger.error("Stack: " + error.stack);[m
+         }[m
+       }[m
+     });[m
+[36m@@ -367,7 +398,7 @@[m [mclass DepositoWebSocket {[m
+       } else {[m
+         console.log("🎉 [WebSocket] Target no es jugador, ignorando evento");[m
+         if (window.visualLogger) {[m
+[31m-          window.visualLogger.warn([m
+[32m+[m[32m          window.visualLogger.info([m
+             "🎉 [WebSocket] Target no es jugador, ignorando evento"[m
+           );[m
+         }[m
+[36m@@ -472,7 +503,7 @@[m [mclass DepositoWebSocket {[m
+     this.socket.on("participant-disconnected", (data) => {[m
+       console.log("⚠️ [RECOVERY] Participante desconectado:", data);[m
+       if (data.tipo === "cajero" && window.visualLogger) {[m
+[31m-        window.visualLogge
