@@ -1,9 +1,13 @@
 /**
  * Módulo WebSocket para la app de depósitos
+ * Version: 1.0.1 - Debug timeout handlers
  */
+
+console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.1 - Debug timeout");
 
 class DepositoWebSocket {
   constructor() {
+    console.log("🔧 [WS] Constructor ejecutándose...");
     this.socket = null;
     this.isConnected = false;
     this.isAuthenticated = false;
@@ -235,9 +239,14 @@ class DepositoWebSocket {
       );
 
       if (window.visualLogger) {
-        window.visualLogger.warn("⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout");
+        window.visualLogger.warn(
+          "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
+        );
         window.visualLogger.debug("TransaccionId", data.transaccionId);
-        window.visualLogger.debug("Callback existe", !!this.callbacks.onTransaccionCanceladaPorTimeout);
+        window.visualLogger.debug(
+          "Callback existe",
+          !!this.callbacks.onTransaccionCanceladaPorTimeout
+        );
         window.visualLogger.warn(
           `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
         );
@@ -251,7 +260,9 @@ class DepositoWebSocket {
         this.callbacks.onTransaccionCanceladaPorTimeout(data);
         console.log("⏱️ [WS] Callback ejecutado");
         if (window.visualLogger) {
-          window.visualLogger.success("⏱️ [WS] Callback ejecutado exitosamente");
+          window.visualLogger.success(
+            "⏱️ [WS] Callback ejecutado exitosamente"
+          );
         }
       } else {
         console.error("⏱️ [WS] Callback NO está configurado!");

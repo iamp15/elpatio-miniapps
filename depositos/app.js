@@ -1,6 +1,9 @@
 /**
  * Aplicacion principal de depositos - Version modular
+ * Version: 1.0.1 - Debug timeout handlers
  */
+
+console.log("🔧 [APP] Cargando DepositApp v1.0.1 - Debug timeout");
 
 import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
@@ -10,6 +13,7 @@ import { MESSAGES, APP_STATES, TRANSACTION_CONFIG } from "./js/config.js";
 
 class DepositApp {
   constructor() {
+    console.log("🔧 [APP] Constructor de DepositApp ejecutándose...");
     this.isInitialized = false;
     this.userData = null;
     this.currentBalance = 0;
@@ -23,6 +27,7 @@ class DepositApp {
 
     try {
       window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
+      window.visualLogger.debug("📦 Versión: v1.0.1 - Debug timeout handlers");
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -991,7 +996,10 @@ class DepositApp {
       window.visualLogger.warn("⏱️ Handler de timeout INICIADO");
       window.visualLogger.debug("TransaccionId", data.transaccionId);
       window.visualLogger.debug("Estado anterior", data.estadoAnterior);
-      window.visualLogger.debug("Tiempo transcurrido", data.tiempoTranscurrido + " min");
+      window.visualLogger.debug(
+        "Tiempo transcurrido",
+        data.tiempoTranscurrido + " min"
+      );
       window.visualLogger.warn(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
@@ -1032,7 +1040,9 @@ class DepositApp {
         error.message
       );
       console.error("❌ [APP] Stack:", error.stack);
-      window.visualLogger.error("❌ Error en handler de timeout: " + error.message);
+      window.visualLogger.error(
+        "❌ Error en handler de timeout: " + error.message
+      );
     }
   }
 }
