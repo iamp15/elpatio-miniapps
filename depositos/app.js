@@ -1,9 +1,9 @@
 /**
  * Aplicacion principal de depositos - Version modular
- * Version: 1.0.3 - Try-catch + paso a paso
+ * Version: 1.0.4 - Fix visualLogger.warn
  */
 
-console.log("🔧 [APP] Cargando DepositApp v1.0.3 - Try-catch");
+console.log("🔧 [APP] Cargando DepositApp v1.0.4 - Fix warn");
 
 import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
@@ -27,9 +27,7 @@ class DepositApp {
 
     try {
       window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
-      window.visualLogger.debug(
-        "📦 Versión: v1.0.3 - Try-catch + paso a paso"
-      );
+      window.visualLogger.debug("📦 Versión: v1.0.4 - Fix visualLogger.warn");
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -190,7 +188,7 @@ class DepositApp {
       window.visualLogger.info(`🔐 Autenticando con WebSocket: ${telegramId}`);
       window.depositoWebSocket.authenticateJugador(telegramId, initData);
     } else {
-      window.visualLogger.warning(
+      window.visualLogger.infoing(
         "WebSocket no conectado, reintentando en 2 segundos..."
       );
       setTimeout(() => {
@@ -344,7 +342,7 @@ class DepositApp {
       // Limpiar transacción activa (ya rechazada)
       window.depositoWebSocket.clearActiveTransaction();
 
-      window.visualLogger.warning("⚠️ [APP] handleDepositoRechazado llamado");
+      window.visualLogger.infoing("⚠️ [APP] handleDepositoRechazado llamado");
       window.visualLogger.info("⚠️ [APP] Datos recibidos:", data);
 
       // Actualizar saldo
@@ -397,7 +395,7 @@ class DepositApp {
         UI.updateBalance(this.currentBalance);
         window.visualLogger.info(`💰 Saldo cargado: ${this.currentBalance} Bs`);
       } else {
-        window.visualLogger.warning(
+        window.visualLogger.infoing(
           "No se pudo cargar el saldo, usando valor por defecto"
         );
         this.currentBalance = 0;
@@ -839,7 +837,7 @@ class DepositApp {
     console.log("⚠️ Participante desconectado:", data);
 
     if (data.tipo === "cajero") {
-      window.visualLogger.warn(
+      window.visualLogger.info(
         "El cajero se desconectó temporalmente. Esperando reconexión..."
       );
     }
@@ -918,7 +916,7 @@ class DepositApp {
             "✅ Pantalla de datos bancarios mostrada"
           );
         } else {
-          window.visualLogger.warning("⚠️ Cajero sin datos disponibles");
+          window.visualLogger.infoing("⚠️ Cajero sin datos disponibles");
           window.visualLogger.debug("data.cajero completo", data.cajero);
           UI.showWaitingScreen();
         }
@@ -951,7 +949,7 @@ class DepositApp {
 
       default:
         console.log(`Estado no manejado para restauración: ${estado}`);
-        window.visualLogger.warn(
+        window.visualLogger.info(
           `Estado desconocido: ${estado}, volviendo a pantalla principal`
         );
         UI.showMainScreen();
@@ -995,14 +993,14 @@ class DepositApp {
       console.log("⏱️ [APP] Data recibida:", data);
 
       // Logs visuales en el panel
-      window.visualLogger.warn("⏱️ Handler de timeout INICIADO");
+      window.visualLogger.info("⏱️ Handler de timeout INICIADO");
       window.visualLogger.debug("TransaccionId", data.transaccionId);
       window.visualLogger.debug("Estado anterior", data.estadoAnterior);
       window.visualLogger.debug(
         "Tiempo transcurrido",
         data.tiempoTranscurrido + " min"
       );
-      window.visualLogger.warn(
+      window.visualLogger.info(
         `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
       );
 
