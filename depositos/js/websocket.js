@@ -1,9 +1,9 @@
 /**
  * Módulo WebSocket para la app de depósitos
- * Version: 1.0.6 - Use .warning() metodo correcto
+ * Version: 1.0.7 - Fix basado en v1.0.3 que funcionaba
  */
 
-console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.6 - Use warning()");
+console.log("🔧 [WS] Cargando DepositoWebSocket v1.0.7 - Clean fix");
 
 class DepositoWebSocket {
   constructor() {
@@ -257,30 +257,27 @@ class DepositoWebSocket {
         if (window.visualLogger) {
           window.visualLogger.error("🔴 LISTENER ESPECÍFICO EJECUTÁNDOSE");
         }
-
+        
         if (window.visualLogger) {
           window.visualLogger.info("Paso 1: Verificando data...");
         }
-
+        
         console.log("⏱️ [WS] Transacción cancelada por timeout:", data);
-
+        
         if (window.visualLogger) {
           window.visualLogger.info("Paso 2: Data OK, verificando callback...");
         }
-
-        const callbackExiste =
-          !!this.callbacks.onTransaccionCanceladaPorTimeout;
+        
+        const callbackExiste = !!this.callbacks.onTransaccionCanceladaPorTimeout;
         console.log("⏱️ [WS] Callback existe:", callbackExiste);
 
         if (window.visualLogger) {
           window.visualLogger.warning(
             "⏱️ [WS] Evento recibido: transaccion-cancelada-por-timeout"
           );
-          window.visualLogger.debug(
-            "TransaccionId: " + (data?.transaccionId || "N/A")
-          );
+          window.visualLogger.debug("TransaccionId: " + (data?.transaccionId || "N/A"));
           window.visualLogger.debug("Callback existe: " + callbackExiste);
-
+          
           if (data?.tiempoTranscurrido) {
             window.visualLogger.warning(
               `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
@@ -297,9 +294,9 @@ class DepositoWebSocket {
           if (window.visualLogger) {
             window.visualLogger.info("⏱️ [WS] Ejecutando callback...");
           }
-
+          
           this.callbacks.onTransaccionCanceladaPorTimeout(data);
-
+          
           console.log("⏱️ [WS] Callback ejecutado");
           if (window.visualLogger) {
             window.visualLogger.success(
@@ -398,7 +395,7 @@ class DepositoWebSocket {
       } else {
         console.log("🎉 [WebSocket] Target no es jugador, ignorando evento");
         if (window.visualLogger) {
-          window.visualLogger.info(
+          window.visualLogger.warn(
             "🎉 [WebSocket] Target no es jugador, ignorando evento"
           );
         }
@@ -503,7 +500,7 @@ class DepositoWebSocket {
     this.socket.on("participant-disconnected", (data) => {
       console.log("⚠️ [RECOVERY] Participante desconectado:", data);
       if (data.tipo === "cajero" && window.visualLogger) {
-        window.visualLogger.info("El cajero se desconectó temporalmente...");
+        window.visualLogger.warn("El cajero se desconectó temporalmente...");
       }
       if (this.callbacks.onParticipantDisconnected) {
         this.callbacks.onParticipantDisconnected(data);
