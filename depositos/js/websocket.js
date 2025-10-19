@@ -1,6 +1,6 @@
 /**
  * Módulo WebSocket para la app de depósitos
- * @version 1.1.0
+ * @version 0.9.0
  */
 
 class DepositoWebSocket {
