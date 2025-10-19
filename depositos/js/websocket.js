@@ -1,5 +1,6 @@
 /**
  * Módulo WebSocket para la app de depósitos
+ * @version 1.1.0
  */
 
 class DepositoWebSocket {
@@ -233,7 +234,7 @@ class DepositoWebSocket {
           `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} minutos)`
         );
       }
-      
+
       if (this.callbacks.onTransaccionCanceladaPorTimeout) {
         this.callbacks.onTransaccionCanceladaPorTimeout(data);
       }

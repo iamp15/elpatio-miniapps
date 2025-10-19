@@ -1,5 +1,6 @@
 /**
  * Aplicacion principal de depositos - Version modular
+ * @version 1.1.0
  */
 
 import { TelegramAuth } from "./js/auth.js";
@@ -8,11 +9,15 @@ import { TransactionManager } from "./js/transactions.js";
 import { API } from "./js/api.js";
 import { MESSAGES, APP_STATES, TRANSACTION_CONFIG } from "./js/config.js";
 
+// Constante de versión
+const APP_VERSION = "1.1.0";
+
 class DepositApp {
   constructor() {
     this.isInitialized = false;
     this.userData = null;
     this.currentBalance = 0;
+    this.version = APP_VERSION;
   }
 
   /**
@@ -22,7 +27,7 @@ class DepositApp {
     if (this.isInitialized) return;
 
     try {
-      window.visualLogger.info("🚀 Iniciando aplicación de depósitos...");
+      window.visualLogger.info(`🚀 Iniciando aplicación de depósitos v${this.version}...`);
 
       // Configurar WebSocket
       this.setupWebSocket();
