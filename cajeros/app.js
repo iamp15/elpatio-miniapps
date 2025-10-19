@@ -1,6 +1,6 @@
 /**
  * Aplicación principal de cajeros - Versión modular
- * @version 0.10.0
+ * @version 0.10.1
  */
 
 import { Auth } from "./js/auth.js";
@@ -12,7 +12,7 @@ import notificationListManager from "./js/notification-manager.js"; // Importar 
 import browserNotifications from "./js/push-notifications.js"; // Importar notificaciones del navegador
 
 // Constante de versión
-const APP_VERSION = "0.10.0"; // Alpha - Sistema de notificaciones push implementado
+const APP_VERSION = "0.10.1"; // Alpha - Sistema de notificaciones push (fixes WebSocket y SW)
 
 class CajerosApp {
   constructor() {
