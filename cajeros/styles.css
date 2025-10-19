@@ -1452,3 +1452,340 @@ body {
     width: 100%;
   }
 }
+
+/* ===== NOTIFICACIONES SISTEMA ===== */
+
+/* Botón flotante de notificaciones */
+.notifications-float-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--patio-verde-pasto),
+    var(--patio-verde-pasto-oscuro)
+  );
+  color: white;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notifications-float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.notifications-float-btn:active {
+  transform: scale(0.95);
+}
+
+/* Animación pulse para el botón cuando hay notificaciones nuevas */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.8),
+      0 0 0 10px rgba(76, 175, 80, 0.2);
+  }
+  100% {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.notifications-float-btn.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Badge de contador de notificaciones */
+.notifications-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: var(--patio-rojo-ladrillo);
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+/* Pantalla de notificaciones */
+#notifications-screen .header {
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.btn-back {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  padding: 8px 16px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+  background: white;
+  color: var(--patio-verde-pasto);
+}
+
+/* Contenido de notificaciones */
+.notifications-content {
+  margin-top: 20px;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Scrollbar personalizado para la lista */
+.notifications-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.notifications-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb {
+  background: var(--patio-verde-pasto);
+  border-radius: 10px;
+}
+
+.notifications-list::-webkit-scrollbar-thumb:hover {
+  background: var(--patio-verde-pasto-oscuro);
+}
+
+/* Card de notificación */
+.notification-card {
+  background: white;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  position: relative;
+  border-left: 4px solid var(--patio-verde-pasto);
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Tipos de notificación con colores diferentes */
+.notification-card.inicio_sesion {
+  border-left-color: var(--patio-azul-cielo);
+}
+
+.notification-card.nueva_solicitud {
+  border-left-color: var(--patio-amarillo-sol);
+}
+
+.notification-card.solicitud_asignada {
+  border-left-color: var(--patio-verde-pasto);
+}
+
+.notification-card.pago_realizado {
+  border-left-color: var(--patio-marron-madera);
+}
+
+.notification-card.transaccion_completada {
+  border-left-color: var(--patio-verde-pasto-oscuro);
+}
+
+.notification-card.sesion_cerrada {
+  border-left-color: var(--patio-gris-piedra);
+}
+
+/* Header de la notificación */
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.notification-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.notification-title-wrapper {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 4px 0;
+}
+
+.notification-time {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Botón de eliminar notificación */
+.notification-delete {
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px;
+  line-height: 1;
+}
+
+.notification-delete:hover {
+  color: var(--patio-rojo-ladrillo);
+  transform: scale(1.2);
+}
+
+/* Cuerpo de la notificación */
+.notification-body {
+  margin-left: 36px;
+}
+
+.notification-message {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Datos adicionales de la notificación (opcional) */
+.notification-data {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--patio-blanco-nube);
+  border-radius: 6px;
+  font-size: 12px;
+  color: #666;
+}
+
+.notification-data-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.notification-data-item:last-child {
+  margin-bottom: 0;
+}
+
+.notification-data-label {
+  font-weight: 600;
+  color: #333;
+}
+
+/* Estado vacío de notificaciones */
+.no-notifications {
+  text-align: center;
+  padding: 60px 20px;
+  color: white;
+}
+
+.no-notifications .no-data-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  opacity: 0.5;
+}
+
+.no-notifications h4 {
+  font-size: 24px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.no-notifications p {
+  font-size: 16px;
+  opacity: 0.8;
+  margin: 0;
+}
+
+/* Responsive para notificaciones */
+@media (max-width: 768px) {
+  .notifications-float-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+    top: 15px;
+    right: 15px;
+  }
+
+  .notifications-badge {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  }
+
+  .notification-card {
+    padding: 12px;
+  }
+
+  .notification-title {
+    font-size: 14px;
+  }
+
+  .notification-message {
+    font-size: 13px;
+  }
+
+  .notification-icon {
+    font-size: 20px;
+    margin-right: 8px;
+  }
+
+  .notification-body {
+    margin-left: 28px;
+  }
+
+  .btn-back {
+    position: relative;
+    left: auto;
+    top: auto;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+}

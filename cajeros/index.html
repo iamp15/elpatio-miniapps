@@ -252,6 +252,62 @@
             </div>
           </div>
         </div>
+
+        <!-- Botón flotante de notificaciones -->
+        <button
+          id="notifications-btn"
+          class="notifications-float-btn"
+          title="Ver notificaciones"
+        >
+          🔔
+          <span
+            id="notifications-badge"
+            class="notifications-badge"
+            style="display: none"
+            >0</span
+          >
+        </button>
+      </div>
+
+      <!-- Pantalla de Notificaciones -->
+      <div id="notifications-screen" class="screen">
+        <div class="container">
+          <div class="header">
+            <button id="back-to-dashboard-btn" class="btn btn-back">
+              ← Volver
+            </button>
+            <h1>🔔 Notificaciones</h1>
+            <p>Historial de eventos recientes</p>
+          </div>
+
+          <div class="notifications-content">
+            <!-- Estado de carga -->
+            <div
+              id="loading-notifications"
+              class="loading-state"
+              style="display: none"
+            >
+              <div class="spinner"></div>
+              <p>Cargando notificaciones...</p>
+            </div>
+
+            <!-- Lista de notificaciones -->
+            <div id="notifications-list" class="notifications-list">
+              <!-- Las notificaciones se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Mensaje cuando no hay notificaciones -->
+            <div
+              id="no-notifications"
+              class="no-notifications"
+              style="display: none"
+            >
+              <div class="no-data-icon">🔕</div>
+              <h4>No hay notificaciones</h4>
+              <p>Cuando ocurran eventos importantes, aparecerán aquí.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 

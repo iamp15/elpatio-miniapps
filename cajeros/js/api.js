@@ -146,6 +146,30 @@ class APIManager {
 
     return error;
   }
+
+  /**
+   * ===== NOTIFICACIONES =====
+   */
+
+  /**
+   * Obtener notificaciones del cajero autenticado
+   */
+  async getNotificaciones(token, limit = 10) {
+    const url = `${this.baseURL}/api/notificaciones/cajero?limit=${limit}`;
+    return this.authenticatedRequest(url, token, {
+      method: "GET",
+    });
+  }
+
+  /**
+   * Eliminar una notificación específica
+   */
+  async deleteNotificacion(notificacionId, token) {
+    const url = `${this.baseURL}/api/notificaciones/${notificacionId}`;
+    return this.authenticatedRequest(url, token, {
+      method: "DELETE",
+    });
+  }
 }
 
 // Crear instancia única del gestor de API

@@ -1,16 +1,18 @@
 /**
  * Aplicación principal de cajeros - Versión modular
- * @version 0.9.0
+ * @version 0.10.0
  */
 
 import { Auth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
 import { MESSAGES } from "./js/config.js";
-import "./js/notifications.js"; // Importar sistema de notificaciones
+import "./js/notifications.js"; // Importar sistema de notificaciones toast
+import notificationListManager from "./js/notification-manager.js"; // Importar gestor de notificaciones persistentes
+import browserNotifications from "./js/push-notifications.js"; // Importar notificaciones del navegador
 
 // Constante de versión
-const APP_VERSION = "0.9.0"; // Alpha - Infraestructura lista, falta implementar juegos
+const APP_VERSION = "0.10.0"; // Alpha - Sistema de notificaciones push implementado
 
 class CajerosApp {
   constructor() {
@@ -26,7 +28,9 @@ class CajerosApp {
     if (this.isInitialized) return;
 
     try {
-      console.log(`🚀 Iniciando aplicación de cajeros v${this.version} [ALPHA]...`);
+      console.log(
+        `🚀 Iniciando aplicación de cajeros v${this.version} [ALPHA]...`
+      );
 
       // Configurar WebSocket
       this.setupWebSocket();
@@ -53,6 +57,9 @@ class CajerosApp {
 
       // Inicializar autenticación
       await Auth.init();
+
+      // Inicializar sistema de notificaciones
+      await this.initNotifications();
 
       // Hacer disponibles las instancias globalmente para uso en HTML
       window.transactionManager = TransactionManager;
@@ -114,6 +121,12 @@ class CajerosApp {
       this.handleTransaccionCanceladaPorTimeout(data);
     });
 
+    // Listener para notificaciones persistentes
+    window.cajeroWebSocket.on("onNuevaNotificacion", (data) => {
+      console.log("🔔 Nueva notificación recibida:", data);
+      this.handleNuevaNotificacion(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
       // Limpiar el estado de procesamiento en caso de error
@@ -127,6 +140,59 @@ class CajerosApp {
 
     // Conectar WebSocket
     window.cajeroWebSocket.connect();
+  }
+
+  /**
+   * Inicializar sistema de notificaciones
+   */
+  async initNotifications() {
+    try {
+      console.log("🔔 Iniciando sistema de notificaciones...");
+
+      // Inicializar gestor de notificaciones persistentes
+      notificationListManager.init();
+
+      // Inicializar notificaciones del navegador
+      await browserNotifications.init();
+
+      // Solicitar permisos de notificación (opcional, se puede hacer en login)
+      // await browserNotifications.requestPermission();
+
+      console.log("✅ Sistema de notificaciones iniciado");
+    } catch (error) {
+      console.error("❌ Error iniciando sistema de notificaciones:", error);
+    }
+  }
+
+  /**
+   * Manejar nueva notificación via WebSocket
+   */
+  handleNuevaNotificacion(data) {
+    try {
+      const { tipo, titulo, mensaje, transaccionId } = data;
+
+      console.log(`🔔 Notificación recibida - Tipo: ${tipo}`);
+
+      // Mostrar notificación toast
+      if (window.notificationManager) {
+        window.notificationManager.info(titulo, mensaje);
+      }
+
+      // Mostrar notificación del navegador para eventos críticos
+      // Solo si la app NO está enfocada
+      if (tipo === "nueva_solicitud" || tipo === "pago_realizado") {
+        browserNotifications.showCriticalNotification(tipo, {
+          mensaje,
+          transaccionId,
+        });
+      }
+
+      // Agregar a la lista de notificaciones persistentes
+      // (opcional, si queremos actualizar en tiempo real)
+      // notificationListManager.addNotification(data);
+    } catch (error) {
+      console.error("❌ Error manejando nueva notificación:", error);
+    }
   }
 
   /**
@@ -170,6 +236,21 @@ class CajerosApp {
 
       // Mostrar dashboard
       UI.showDashboard();
+
+      // Solicitar permisos de notificación (solo se hace una vez)
+      try {
+        await browserNotifications.requestPermission();
+      } catch (error) {
+        console.log("No se pudo solicitar permiso de notificaciones:", error);
+      }
+
+      // Crear notificación local de inicio de sesión
+      if (window.notificationManager) {
+        window.notificationManager.success(
+          "Sesión iniciada",
+          `Bienvenido ${cajeroInfo.nombreCompleto || cajeroInfo.email}`
+        );
+      }
     } catch (error) {
       console.error(`Error después del login exitoso: ${error.message}`);
       UI.showError("Error al cargar datos del dashboard");
@@ -376,6 +457,14 @@ class CajerosApp {
    * Manejar logout
    */
   handleLogout() {
+    // Crear notificación de cierre de sesión
+    if (window.notificationManager) {
+      window.notificationManager.info(
+        "Sesión cerrada",
+        "Has cerrado sesión correctamente"
+      );
+    }
+
     // Limpiar sesión en Auth
     Auth.logout();
 
