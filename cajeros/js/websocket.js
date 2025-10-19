@@ -1,5 +1,6 @@
 /**
  * Módulo WebSocket para la app de cajeros
+ * @version 0.9.0
  */
 
 class CajeroWebSocket {

@@ -1,5 +1,6 @@
 /**
  * Aplicación principal de cajeros - Versión modular
+ * @version 0.9.0
  */
 
 import { Auth } from "./js/auth.js";
@@ -8,10 +9,14 @@ import { TransactionManager } from "./js/transactions.js";
 import { MESSAGES } from "./js/config.js";
 import "./js/notifications.js"; // Importar sistema de notificaciones
 
+// Constante de versión
+const APP_VERSION = "0.9.0"; // Alpha - Infraestructura lista, falta implementar juegos
+
 class CajerosApp {
   constructor() {
     this.isInitialized = false;
     this.processedTransactions = new Set(); // Para evitar duplicados
+    this.version = APP_VERSION;
   }
 
   /**
@@ -21,6 +26,8 @@ class CajerosApp {
     if (this.isInitialized) return;
 
     try {
+      console.log(`🚀 Iniciando aplicación de cajeros v${this.version} [ALPHA]...`);
+
       // Configurar WebSocket
       this.setupWebSocket();
 
