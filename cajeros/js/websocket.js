@@ -24,6 +24,7 @@ class CajeroWebSocket {
       onDepositoRechazado: null,
       onTransaccionCanceladaPorJugador: null,
       onTransaccionCanceladaPorTimeout: null,
+      onNuevaNotificacion: null,
       onError: null,
     };
   }
@@ -201,6 +202,14 @@ class CajeroWebSocket {
       console.error("❌ Error en WebSocket:", error);
       if (this.callbacks.onError) {
         this.callbacks.onError(error);
+      }
+    });
+
+    // Evento de nueva notificación
+    this.socket.on("nuevaNotificacion", (data) => {
+      console.log("🔔 Nueva notificación recibida via WebSocket:", data);
+      if (this.callbacks.onNuevaNotificacion) {
+        this.callbacks.onNuevaNotificacion(data);
       }
     });
 
