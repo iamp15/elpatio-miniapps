@@ -1,0 +1,5 @@
+fix(v1.0.6): Usar .warning() en vez de .warn() - metodo correcto
+
+El metodo correcto es .warning() no .warn()
+Corregido en handler de timeout para que funcione
+
