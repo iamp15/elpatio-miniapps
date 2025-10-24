@@ -352,12 +352,13 @@ class DepositApp {
 
       // Mostrar mensaje de error con razón del rechazo
       const motivo = data.motivo || "El cajero rechazó la transacción";
-      UI.showErrorScreen("Depósito Rechazado", `El cajero rechazó la transacción: ${motivo}`);
+      UI.showErrorScreen(
+        "Depósito Rechazado",
+        `El cajero rechazó la transacción: ${motivo}`
+      );
 
-      // Volver a pantalla principal después de un delay
-      setTimeout(() => {
-        UI.showMainScreen();
-      }, 3000);
+      // No redirigir automáticamente - dejar que el usuario decida cuándo continuar
+      // El usuario puede usar el botón "Volver al Banco" o "Cerrar" para continuar
 
       window.visualLogger.info("⚠️ [APP] Depósito rechazado procesado");
     } catch (error) {
