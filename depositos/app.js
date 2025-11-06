@@ -616,7 +616,7 @@ class DepositApp {
           telefono: formData.phone,
           referencia: formData.reference,
           fecha: formData.date,
-          monto: TransactionManager.convertToCents(formData.amount),
+          monto: this.currentTransaction.monto, // Usar el monto de la transacción original
         },
       };
 

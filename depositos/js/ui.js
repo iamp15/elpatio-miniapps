@@ -103,9 +103,6 @@ class UIManager {
     this.elements.paymentDateInput = document.querySelector(
       DOM_SELECTORS.PAYMENT_DATE_INPUT
     );
-    this.elements.paymentAmountInput = document.querySelector(
-      DOM_SELECTORS.PAYMENT_AMOUNT_INPUT
-    );
 
     // Información mostrada
     this.elements.currentBalance = document.querySelector(
@@ -500,7 +497,6 @@ class UIManager {
       phone: formData.get("payment-phone"),
       reference: formData.get("payment-reference"),
       date: formData.get("payment-date"),
-      amount: parseFloat(formData.get("payment-amount")),
     };
   }
 
@@ -537,7 +533,7 @@ class UIManager {
       return { valid: false, message: "Datos de pago no válidos" };
     }
 
-    const requiredFields = ["bank", "phone", "reference", "date", "amount"];
+    const requiredFields = ["bank", "phone", "reference", "date"];
     for (const field of requiredFields) {
       if (!formData[field]) {
         return { valid: false, message: `El campo ${field} es requerido` };
@@ -546,10 +542,6 @@ class UIManager {
 
     if (formData.phone.length !== 11) {
       return { valid: false, message: "El teléfono debe tener 11 dígitos" };
-    }
-
-    if (formData.amount <= 0) {
-      return { valid: false, message: "El monto debe ser mayor a 0" };
     }
 
     return { valid: true };

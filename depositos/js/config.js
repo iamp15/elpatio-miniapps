@@ -127,7 +127,6 @@ export const DOM_SELECTORS = {
   PAYMENT_PHONE_INPUT: "#payment-phone",
   PAYMENT_REFERENCE_INPUT: "#payment-reference",
   PAYMENT_DATE_INPUT: "#payment-date",
-  PAYMENT_AMOUNT_INPUT: "#payment-amount",
 
   // Información mostrada
   CURRENT_BALANCE: "#current-balance",
