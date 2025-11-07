@@ -35,7 +35,7 @@ export const UI_CONFIG = {
 
 // Configuración de transacciones
 export const TRANSACTION_CONFIG = {
-  MIN_AMOUNT: 1, // Bs
+  MIN_AMOUNT: 1, // Bs - Valor inicial, se actualiza dinámicamente desde el backend
   MAX_AMOUNT: 10000, // Bs
   AMOUNT_DIVISOR: 100, // Para convertir centavos a bolívares
   LOCALE: "es-VE",

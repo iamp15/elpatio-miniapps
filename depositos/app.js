@@ -18,6 +18,7 @@ class DepositApp {
     this.userData = null;
     this.currentBalance = 0;
     this.version = APP_VERSION;
+    this.montoMinimo = 1; // Valor por defecto, se actualiza al cargar configuración
   }
 
   /**
@@ -66,6 +67,9 @@ class DepositApp {
       // Hacer disponibles las instancias globalmente para uso en HTML
       window.transactionManager = TransactionManager;
       window.depositApp = this;
+
+      // Cargar configuración del sistema
+      await this.cargarConfiguracion();
 
       // Inicializar autenticacion de Telegram con timeout
       await this.initWithTimeout();
@@ -141,6 +145,63 @@ class DepositApp {
     // Conectar WebSocket
     window.visualLogger.info("🔌 Iniciando conexión WebSocket...");
     window.depositoWebSocket.connect();
+  }
+
+  /**
+   * Cargar configuración del sistema
+   */
+  async cargarConfiguracion() {
+    try {
+      window.visualLogger.info("⚙️ Cargando configuración del sistema...");
+      
+      const response = await fetch(`${BACKEND_URL}/api/config/depositos`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.ok && data.configuracion) {
+          this.montoMinimo = data.configuracion.deposito_monto_minimo || 1;
+          
+          // Actualizar la configuración de transacciones
+          TRANSACTION_CONFIG.MIN_AMOUNT = this.montoMinimo;
+          
+          // Actualizar la UI
+          this.actualizarUIMontoMinimo();
+          
+          window.visualLogger.success(
+            `✅ Configuración cargada: Monto mínimo = ${this.montoMinimo} Bs`
+          );
+        }
+      } else {
+        window.visualLogger.warning(
+          "⚠️ No se pudo cargar la configuración, usando valores por defecto"
+        );
+      }
+    } catch (error) {
+      window.visualLogger.error(
+        `❌ Error cargando configuración: ${error.message}`
+      );
+      // Usar valores por defecto si hay error
+      this.montoMinimo = 1;
+      TRANSACTION_CONFIG.MIN_AMOUNT = 1;
+    }
+  }
+
+  /**
+   * Actualizar UI con el monto mínimo
+   */
+  actualizarUIMontoMinimo() {
+    // Actualizar el texto de ayuda en el formulario
+    const helpText = document.querySelector('#amount + .form-help');
+    if (helpText) {
+      helpText.textContent = `Monto mínimo: ${this.montoMinimo} Bs`;
+    }
+
+    // Actualizar el atributo min del input
+    const amountInput = document.getElementById('amount');
+    if (amountInput) {
+      amountInput.min = this.montoMinimo;
+    }
   }
 
   /**
