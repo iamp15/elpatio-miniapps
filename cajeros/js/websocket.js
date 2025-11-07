@@ -392,18 +392,59 @@ class CajeroWebSocket {
   }
 
   /**
-   * Rechazar pago (verificación de pago)
+   * Rechazar pago (verificación de pago) con estructura mejorada
    */
-  rechazarPagoCajero(transaccionId, motivo) {
+  rechazarPagoCajero(transaccionId, motivoRechazo) {
     if (!this.isConnected || !this.isAuthenticated) {
       console.error("No hay conexión o no está autenticado");
       return;
     }
-    console.log("❌ Rechazando pago:", { transaccionId, motivo });
+    
+    console.log("❌ Rechazando pago:", { transaccionId, motivoRechazo });
+    
+    // Soportar tanto el formato antiguo (string) como el nuevo (objeto)
+    const motivoData = typeof motivoRechazo === 'string' 
+      ? { descripcionDetallada: motivoRechazo, categoria: 'otro' }
+      : motivoRechazo;
+    
     this.socket.emit("verificar-pago-cajero", {
       transaccionId,
       accion: "rechazar",
-      motivo,
+      motivoRechazo: motivoData,
+      motivo: motivoData.descripcionDetallada, // Mantener compatibilidad
+    });
+  }
+
+  /**
+   * Referir transacción a administrador
+   */
+  referirAAdmin(transaccionId, descripcion) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+    
+    console.log("⚠️ Refiriendo a admin:", { transaccionId, descripcion });
+    this.socket.emit("referir-a-admin", {
+      transaccionId,
+      descripcion,
+    });
+  }
+
+  /**
+   * Ajustar monto de depósito
+   */
+  ajustarMontoDeposito(transaccionId, montoReal, razon) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+    
+    console.log("💰 Ajustando monto:", { transaccionId, montoReal, razon });
+    this.socket.emit("ajustar-monto-deposito", {
+      transaccionId,
+      montoReal,
+      razon,
     });
   }
 

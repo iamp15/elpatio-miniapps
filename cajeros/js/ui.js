@@ -445,8 +445,10 @@ class UIManager {
    * Mostrar pop-up de verificación de pago
    */
   showVerificarPagoPopup(data) {
+    const montoSolicitado = data.monto / 100;
+    
     const modalHTML = `
-      <div class="transaction-details-modal">
+      <div class="transaction-details-modal verificar-pago-modal">
         <div class="modal-header">
           <h2>🔍 Verificar Pago</h2>
           <button onclick="closeTransactionDetails()" class="close-btn">&times;</button>
@@ -458,7 +460,7 @@ class UIManager {
               💰 Depósito
             </div>
             <div class="transaction-amount">
-              ${(data.monto / 100).toFixed(2)} Bs
+              ${montoSolicitado.toFixed(2)} Bs
             </div>
           </div>
           
@@ -483,6 +485,23 @@ class UIManager {
               <span>${data.datosPago.telefono}</span>
             </div>
           </div>
+
+          <div class="form-group monto-verificacion">
+            <label class="form-label">
+              Monto recibido (Bs): *
+              <span class="label-hint">Ingresa el monto exacto que recibiste</span>
+            </label>
+            <input 
+              type="number" 
+              id="monto-recibido" 
+              class="form-input" 
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              value="${montoSolicitado.toFixed(2)}"
+            />
+            <div id="monto-alert" class="monto-alert" style="display: none;"></div>
+          </div>
           
           <div class="status-message">
             <p>🔍 <strong>Verificación requerida:</strong> Confirma en tu cuenta bancaria si el pago fue recibido correctamente.</p>
@@ -490,17 +509,207 @@ class UIManager {
         </div>
         
         <div class="modal-actions">
-          <button class="btn btn-success confirm-payment-btn" data-transaction-id="${
-            data.transaccionId
-          }">✅ Confirmar Pago</button>
-          <button class="btn btn-danger reject-payment-btn" data-transaction-id="${
-            data.transaccionId
-          }">❌ Rechazar Pago</button>
+          <button class="btn btn-success" id="btn-verificar-confirmar" data-transaction-id="${data.transaccionId}" data-monto-solicitado="${montoSolicitado}">✅ Confirmar Pago</button>
+          <button class="btn btn-danger reject-payment-btn" data-transaction-id="${data.transaccionId}">❌ Rechazar Pago</button>
         </div>
       </div>
     `;
 
     this.showTransactionDetailsModal(modalHTML);
+
+    // Agregar event listeners
+    const montoRecibidoInput = document.getElementById('monto-recibido');
+    const montoAlert = document.getElementById('monto-alert');
+
+    montoRecibidoInput.addEventListener('input', (e) => {
+      const montoRecibido = parseFloat(e.target.value) || 0;
+      
+      if (montoRecibido !== montoSolicitado) {
+        montoAlert.style.display = 'block';
+        
+        if (montoRecibido < montoSolicitado) {
+          montoAlert.className = 'monto-alert error';
+          montoAlert.innerHTML = `⚠️ El monto recibido es MENOR al solicitado. Diferencia: ${(montoSolicitado - montoRecibido).toFixed(2)} Bs`;
+        } else {
+          montoAlert.className = 'monto-alert warning';
+          montoAlert.innerHTML = `⚠️ El monto recibido es MAYOR al solicitado. Diferencia: ${(montoRecibido - montoSolicitado).toFixed(2)} Bs`;
+        }
+      } else {
+        montoAlert.style.display = 'none';
+      }
+    });
+
+    // Botón de confirmar con validación de monto
+    document.getElementById('btn-verificar-confirmar').addEventListener('click', (e) => {
+      const transaccionId = e.target.dataset.transactionId;
+      const montoSolicitado = parseFloat(e.target.dataset.montoSolicitado);
+      const montoRecibido = parseFloat(montoRecibidoInput.value) || 0;
+
+      if (montoRecibido <= 0) {
+        this.showAlert('Debes ingresar el monto recibido');
+        return;
+      }
+
+      // Si hay diferencia en el monto, manejar apropiadamente
+      if (montoRecibido !== montoSolicitado) {
+        this.handleDiferenciaMonto(transaccionId, montoSolicitado, montoRecibido);
+      } else {
+        // Confirmar directamente si el monto coincide
+        this.handleConfirmPayment(transaccionId);
+      }
+    });
+  }
+
+  /**
+   * Manejar diferencia de monto
+   */
+  async handleDiferenciaMonto(transaccionId, montoSolicitado, montoRecibido) {
+    // Obtener configuración de monto mínimo
+    const montoMinimo = await this.obtenerMontoMinimo();
+
+    // Si el monto recibido es menor al mínimo, debe rechazarse
+    if (montoRecibido < montoMinimo) {
+      this.showAlert(
+        `El monto recibido (${montoRecibido} Bs) es menor al mínimo permitido (${montoMinimo} Bs). Debes rechazar este depósito.`
+      );
+      return;
+    }
+
+    // Si el monto es mayor al solicitado pero mayor al mínimo, permitir ajuste
+    if (montoRecibido > montoSolicitado) {
+      this.showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido);
+    } else {
+      // Si es menor al solicitado pero mayor al mínimo, preguntar
+      this.showConfirmDialog(
+        `El monto recibido (${montoRecibido} Bs) es menor al solicitado (${montoSolicitado} Bs). ¿Deseas ajustar el monto o rechazar el depósito?`,
+        (confirmed) => {
+          if (confirmed) {
+            this.showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido);
+          }
+        }
+      );
+    }
+  }
+
+  /**
+   * Obtener monto mínimo desde la configuración
+   */
+  async obtenerMontoMinimo() {
+    try {
+      const response = await fetch('/api/config/depositos');
+      if (response.ok) {
+        const data = await response.json();
+        return data.configuracion?.deposito_monto_minimo || 10;
+      }
+    } catch (error) {
+      console.error('Error obteniendo configuración:', error);
+    }
+    return 10; // Valor por defecto
+  }
+
+  /**
+   * Mostrar modal de ajuste de monto
+   */
+  showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido) {
+    const modalHTML = `
+      <div class="modal-ajuste-monto">
+        <div class="modal-header warning">
+          <h2>⚠️ Ajustar Monto</h2>
+          <button class="close-btn" onclick="closeTransactionDetails()">&times;</button>
+        </div>
+        
+        <div class="modal-content">
+          <div class="monto-comparison">
+            <div class="monto-item">
+              <div class="monto-label">Monto Solicitado</div>
+              <div class="monto-value">${montoSolicitado.toFixed(2)} Bs</div>
+            </div>
+            <div class="monto-arrow">→</div>
+            <div class="monto-item">
+              <div class="monto-label">Monto Recibido</div>
+              <div class="monto-value">${montoRecibido.toFixed(2)} Bs</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Confirma el monto real recibido:</label>
+            <input 
+              type="number" 
+              id="monto-ajustado-final" 
+              class="form-input" 
+              value="${montoRecibido.toFixed(2)}"
+              step="0.01"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Razón del ajuste: (opcional)</label>
+            <textarea 
+              id="razon-ajuste" 
+              class="form-textarea" 
+              rows="3" 
+              placeholder="Describe por qué el monto es diferente..."
+            ></textarea>
+          </div>
+
+          <div class="info-message">
+            <p>ℹ️ El depósito se completará con el monto ajustado. El jugador recibirá este monto en su saldo.</p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeTransactionDetails()">Cancelar</button>
+          <button class="btn btn-success" id="btn-confirmar-ajuste">Confirmar Ajuste</button>
+        </div>
+      </div>
+    `;
+
+    this.showTransactionDetailsModal(modalHTML);
+
+    // Event listener para confirmar ajuste
+    document.getElementById('btn-confirmar-ajuste').addEventListener('click', () => {
+      const montoFinal = parseFloat(document.getElementById('monto-ajustado-final').value);
+      const razon = document.getElementById('razon-ajuste').value.trim();
+
+      if (!montoFinal || montoFinal <= 0) {
+        this.showAlert('Debes ingresar un monto válido');
+        return;
+      }
+
+      this.procesarAjusteMonto(transaccionId, montoFinal, razon || 'Ajuste de monto por discrepancia');
+    });
+  }
+
+  /**
+   * Procesar ajuste de monto
+   */
+  procesarAjusteMonto(transaccionId, montoReal, razon) {
+    console.log('💰 Ajustando monto:', { transaccionId, montoReal, razon });
+
+    // Marcar como procesando
+    this.processingPayment = transaccionId;
+
+    // Cerrar el modal
+    this.closeTransactionDetailsModal();
+
+    // Enviar ajuste via WebSocket
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.isConnected &&
+      window.cajeroWebSocket.isAuthenticated
+    ) {
+      window.cajeroWebSocket.ajustarMontoDeposito(transaccionId, montoReal, razon);
+      
+      // Después de ajustar, confirmar automáticamente
+      setTimeout(() => {
+        this.handleConfirmPayment(transaccionId);
+      }, 500);
+    } else {
+      console.error('No hay conexión WebSocket disponible');
+      this.showAlert('Error: No hay conexión disponible');
+      this.processingPayment = null;
+    }
   }
 
   /**
@@ -760,22 +969,142 @@ class UIManager {
   handleRejectPayment(transaccionId) {
     // Verificar si ya se está procesando esta transacción
     if (this.processingPayment === transaccionId) {
-      // Ya se está procesando esta transacción
       return;
     }
 
-    const motivo = prompt("Ingresa el motivo del rechazo:");
-    if (!motivo || motivo.trim() === "") {
-      this.showAlert("Debes ingresar un motivo para rechazar el pago");
+    // Mostrar modal de rechazo estructurado
+    this.showModalRechazoDeposito(transaccionId);
+  }
+
+  /**
+   * Mostrar modal de rechazo estructurado
+   */
+  showModalRechazoDeposito(transaccionId) {
+    const modalHTML = `
+      <div class="modal-rechazo-deposito">
+        <div class="modal-header error">
+          <h2>❌ Rechazar Depósito</h2>
+          <button class="close-btn" onclick="closeTransactionDetails()">&times;</button>
+        </div>
+        
+        <div class="modal-content">
+          <div class="form-group">
+            <label class="form-label">Categoría del rechazo:</label>
+            <div class="radio-group">
+              <label class="radio-option">
+                <input type="radio" name="categoria" value="monto_insuficiente">
+                <span>💰 Monto insuficiente (menor al mínimo)</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="categoria" value="datos_incorrectos">
+                <span>📝 Datos incorrectos del usuario</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="categoria" value="pago_no_recibido">
+                <span>❌ Pago no recibido / Requiere revisión admin</span>
+              </label>
+              <label class="radio-option">
+                <input type="radio" name="categoria" value="otro" checked>
+                <span>🔍 Otro motivo</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group severidad-group" style="display: none;">
+            <label class="form-label">Severidad del error de datos:</label>
+            <div class="radio-group-horizontal">
+              <label class="radio-option-inline">
+                <input type="radio" name="severidad" value="leve">
+                <span>Leve (error de tipeo)</span>
+              </label>
+              <label class="radio-option-inline">
+                <input type="radio" name="severidad" value="grave" checked>
+                <span>Grave (no coinciden)</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Descripción detallada: *</label>
+            <textarea 
+              id="descripcion-rechazo" 
+              class="form-textarea" 
+              rows="4" 
+              placeholder="Describe el motivo del rechazo con detalle..."
+              required
+            ></textarea>
+          </div>
+
+          <div class="info-message">
+            <p>ℹ️ Esta información será enviada al jugador.</p>
+          </div>
+        </div>
+        
+        <div class="modal-actions">
+          <button class="btn btn-secondary" onclick="closeTransactionDetails()">Cancelar</button>
+          <button class="btn btn-danger" id="btn-confirmar-rechazo">Confirmar Rechazo</button>
+        </div>
+      </div>
+    `;
+
+    this.showTransactionDetailsModal(modalHTML);
+
+    // Configurar event listeners
+    const categoriaInputs = document.querySelectorAll('input[name="categoria"]');
+    const severidadGroup = document.querySelector('.severidad-group');
+    
+    categoriaInputs.forEach(input => {
+      input.addEventListener('change', (e) => {
+        // Mostrar selector de severidad solo para "datos_incorrectos"
+        if (e.target.value === 'datos_incorrectos') {
+          severidadGroup.style.display = 'block';
+        } else {
+          severidadGroup.style.display = 'none';
+        }
+      });
+    });
+
+    // Botón de confirmar rechazo
+    document.getElementById('btn-confirmar-rechazo').addEventListener('click', () => {
+      this.procesarRechazoDeposito(transaccionId);
+    });
+  }
+
+  /**
+   * Procesar rechazo de depósito con datos estructurados
+   */
+  procesarRechazoDeposito(transaccionId) {
+    // Obtener categoría seleccionada
+    const categoria = document.querySelector('input[name="categoria"]:checked')?.value;
+    if (!categoria) {
+      this.showAlert('Debes seleccionar una categoría de rechazo');
       return;
     }
 
-    console.log(
-      "❌ Rechazando pago para transacción:",
-      transaccionId,
-      "Motivo:",
-      motivo
-    );
+    // Obtener descripción
+    const descripcion = document.getElementById('descripcion-rechazo')?.value.trim();
+    if (!descripcion) {
+      this.showAlert('Debes proporcionar una descripción detallada');
+      return;
+    }
+
+    // Obtener severidad (solo si aplica)
+    let severidad = null;
+    if (categoria === 'datos_incorrectos') {
+      severidad = document.querySelector('input[name="severidad"]:checked')?.value || 'grave';
+    }
+
+    console.log('❌ Rechazando pago para transacción:', transaccionId, {
+      categoria,
+      severidad,
+      descripcion
+    });
+
+    // Si es "pago_no_recibido", referir a admin en lugar de rechazar
+    if (categoria === 'pago_no_recibido') {
+      this.referirAAdmin(transaccionId, descripcion);
+      return;
+    }
 
     // Marcar como procesando
     this.processingPayment = transaccionId;
@@ -783,17 +1112,47 @@ class UIManager {
     // Cerrar el modal
     this.closeTransactionDetailsModal();
 
-    // Enviar rechazo via WebSocket
+    // Enviar rechazo via WebSocket con estructura mejorada
     if (
       window.cajeroWebSocket &&
       window.cajeroWebSocket.isConnected &&
       window.cajeroWebSocket.isAuthenticated
     ) {
-      window.cajeroWebSocket.rechazarPagoCajero(transaccionId, motivo.trim());
+      window.cajeroWebSocket.rechazarPagoCajero(transaccionId, {
+        categoria,
+        descripcionDetallada: descripcion,
+        severidad
+      });
     } else {
-      console.error("No hay conexión WebSocket disponible");
-      this.showAlert("Error: No hay conexión disponible");
-      this.processingPayment = null; // Limpiar en caso de error
+      console.error('No hay conexión WebSocket disponible');
+      this.showAlert('Error: No hay conexión disponible');
+      this.processingPayment = null;
+    }
+  }
+
+  /**
+   * Referir transacción a administrador
+   */
+  referirAAdmin(transaccionId, descripcion) {
+    console.log('⚠️ Refiriendo transacción a admin:', transaccionId);
+
+    // Marcar como procesando
+    this.processingPayment = transaccionId;
+
+    // Cerrar el modal
+    this.closeTransactionDetailsModal();
+
+    // Enviar evento de referir a admin
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.isConnected &&
+      window.cajeroWebSocket.isAuthenticated
+    ) {
+      window.cajeroWebSocket.referirAAdmin(transaccionId, descripcion);
+    } else {
+      console.error('No hay conexión WebSocket disponible');
+      this.showAlert('Error: No hay conexión disponible');
+      this.processingPayment = null;
     }
   }
 }

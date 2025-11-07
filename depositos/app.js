@@ -93,6 +93,7 @@ class DepositApp {
     window.depositoWebSocket.setCallbacks({
       onDepositoCompletado: this.handleDepositoCompletado.bind(this),
       onDepositoRechazado: this.handleDepositoRechazado.bind(this),
+      onTransaccionEnRevision: this.handleTransaccionEnRevision.bind(this),
       onPagoConfirmado: this.handlePagoConfirmado.bind(this),
       onSolicitudAceptada: this.handleSolicitudAceptada.bind(this),
       onSolicitudCreada: this.handleSolicitudCreada.bind(this),
@@ -350,20 +351,64 @@ class DepositApp {
       // Actualizar saldo
       this.loadUserBalance();
 
-      // Mostrar mensaje de error con razón del rechazo
+      // Construir mensaje personalizado según categoría
+      let titulo = "Depósito Rechazado";
+      let mensaje = "";
+      
       const motivo = data.motivo || "El cajero rechazó la transacción";
-      UI.showErrorScreen(
-        "Depósito Rechazado",
-        `El cajero rechazó la transacción: ${motivo}`
-      );
+      const categoria = data.categoria || "otro";
+      
+      switch (categoria) {
+        case "monto_insuficiente":
+          titulo = "Monto Insuficiente";
+          mensaje = `⚠️ El monto que depositaste es menor al mínimo permitido.\n\n${motivo}`;
+          break;
+          
+        case "datos_incorrectos":
+          titulo = "Datos Incorrectos";
+          const severidad = data.severidad === "leve" ? "Revisa tus datos" : "Los datos no coinciden";
+          mensaje = `📝 ${severidad}.\n\n${motivo}\n\nPor favor, verifica la información que enviaste.`;
+          break;
+          
+        case "pago_no_recibido":
+          titulo = "Pago No Recibido";
+          mensaje = `❌ El cajero no recibió tu pago.\n\n${motivo}\n\nPor favor, verifica tu comprobante.`;
+          break;
+          
+        default:
+          mensaje = `El cajero rechazó la transacción:\n\n${motivo}`;
+      }
+
+      UI.showErrorScreen(titulo, mensaje);
 
       // No redirigir automáticamente - dejar que el usuario decida cuándo continuar
-      // El usuario puede usar el botón "Volver al Banco" o "Cerrar" para continuar
-
       window.visualLogger.info("⚠️ [APP] Depósito rechazado procesado");
     } catch (error) {
       window.visualLogger.error(
         `❌ [APP] Error manejando depósito rechazado: ${error.message}`
+      );
+      console.error("❌ [APP] Stack trace:", error);
+    }
+  }
+
+  /**
+   * Manejar transacción en revisión administrativa
+   */
+  handleTransaccionEnRevision(data) {
+    try {
+      window.visualLogger.warning("⏳ [APP] handleTransaccionEnRevision llamado");
+      window.visualLogger.info("⏳ [APP] Datos recibidos:", data);
+
+      // Mostrar mensaje informativo
+      UI.showInfoScreen(
+        "Transacción en Revisión",
+        `⏳ Tu depósito está siendo revisado por un administrador.\n\nUn miembro de nuestro equipo se pondrá en contacto contigo pronto para resolver cualquier inconveniente.\n\nGracias por tu paciencia.`
+      );
+
+      window.visualLogger.info("⏳ [APP] Transacción en revisión procesada");
+    } catch (error) {
+      window.visualLogger.error(
+        `❌ [APP] Error manejando transacción en revisión: ${error.message}`
       );
       console.error("❌ [APP] Stack trace:", error);
     }

@@ -228,6 +228,13 @@ class DepositoWebSocket {
       }
     });
 
+    this.socket.on("transaccion-en-revision", (data) => {
+      console.log("⏳ Transacción en revisión:", data);
+      if (this.callbacks.onTransaccionEnRevision) {
+        this.callbacks.onTransaccionEnRevision(data);
+      }
+    });
+
     this.socket.on("transaccion-cancelada-por-timeout", (data) => {
       if (window.visualLogger) {
         window.visualLogger.warning(
