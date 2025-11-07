@@ -7,7 +7,7 @@ import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
 import { API } from "./js/api.js";
-import { MESSAGES, APP_STATES, TRANSACTION_CONFIG } from "./js/config.js";
+import { MESSAGES, APP_STATES, TRANSACTION_CONFIG, API_CONFIG } from "./js/config.js";
 
 // Constante de versión
 const APP_VERSION = "0.9.0"; // Alpha - Infraestructura lista, falta implementar juegos
@@ -154,7 +154,7 @@ class DepositApp {
     try {
       window.visualLogger.info("⚙️ Cargando configuración del sistema...");
       
-      const response = await fetch(`${BACKEND_URL}/api/config/depositos`);
+      const response = await fetch(`${API_CONFIG.BASE_URL}/config/depositos`);
       
       if (response.ok) {
         const data = await response.json();
