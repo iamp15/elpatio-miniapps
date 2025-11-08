@@ -6,7 +6,7 @@
 import { Auth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
-import { MESSAGES } from "./js/config.js";
+import { MESSAGES, API_CONFIG } from "./js/config.js";
 import "./js/notifications.js"; // Importar sistema de notificaciones toast
 import notificationListManager from "./js/notification-manager.js"; // Importar gestor de notificaciones persistentes
 import browserNotifications from "./js/push-notifications.js"; // Importar notificaciones del navegador
@@ -64,6 +64,7 @@ class CajerosApp {
       // Hacer disponibles las instancias globalmente para uso en HTML
       window.transactionManager = TransactionManager;
       window.CajerosApp = this;
+      window.API_CONFIG = API_CONFIG;
 
       this.isInitialized = true;
     } catch (error) {

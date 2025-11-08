@@ -596,7 +596,9 @@ class UIManager {
    */
   async obtenerMontoMinimo() {
     try {
-      const response = await fetch('/api/config/depositos');
+      // Importar API_CONFIG si no está disponible
+      const API_BASE = window.API_CONFIG?.BASE_URL || 'https://elpatio-backend.fly.dev';
+      const response = await fetch(`${API_BASE}/api/config/depositos`);
       if (response.ok) {
         const data = await response.json();
         return data.configuracion?.deposito_monto_minimo || 10;
