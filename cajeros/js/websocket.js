@@ -251,6 +251,11 @@ class CajeroWebSocket {
           `⚠️ Jugador desconectado en transacción ${data.transaccionId}`
         );
         // El cajero puede mostrar un indicador de que el jugador se desconectó
+      } else if (data.tipo === "cajero") {
+        // Ignorar eventos sobre cajeros (no deberían recibirse después del fix del backend)
+        console.log(
+          `⚠️ [RECOVERY] Ignorando evento de desconexión de cajero (no debería recibirse)`
+        );
       }
     });
 
@@ -261,6 +266,11 @@ class CajeroWebSocket {
           `✅ Jugador reconectado en transacción ${data.transaccionId}`
         );
         // El cajero puede ocultar el indicador de desconexión
+      } else if (data.tipo === "cajero") {
+        // Ignorar eventos sobre cajeros (no deberían recibirse después del fix del backend)
+        console.log(
+          `⚠️ [RECOVERY] Ignorando evento de reconexión de cajero (no debería recibirse)`
+        );
       }
     });
 
@@ -271,6 +281,12 @@ class CajeroWebSocket {
           `❌ Jugador no reconectó en transacción ${data.transaccionId}`
         );
         // El cajero debe verificar el estado de la transacción manualmente
+      } else if (data.tipo === "cajero") {
+        // Ignorar eventos sobre cajeros (no deberían recibirse después del fix del backend)
+        // Si se recibe, podría ser un timer que expiró antes de la reconexión exitosa
+        console.log(
+          `⚠️ [RECOVERY] Ignorando evento de timeout de cajero (posible condición de carrera ya resuelta)`
+        );
       }
     });
   }
