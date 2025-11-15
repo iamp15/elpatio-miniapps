@@ -30,6 +30,7 @@ class DepositoWebSocket {
       onDepositoCompletado: null,
       onSolicitudCreada: null,
       onPagoConfirmado: null,
+      onMontoAjustado: null,
       onError: null,
       // Nuevos callbacks para recuperación
       onTransactionRecovered: null,
@@ -266,6 +267,27 @@ class DepositoWebSocket {
       console.log("🔍 Verificar pago:", data);
       if (this.callbacks.onVerificarPago) {
         this.callbacks.onVerificarPago(data);
+      }
+    });
+
+    this.socket.on("monto-ajustado", (data) => {
+      console.log("💰 [WebSocket] Evento monto-ajustado recibido:", data);
+      if (window.visualLogger) {
+        window.visualLogger.info(
+          "💰 [WebSocket] Evento monto-ajustado recibido:",
+          data
+        );
+      }
+
+      // Filtrar por target: solo procesar si es para jugador o no tiene target
+      if (!data.target || data.target === "jugador") {
+        if (this.callbacks.onMontoAjustado) {
+          this.callbacks.onMontoAjustado(data);
+        } else {
+          console.warn(
+            "⚠️ [WebSocket] Callback onMontoAjustado no está configurado"
+          );
+        }
       }
     });
 

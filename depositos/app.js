@@ -101,6 +101,7 @@ class DepositApp {
       onPagoConfirmado: this.handlePagoConfirmado.bind(this),
       onSolicitudAceptada: this.handleSolicitudAceptada.bind(this),
       onSolicitudCreada: this.handleSolicitudCreada.bind(this),
+      onMontoAjustado: this.handleMontoAjustado.bind(this),
       onError: this.handleWebSocketError.bind(this),
       // Callbacks de recuperación
       onTransactionRecovered: this.handleTransactionRecovered.bind(this),
@@ -327,6 +328,36 @@ class DepositApp {
     } catch (error) {
       window.visualLogger.error(
         `Error manejando solicitud creada: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Manejar ajuste de monto via WebSocket
+   */
+  handleMontoAjustado(data) {
+    try {
+      const montoOriginalBs = (data.montoOriginal / 100).toFixed(2);
+      const montoRealBs = (data.montoReal / 100).toFixed(2);
+      
+      window.visualLogger.info(
+        `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`
+      );
+
+      // Actualizar la transacción actual si existe
+      if (this.currentTransaction) {
+        this.currentTransaction.monto = data.montoReal;
+        TransactionManager.setCurrentTransaction(this.currentTransaction);
+      }
+
+      // Mostrar notificación al usuario
+      UI.showNotification(
+        `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`,
+        data.razon || "Ajuste de monto por discrepancia"
+      );
+    } catch (error) {
+      window.visualLogger.error(
+        `Error manejando ajuste de monto: ${error.message}`
       );
     }
   }

@@ -679,7 +679,9 @@ class UIManager {
         return;
       }
 
-      this.procesarAjusteMonto(transaccionId, montoFinal, razon || 'Ajuste de monto por discrepancia');
+      // Convertir de bolívares a centavos (el backend espera centavos)
+      const montoEnCentavos = Math.round(montoFinal * 100);
+      this.procesarAjusteMonto(transaccionId, montoEnCentavos, razon || 'Ajuste de monto por discrepancia');
     });
   }
 
