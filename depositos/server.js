@@ -18,11 +18,20 @@ try {
 }
 
 const server = http.createServer((req, res) => {
-  let filePath = "." + req.url;
+  // Usar __dirname para rutas absolutas (el servidor está en depositos/)
+  let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
 
-  // Si la URL es solo '/', servir index.html
-  if (filePath === "./") {
-    filePath = "./index.html";
+  // Log de todas las solicitudes para depuración
+  console.log(`[SERVER] Solicitud recibida: ${req.url} -> ${filePath}`);
+
+  // Normalizar la ruta para evitar problemas con ../
+  filePath = path.normalize(filePath);
+
+  // Asegurar que el archivo esté dentro del directorio del servidor (seguridad)
+  if (!filePath.startsWith(__dirname)) {
+    res.writeHead(403, { "Content-Type": "text/html" });
+    res.end("<h1>403 Forbidden</h1>");
+    return;
   }
 
   // Obtener la extensión del archivo
@@ -31,7 +40,7 @@ const server = http.createServer((req, res) => {
   // Mapear extensiones a tipos MIME
   const mimeTypes = {
     ".html": "text/html",
-    ".js": "application/javascript",
+    ".js": "application/javascript; charset=utf-8",
     ".css": "text/css",
     ".json": "application/json",
     ".png": "image/png",
@@ -47,7 +56,12 @@ const server = http.createServer((req, res) => {
     ".wasm": "application/wasm",
   };
 
-  const contentType = mimeTypes[extname] || "application/octet-stream";
+  let contentType = mimeTypes[extname] || "application/octet-stream";
+
+  // Para módulos ES6, asegurar el tipo correcto
+  if (extname === ".js") {
+    contentType = "application/javascript; charset=utf-8";
+  }
 
   // Leer y servir el archivo
   fs.readFile(filePath, (error, content) => {
@@ -77,14 +91,33 @@ const server = http.createServer((req, res) => {
       }
     } else {
       // Si es index.html, inyectar la versión como variable global
-      if (filePath === "./index.html" || filePath === "index.html") {
+      if (
+        filePath.endsWith("index.html") ||
+        path.basename(filePath) === "index.html"
+      ) {
         let htmlContent = content.toString("utf-8");
         // Inyectar script con la versión en el <head> (meta tag como fallback)
         const versionMeta = `<meta name="app-version" content="${APP_VERSION}">`;
+        const beforeReplace = htmlContent;
         htmlContent = htmlContent.replace(
           /(<head[^>]*>)/i,
           `$1\n    ${versionMeta}`
         );
+        const metaInjected = beforeReplace !== htmlContent;
+        console.log(
+          `[SERVER] Meta tag inyectado en index.html: ${
+            metaInjected ? "SI" : "NO"
+          }`
+        );
+        if (metaInjected) {
+          // Verificar que el meta tag está presente
+          const hasMeta = htmlContent.includes(
+            `<meta name="app-version" content="${APP_VERSION}">`
+          );
+          console.log(
+            `[SERVER] Verificacion: meta tag presente en HTML: ${hasMeta}`
+          );
+        }
         // Inyectar script INLINE en el body JUSTO ANTES de los módulos ES6 para ejecución síncrona
         // Esto asegura que window.APP_VERSION esté disponible cuando se carguen los módulos
         const versionScript = `<script>window.APP_VERSION="${APP_VERSION}";</script>`;
@@ -100,8 +133,21 @@ const server = http.createServer((req, res) => {
         res.end(htmlContent, "utf-8");
       }
       // Si es app.js, reemplazar el valor por defecto de la versión con la versión real
-      else if (filePath === "./app.js" || filePath === "app.js") {
+      else if (
+        filePath.endsWith("app.js") ||
+        path.basename(filePath) === "app.js"
+      ) {
+        console.log(
+          `[SERVER] Procesando app.js, version a inyectar: ${APP_VERSION}`
+        );
         let jsContent = content.toString("utf-8");
+
+        // Verificar si el contenido contiene el patrón antes de reemplazar
+        const hasPattern = /return "0\.0\.0";/.test(jsContent);
+        console.log(
+          `[SERVER] app.js contiene "return \"0.0.0\";": ${hasPattern}`
+        );
+
         // Reemplazar el valor por defecto "0.0.0" en la función getAppVersion con la versión real
         // Esto asegura que la versión esté disponible incluso si window.APP_VERSION no se carga a tiempo
         const originalContent = jsContent;
@@ -119,9 +165,23 @@ const server = http.createServer((req, res) => {
           console.log(
             `[SERVER] Reemplazo realizado: "0.0.0" -> "${APP_VERSION}"`
           );
+          // Verificar que el reemplazo se hizo correctamente
+          const verifyPattern = new RegExp(`return "${APP_VERSION}";`);
+          const isReplaced = verifyPattern.test(jsContent);
+          console.log(
+            `[SERVER] Verificacion: reemplazo presente en contenido: ${isReplaced}`
+          );
         } else {
           console.log(
             `[SERVER] ADVERTENCIA: No se encontro "0.0.0" para reemplazar en app.js`
+          );
+          // Mostrar un fragmento del contenido para debug
+          const snippet = jsContent.substring(
+            jsContent.indexOf('return "'),
+            jsContent.indexOf('return "') + 50
+          );
+          console.log(
+            `[SERVER] Fragmento del codigo alrededor de return: ${snippet}`
           );
         }
         res.writeHead(200, { "Content-Type": contentType });
