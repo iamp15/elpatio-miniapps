@@ -94,6 +94,18 @@ const server = http.createServer((req, res) => {
         );
         res.writeHead(200, { "Content-Type": contentType });
         res.end(htmlContent, "utf-8");
+      }
+      // Si es app.js, reemplazar el valor por defecto de la versión con la versión real
+      else if (filePath === "./app.js" || filePath === "app.js") {
+        let jsContent = content.toString("utf-8");
+        // Reemplazar el valor por defecto "0.0.0" en la función getAppVersion con la versión real
+        // Esto asegura que la versión esté disponible incluso si window.APP_VERSION no se carga a tiempo
+        jsContent = jsContent.replace(
+          /return "0\.0\.0";/g,
+          `return "${APP_VERSION}";`
+        );
+        res.writeHead(200, { "Content-Type": contentType });
+        res.end(jsContent, "utf-8");
       } else {
         res.writeHead(200, { "Content-Type": contentType });
         res.end(content, "utf-8");
