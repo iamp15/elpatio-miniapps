@@ -381,12 +381,17 @@ class DepositApp {
         UI.updateWaitingTransaction(this.currentTransaction);
       }
 
-      // Datos para pantallas
+      // Datos para pantallas (usar la referencia REAL ingresada por el usuario si existe)
+      const numeroReferenciaUsuario =
+        this.paymentData?.infoPago?.numeroReferencia || "-";
+      const fechaPagoUsuario =
+        this.paymentData?.infoPago?.fechaPago || new Date();
+
       const paymentData = {
         monto: data.montoReal,
         infoPago: {
-          fechaPago: new Date(),
-          numeroReferencia: this.currentTransaction?.referencia || "-",
+          fechaPago: fechaPagoUsuario,
+          numeroReferencia: numeroReferenciaUsuario,
         },
       };
 
