@@ -250,6 +250,15 @@ class UIManager {
     if (screen) {
       screen.classList.add("active");
       this.currentState = screenId;
+      if (window.visualLogger) {
+        window.visualLogger.success(`🖥️ [UI] Pantalla activa: ${screenId}`);
+      }
+    } else {
+      if (window.visualLogger) {
+        window.visualLogger.error(
+          `🖥️ [UI] Pantalla NO encontrada en DOM: ${screenId}`
+        );
+      }
     }
   }
 
@@ -376,24 +385,36 @@ class UIManager {
    * Actualizar información de pago registrado
    */
   updateRegisteredInfo(transaction) {
+    if (window.visualLogger) {
+      window.visualLogger.info("🖥️ [UI] updateRegisteredInfo llamado");
+      window.visualLogger.debug("🖥️ [UI] Datos:", transaction);
+    }
     if (this.elements.registeredAmount) {
       this.elements.registeredAmount.textContent = this.formatCurrency(
         transaction.monto
       );
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] registeredAmount NO encontrado");
     }
     if (this.elements.registeredDate) {
       // Mostrar la fecha del pago del usuario
       const paymentDate = transaction.infoPago?.fechaPago || new Date();
       this.elements.registeredDate.textContent = this.formatDate(paymentDate);
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] registeredDate NO encontrado");
     }
     if (this.elements.registeredReference) {
       // Mostrar la referencia del pago del usuario
       this.elements.registeredReference.textContent =
         transaction.infoPago?.numeroReferencia || "-";
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] registeredReference NO encontrado");
     }
     if (this.elements.registeredStatus) {
       this.elements.registeredStatus.textContent = "En verificación";
       this.elements.registeredStatus.className = "status-processing";
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] registeredStatus NO encontrado");
     }
   }
 

@@ -337,6 +337,13 @@ class DepositApp {
    */
   handleMontoAjustado(data) {
     try {
+      window.visualLogger.info("💰 [APP] handleMontoAjustado llamado");
+      window.visualLogger.debug("💰 [APP] Datos recibidos:", data);
+      window.visualLogger.debug(
+        "💰 [APP] currentTransaction antes:",
+        this.currentTransaction
+      );
+
       const montoOriginalBs = (data.montoOriginal / 100).toFixed(2);
       const montoRealBs = (data.montoReal / 100).toFixed(2);
       
@@ -348,6 +355,10 @@ class DepositApp {
       if (this.currentTransaction) {
         this.currentTransaction.monto = data.montoReal;
         TransactionManager.setCurrentTransaction(this.currentTransaction);
+        window.visualLogger.debug(
+          "💰 [APP] currentTransaction actualizado:",
+          this.currentTransaction
+        );
       }
 
       // Mostrar al usuario con logs visuales y refrescar UI
@@ -364,6 +375,9 @@ class DepositApp {
 
       // Refrescar los montos visibles en la pantalla de espera
       if (this.currentTransaction) {
+        window.visualLogger.info(
+          "🖥️ [APP] Actualizando UI de pantalla de espera (updateWaitingTransaction)"
+        );
         UI.updateWaitingTransaction(this.currentTransaction);
       }
 
@@ -376,7 +390,15 @@ class DepositApp {
           numeroReferencia: this.currentTransaction?.referencia || "-",
         },
       };
+      window.visualLogger.info(
+        "🖥️ [APP] Actualizando UI registrada con paymentData (updateRegisteredInfo)"
+      );
+      window.visualLogger.debug("🖥️ [APP] paymentData:", paymentData);
       UI.updateRegisteredInfo(paymentData);
+
+      window.visualLogger.info(
+        "🖥️ [APP] Mostrando pantalla: USER_PAYMENT_CONFIRMED"
+      );
       UI.showUserPaymentConfirmedScreen();
     } catch (error) {
       window.visualLogger.error(
