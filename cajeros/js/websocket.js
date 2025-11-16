@@ -25,6 +25,7 @@ class CajeroWebSocket {
       onTransaccionCanceladaPorJugador: null,
       onTransaccionCanceladaPorTimeout: null,
       onNuevaNotificacion: null,
+      onMontoAjustado: null,
       onError: null,
     };
   }
@@ -210,6 +211,18 @@ class CajeroWebSocket {
       console.log("🔔 Nueva notificación recibida via WebSocket:", data);
       if (this.callbacks.onNuevaNotificacion) {
         this.callbacks.onNuevaNotificacion(data);
+      }
+    });
+
+    // Evento de monto ajustado
+    this.socket.on("monto-ajustado", (data) => {
+      console.log("💰 [WebSocket] Evento monto-ajustado recibido:", data);
+      if (this.callbacks.onMontoAjustado) {
+        this.callbacks.onMontoAjustado(data);
+      } else {
+        console.warn(
+          "⚠️ [WebSocket] Callback onMontoAjustado no está configurado"
+        );
       }
     });
 

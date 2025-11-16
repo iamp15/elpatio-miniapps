@@ -128,6 +128,12 @@ class CajerosApp {
       this.handleNuevaNotificacion(data);
     });
 
+    // Listener para monto ajustado
+    window.cajeroWebSocket.on("onMontoAjustado", (data) => {
+      console.log("💰 Monto ajustado recibido:", data);
+      this.handleMontoAjustado(data);
+    });
+
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
       // Limpiar el estado de procesamiento en caso de error
@@ -508,6 +514,30 @@ class CajerosApp {
     const token = Auth.getToken();
     if (token) {
       await TransactionManager.loadTransactions(token);
+    }
+  }
+
+  /**
+   * Manejar monto ajustado
+   */
+  handleMontoAjustado(data) {
+    try {
+      console.log("💰 [APP] Monto ajustado recibido, confirmando automáticamente:", data);
+      const { transaccionId } = data;
+      
+      // Limpiar processingPayment para permitir la confirmación
+      if (UI.processingPayment === transaccionId) {
+        UI.processingPayment = null;
+      }
+      
+      // Confirmar automáticamente el pago después del ajuste
+      if (transaccionId) {
+        setTimeout(() => {
+          UI.handleConfirmPayment(transaccionId);
+        }, 300);
+      }
+    } catch (error) {
+      console.error("Error manejando monto ajustado:", error);
     }
   }
 

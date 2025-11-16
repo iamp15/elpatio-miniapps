@@ -703,12 +703,8 @@ class UIManager {
       window.cajeroWebSocket.isConnected &&
       window.cajeroWebSocket.isAuthenticated
     ) {
+      // Enviar ajuste - la confirmación automática se hará cuando llegue el evento monto-ajustado
       window.cajeroWebSocket.ajustarMontoDeposito(transaccionId, montoReal, razon);
-      
-      // Después de ajustar, confirmar automáticamente
-      setTimeout(() => {
-        this.handleConfirmPayment(transaccionId);
-      }, 500);
     } else {
       console.error('No hay conexión WebSocket disponible');
       this.showAlert('Error: No hay conexión disponible');
