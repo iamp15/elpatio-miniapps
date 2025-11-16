@@ -120,6 +120,8 @@ export const DOM_SELECTORS = {
   RETRY_BTN: "#retry-btn",
   CLOSE_ERROR_BTN: "#close-error-btn",
   COPY_ALL_BTN: "#copy-all-btn",
+  CONTINUE_FROM_ADJUSTED_BTN: "#continue-from-adjusted-btn",
+  CONTACT_ADMIN_BTN: "#contact-admin-btn",
 
   // Campos de entrada
   AMOUNT_INPUT: "#amount",

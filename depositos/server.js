@@ -2,6 +2,17 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
+// Leer la versión del package.json (un nivel arriba desde depositos/)
+const packageJsonPath = path.join(__dirname, "..", "package.json");
+let APP_VERSION = "0.0.0"; // Versión por defecto
+
+try {
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
+  APP_VERSION = packageJson.version;
+} catch (error) {
+  console.warn("⚠️ No se pudo leer la versión del package.json:", error.message);
+}
+
 const server = http.createServer((req, res) => {
   let filePath = "." + req.url;
 
@@ -61,8 +72,22 @@ const server = http.createServer((req, res) => {
         res.end("Server Error: " + error.code);
       }
     } else {
-      res.writeHead(200, { "Content-Type": contentType });
-      res.end(content, "utf-8");
+      // Si es index.html, inyectar la versión como variable global
+      if (filePath === "./index.html" || filePath === "index.html") {
+        let htmlContent = content.toString("utf-8");
+        // Inyectar script con la versión ANTES de los otros scripts para que esté disponible cuando app.js se ejecute
+        const versionScript = `<script>window.APP_VERSION = "${APP_VERSION}";</script>`;
+        // Buscar el primer <script> y agregar el script de versión antes
+        htmlContent = htmlContent.replace(
+          /(<script[^>]*src="js\/logger\.js"[^>]*>)/i,
+          `${versionScript}\n    $1`
+        );
+        res.writeHead(200, { "Content-Type": contentType });
+        res.end(htmlContent, "utf-8");
+      } else {
+        res.writeHead(200, { "Content-Type": contentType });
+        res.end(content, "utf-8");
+      }
     }
   });
 });

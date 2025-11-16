@@ -1,6 +1,6 @@
 /**
  * Aplicacion principal de depositos - Version modular
- * @version 0.9.0
+ * @version (leído dinámicamente desde package.json)
  */
 
 import { TelegramAuth } from "./js/auth.js";
@@ -9,8 +9,9 @@ import { TransactionManager } from "./js/transactions.js";
 import { API } from "./js/api.js";
 import { MESSAGES, APP_STATES, TRANSACTION_CONFIG, API_CONFIG } from "./js/config.js";
 
-// Constante de versión
-const APP_VERSION = "0.9.0"; // Alpha - Infraestructura lista, falta implementar juegos
+// Leer versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
+// Si no está disponible, usar versión por defecto
+const APP_VERSION = window.APP_VERSION || "0.0.0";
 
 class DepositApp {
   constructor() {
@@ -19,6 +20,8 @@ class DepositApp {
     this.currentBalance = 0;
     this.version = APP_VERSION;
     this.montoMinimo = 1; // Valor por defecto, se actualiza al cargar configuración
+    this.hasAmountAdjustment = false; // Rastrear si hubo un ajuste de monto
+    this.pendingDepositoCompletadoData = null; // Guardar datos de depósito completado si hay ajuste pendiente
   }
 
   /**
@@ -62,6 +65,8 @@ class DepositApp {
         onCloseError: this.handleCloseError.bind(this),
         onAmountChange: this.handleAmountChange.bind(this),
         onCancelTransaction: this.handleCancelTransaction.bind(this),
+        onContinueFromAdjusted: this.handleContinueFromAdjusted.bind(this),
+        onContactAdmin: this.handleContactAdmin.bind(this),
       });
 
       // Hacer disponibles las instancias globalmente para uso en HTML
@@ -310,6 +315,10 @@ class DepositApp {
       );
 
       // Guardar la transacción actual
+      // Resetear flags de ajuste de monto para nueva transacción
+      this.hasAmountAdjustment = false;
+      this.pendingDepositoCompletadoData = null;
+
       this.currentTransaction = {
         _id: data.transaccionId,
         referencia: data.referencia,
@@ -343,6 +352,9 @@ class DepositApp {
         "💰 [APP] currentTransaction antes:",
         this.currentTransaction
       );
+
+      // Marcar que hubo un ajuste de monto
+      this.hasAmountAdjustment = true;
 
       const montoOriginalBs = (data.montoOriginal / 100).toFixed(2);
       const montoRealBs = (data.montoReal / 100).toFixed(2);
@@ -463,7 +475,18 @@ class DepositApp {
       window.visualLogger.info("🎉 [APP] Actualizando saldo del usuario...");
       this.loadUserBalance();
 
-      // Mostrar confirmación final
+      // Si hubo un ajuste de monto, guardar los datos pero NO mostrar la pantalla automáticamente
+      // El usuario debe hacer clic en "Continuar" en la pantalla de ajuste
+      if (this.hasAmountAdjustment) {
+        window.visualLogger.info(
+          "🎉 [APP] Hay ajuste de monto pendiente, guardando datos para mostrar después"
+        );
+        this.pendingDepositoCompletadoData = data;
+        // NO mostrar la pantalla automáticamente, esperar a que el usuario haga clic en "Continuar"
+        return;
+      }
+
+      // Mostrar confirmación final solo si NO hubo ajuste de monto
       window.visualLogger.info(
         "🎉 [APP] Actualizando información final y mostrando pantalla..."
       );
@@ -479,6 +502,41 @@ class DepositApp {
       );
       console.error("❌ [APP] Stack trace:", error);
     }
+  }
+
+  /**
+   * Manejar botón "Continuar" desde la pantalla de monto ajustado
+   */
+  handleContinueFromAdjusted() {
+    try {
+      window.visualLogger.info("🎉 [APP] Continuando desde pantalla de ajuste");
+      
+      // Si hay datos pendientes de depósito completado, mostrarlos
+      if (this.pendingDepositoCompletadoData) {
+        window.visualLogger.info("🎉 [APP] Mostrando pantalla de depósito verificado");
+        UI.updateFinalInfo(this.pendingDepositoCompletadoData);
+        UI.showCashierVerifiedScreen();
+        
+        // Limpiar flags
+        this.hasAmountAdjustment = false;
+        this.pendingDepositoCompletadoData = null;
+      } else {
+        window.visualLogger.warning("🎉 [APP] No hay datos pendientes de depósito completado");
+      }
+    } catch (error) {
+      window.visualLogger.error(
+        `❌ [APP] Error continuando desde ajuste: ${error.message}`
+      );
+    }
+  }
+
+  /**
+   * Manejar botón "Contactar admin" desde la pantalla de monto ajustado
+   */
+  handleContactAdmin() {
+    // Por ahora no hace nada, se implementará en el futuro
+    window.visualLogger.info("📞 [APP] Contactar admin (funcionalidad pendiente)");
+    // TODO: Implementar cuando tengamos dashboard de admin
   }
 
   /**

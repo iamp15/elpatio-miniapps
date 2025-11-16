@@ -78,6 +78,12 @@ class UIManager {
     this.elements.copyAllBtn = document.querySelector(
       DOM_SELECTORS.COPY_ALL_BTN
     );
+    this.elements.continueFromAdjustedBtn = document.querySelector(
+      DOM_SELECTORS.CONTINUE_FROM_ADJUSTED_BTN
+    );
+    this.elements.contactAdminBtn = document.querySelector(
+      DOM_SELECTORS.CONTACT_ADMIN_BTN
+    );
     this.elements.cancelWaitingBtn =
       document.getElementById("cancel-waiting-btn");
     this.elements.cancelBankInfoBtn = document.getElementById(
@@ -242,6 +248,21 @@ class UIManager {
       this.elements.amountInput.addEventListener(
         "input",
         eventHandlers.onAmountChange
+      );
+    }
+
+    // Botones de pantalla de ajuste aprobado
+    if (this.elements.continueFromAdjustedBtn && eventHandlers.onContinueFromAdjusted) {
+      this.elements.continueFromAdjustedBtn.addEventListener(
+        "click",
+        eventHandlers.onContinueFromAdjusted
+      );
+    }
+
+    if (this.elements.contactAdminBtn && eventHandlers.onContactAdmin) {
+      this.elements.contactAdminBtn.addEventListener(
+        "click",
+        eventHandlers.onContactAdmin
       );
     }
   }
