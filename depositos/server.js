@@ -18,21 +18,39 @@ try {
 }
 
 const server = http.createServer((req, res) => {
+  // Limpiar la URL: quitar query strings y normalizar
+  let urlPath = req.url.split("?")[0]; // Quitar query strings
+
+  // Si la URL es solo '/', servir index.html
+  if (urlPath === "/" || urlPath === "") {
+    urlPath = "/index.html";
+  }
+
+  // Quitar el / inicial para hacer join correctamente
+  const relativePath = urlPath.startsWith("/") ? urlPath.substring(1) : urlPath;
+
   // Usar __dirname para rutas absolutas (el servidor está en depositos/)
-  let filePath = path.join(__dirname, req.url === "/" ? "index.html" : req.url);
+  let filePath = path.join(__dirname, relativePath);
 
   // Log de todas las solicitudes para depuración
   console.log(`[SERVER] Solicitud recibida: ${req.url} -> ${filePath}`);
+  console.log(`[SERVER] __dirname: ${__dirname}`);
+  console.log(`[SERVER] relativePath: ${relativePath}`);
 
   // Normalizar la ruta para evitar problemas con ../
   filePath = path.normalize(filePath);
 
   // Asegurar que el archivo esté dentro del directorio del servidor (seguridad)
   if (!filePath.startsWith(__dirname)) {
+    console.log(
+      `[SERVER] ERROR: Ruta fuera del directorio permitido: ${filePath}`
+    );
     res.writeHead(403, { "Content-Type": "text/html" });
     res.end("<h1>403 Forbidden</h1>");
     return;
   }
+
+  console.log(`[SERVER] Ruta final normalizada: ${filePath}`);
 
   // Obtener la extensión del archivo
   const extname = String(path.extname(filePath)).toLowerCase();
@@ -67,6 +85,14 @@ const server = http.createServer((req, res) => {
   fs.readFile(filePath, (error, content) => {
     if (error) {
       if (error.code == "ENOENT") {
+        console.log(`[SERVER] ERROR 404: Archivo no encontrado: ${filePath}`);
+        console.log(`[SERVER] Verificando si existe el archivo...`);
+        // Intentar verificar si el archivo existe
+        fs.access(filePath, fs.constants.F_OK, (err) => {
+          console.log(
+            `[SERVER] fs.access resultado: ${err ? "NO existe" : "existe"}`
+          );
+        });
         res.writeHead(404, { "Content-Type": "text/html" });
         res.end(`
           <html>
@@ -74,18 +100,22 @@ const server = http.createServer((req, res) => {
             <body>
               <h1>404 - File Not Found</h1>
               <p>Requested file: ${filePath}</p>
+              <p>Requested URL: ${req.url}</p>
               <p>Current directory: ${process.cwd()}</p>
+              <p>__dirname: ${__dirname}</p>
               <p>Available files:</p>
               <ul>
                 <li><a href="/">index.html</a></li>
                 <li><a href="/app.js">app.js</a></li>
                 <li><a href="/styles.css">styles.css</a></li>
-                <li><a href="/js/">js/ directory</a></li>
+                <li><a href="/js/logger.js">js/logger.js</a></li>
+                <li><a href="/js/websocket.js">js/websocket.js</a></li>
               </ul>
             </body>
           </html>
         `);
       } else {
+        console.log(`[SERVER] ERROR 500: ${error.code} - ${error.message}`);
         res.writeHead(500);
         res.end("Server Error: " + error.code);
       }
