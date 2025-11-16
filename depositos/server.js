@@ -9,6 +9,7 @@ let APP_VERSION = "0.0.0"; // Versión por defecto
 try {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   APP_VERSION = packageJson.version;
+  console.log(`[SERVER] Version leida del package.json: ${APP_VERSION}`);
 } catch (error) {
   console.warn(
     "⚠️ No se pudo leer la versión del package.json:",
@@ -92,6 +93,9 @@ const server = http.createServer((req, res) => {
           /(<script[^>]*src="js\/logger\.js"[^>]*>)/i,
           `${versionScript}\n    $1`
         );
+        console.log(
+          `[SERVER] index.html modificado, version inyectada: ${APP_VERSION}`
+        );
         res.writeHead(200, { "Content-Type": contentType });
         res.end(htmlContent, "utf-8");
       }
@@ -100,10 +104,26 @@ const server = http.createServer((req, res) => {
         let jsContent = content.toString("utf-8");
         // Reemplazar el valor por defecto "0.0.0" en la función getAppVersion con la versión real
         // Esto asegura que la versión esté disponible incluso si window.APP_VERSION no se carga a tiempo
+        const originalContent = jsContent;
         jsContent = jsContent.replace(
           /return "0\.0\.0";/g,
           `return "${APP_VERSION}";`
         );
+        const wasReplaced = originalContent !== jsContent;
+        console.log(
+          `[SERVER] app.js modificado: ${
+            wasReplaced ? "SI" : "NO"
+          }, version: ${APP_VERSION}`
+        );
+        if (wasReplaced) {
+          console.log(
+            `[SERVER] Reemplazo realizado: "0.0.0" -> "${APP_VERSION}"`
+          );
+        } else {
+          console.log(
+            `[SERVER] ADVERTENCIA: No se encontro "0.0.0" para reemplazar en app.js`
+          );
+        }
         res.writeHead(200, { "Content-Type": contentType });
         res.end(jsContent, "utf-8");
       } else {

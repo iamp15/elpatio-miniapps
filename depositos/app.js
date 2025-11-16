@@ -17,16 +17,52 @@ import {
 // Función para obtener la versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
 // Si no está disponible, usar versión por defecto
 function getAppVersion() {
+  let debugInfo = [];
+
   // Primero intentar leer desde window.APP_VERSION (inyectado por script)
-  if (typeof window !== "undefined" && window.APP_VERSION) {
-    return window.APP_VERSION;
+  if (typeof window !== "undefined") {
+    debugInfo.push(`window existe: SI`);
+    if (window.APP_VERSION) {
+      debugInfo.push(`window.APP_VERSION: ${window.APP_VERSION}`);
+      if (window.visualLogger) {
+        window.visualLogger.debug(
+          `[DEBUG getAppVersion] Usando window.APP_VERSION: ${window.APP_VERSION}`
+        );
+      }
+      return window.APP_VERSION;
+    } else {
+      debugInfo.push(`window.APP_VERSION: NO disponible`);
+    }
+  } else {
+    debugInfo.push(`window existe: NO`);
   }
+
   // Si no está disponible, intentar leer desde un meta tag (siempre disponible en el DOM)
   if (typeof document !== "undefined") {
+    debugInfo.push(`document existe: SI`);
     const metaVersion = document.querySelector('meta[name="app-version"]');
-    if (metaVersion && metaVersion.getAttribute("content")) {
-      return metaVersion.getAttribute("content");
+    if (metaVersion) {
+      const metaContent = metaVersion.getAttribute("content");
+      debugInfo.push(`meta tag encontrado: SI, content: ${metaContent}`);
+      if (metaContent) {
+        if (window.visualLogger) {
+          window.visualLogger.debug(
+            `[DEBUG getAppVersion] Usando meta tag: ${metaContent}`
+          );
+        }
+        return metaContent;
+      }
+    } else {
+      debugInfo.push(`meta tag encontrado: NO`);
     }
+  } else {
+    debugInfo.push(`document existe: NO`);
+  }
+
+  // Fallback al valor por defecto (que debería ser reemplazado por el servidor)
+  debugInfo.push(`Usando fallback: 0.0.0`);
+  if (window.visualLogger) {
+    window.visualLogger.debug(`[DEBUG getAppVersion] ${debugInfo.join(", ")}`);
   }
   return "0.0.0";
 }
@@ -52,14 +88,34 @@ class DepositApp {
     try {
       // Leer la versión al inicializar (para asegurar que window.APP_VERSION esté disponible)
       if (!this.version) {
+        if (window.visualLogger) {
+          window.visualLogger.debug(
+            `[DEBUG init] Llamando a getAppVersion()...`
+          );
+        }
         this.version = getAppVersion();
         // Log de depuración (temporal) para verificar que la versión se lee correctamente
         if (window.visualLogger) {
           window.visualLogger.debug(
-            `[DEBUG] Version leida: ${this.version}, window.APP_VERSION: ${
+            `[DEBUG init] Version final leida: ${this.version}`
+          );
+          window.visualLogger.debug(
+            `[DEBUG init] window.APP_VERSION: ${
               window.APP_VERSION || "no disponible"
             }`
           );
+          if (typeof document !== "undefined") {
+            const metaVersion = document.querySelector(
+              'meta[name="app-version"]'
+            );
+            window.visualLogger.debug(
+              `[DEBUG init] meta tag: ${
+                metaVersion
+                  ? metaVersion.getAttribute("content")
+                  : "no encontrado"
+              }`
+            );
+          }
         }
       }
 
