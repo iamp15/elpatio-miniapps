@@ -10,7 +10,10 @@ try {
   const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf8"));
   APP_VERSION = packageJson.version;
 } catch (error) {
-  console.warn("⚠️ No se pudo leer la versión del package.json:", error.message);
+  console.warn(
+    "⚠️ No se pudo leer la versión del package.json:",
+    error.message
+  );
 }
 
 const server = http.createServer((req, res) => {
@@ -75,13 +78,15 @@ const server = http.createServer((req, res) => {
       // Si es index.html, inyectar la versión como variable global
       if (filePath === "./index.html" || filePath === "index.html") {
         let htmlContent = content.toString("utf-8");
-        // Inyectar script con la versión en el <head> para que se ejecute inmediatamente
-        // Usar IIFE para asegurar ejecución síncrona
-        const versionScript = `<script>(function(){window.APP_VERSION="${APP_VERSION}";})();</script>`;
-        // Buscar el cierre de </head> y agregar el script de versión justo antes
+        // Inyectar script con la versión AL INICIO del <head> para que se ejecute antes que cualquier otro script
+        // Esto asegura que window.APP_VERSION esté disponible cuando se carguen los módulos ES6
+        // También agregar un meta tag como fallback
+        const versionScript = `<script>window.APP_VERSION="${APP_VERSION}";</script>`;
+        const versionMeta = `<meta name="app-version" content="${APP_VERSION}">`;
+        // Buscar la apertura de <head> y agregar el script y meta tag justo después
         htmlContent = htmlContent.replace(
-          /(<\/head>)/i,
-          `    ${versionScript}\n$1`
+          /(<head[^>]*>)/i,
+          `$1\n    ${versionScript}\n    ${versionMeta}`
         );
         res.writeHead(200, { "Content-Type": contentType });
         res.end(htmlContent, "utf-8");

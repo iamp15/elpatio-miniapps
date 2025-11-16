@@ -7,12 +7,26 @@ import { TelegramAuth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
 import { API } from "./js/api.js";
-import { MESSAGES, APP_STATES, TRANSACTION_CONFIG, API_CONFIG } from "./js/config.js";
+import {
+  MESSAGES,
+  APP_STATES,
+  TRANSACTION_CONFIG,
+  API_CONFIG,
+} from "./js/config.js";
 
 // Función para obtener la versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
 // Si no está disponible, usar versión por defecto
 function getAppVersion() {
-  return window.APP_VERSION || "0.0.0";
+  // Verificar si window.APP_VERSION está disponible
+  if (typeof window !== "undefined" && window.APP_VERSION) {
+    return window.APP_VERSION;
+  }
+  // Si no está disponible, intentar leer desde un meta tag como fallback
+  const metaVersion = document.querySelector('meta[name="app-version"]');
+  if (metaVersion) {
+    return metaVersion.getAttribute("content") || "0.0.0";
+  }
+  return "0.0.0";
 }
 
 class DepositApp {
@@ -37,8 +51,16 @@ class DepositApp {
       // Leer la versión al inicializar (para asegurar que window.APP_VERSION esté disponible)
       if (!this.version) {
         this.version = getAppVersion();
+        // Log de depuración (temporal) para verificar que la versión se lee correctamente
+        if (window.visualLogger) {
+          window.visualLogger.debug(
+            `[DEBUG] Version leida: ${this.version}, window.APP_VERSION: ${
+              window.APP_VERSION || "no disponible"
+            }`
+          );
+        }
       }
-      
+
       window.visualLogger.info(
         `🚀 Iniciando aplicación de depósitos v${this.version} [ALPHA]...`
       );
@@ -167,21 +189,21 @@ class DepositApp {
   async cargarConfiguracion() {
     try {
       window.visualLogger.info("⚙️ Cargando configuración del sistema...");
-      
+
       const response = await fetch(`${API_CONFIG.BASE_URL}/config/depositos`);
-      
+
       if (response.ok) {
         const data = await response.json();
-        
+
         if (data.ok && data.configuracion) {
           this.montoMinimo = data.configuracion.deposito_monto_minimo || 1;
-          
+
           // Actualizar la configuración de transacciones
           TRANSACTION_CONFIG.MIN_AMOUNT = this.montoMinimo;
-          
+
           // Actualizar la UI
           this.actualizarUIMontoMinimo();
-          
+
           window.visualLogger.success(
             `✅ Configuración cargada: Monto mínimo = ${this.montoMinimo} Bs`
           );
@@ -206,13 +228,13 @@ class DepositApp {
    */
   actualizarUIMontoMinimo() {
     // Actualizar el texto de ayuda en el formulario
-    const helpText = document.querySelector('#amount + .form-help');
+    const helpText = document.querySelector("#amount + .form-help");
     if (helpText) {
       helpText.textContent = `Monto mínimo: ${this.montoMinimo} Bs`;
     }
 
     // Actualizar el atributo min del input
-    const amountInput = document.getElementById('amount');
+    const amountInput = document.getElementById("amount");
     if (amountInput) {
       amountInput.min = this.montoMinimo;
     }
@@ -366,7 +388,7 @@ class DepositApp {
 
       const montoOriginalBs = (data.montoOriginal / 100).toFixed(2);
       const montoRealBs = (data.montoReal / 100).toFixed(2);
-      
+
       window.visualLogger.info(
         `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`
       );
@@ -424,7 +446,9 @@ class DepositApp {
       };
 
       // Mostrar nueva pantalla dedicada de "ajuste aprobado"
-      window.visualLogger.info("🖥️ [APP] Mostrando pantalla: ADJUSTED_APPROVED");
+      window.visualLogger.info(
+        "🖥️ [APP] Mostrando pantalla: ADJUSTED_APPROVED"
+      );
       UI.updateAdjustedApprovedInfo(adjustedData);
       UI.showAdjustedApprovedScreen();
     } catch (error) {
@@ -518,18 +542,22 @@ class DepositApp {
   handleContinueFromAdjusted() {
     try {
       window.visualLogger.info("🎉 [APP] Continuando desde pantalla de ajuste");
-      
+
       // Si hay datos pendientes de depósito completado, mostrarlos
       if (this.pendingDepositoCompletadoData) {
-        window.visualLogger.info("🎉 [APP] Mostrando pantalla de depósito verificado");
+        window.visualLogger.info(
+          "🎉 [APP] Mostrando pantalla de depósito verificado"
+        );
         UI.updateFinalInfo(this.pendingDepositoCompletadoData);
         UI.showCashierVerifiedScreen();
-        
+
         // Limpiar flags
         this.hasAmountAdjustment = false;
         this.pendingDepositoCompletadoData = null;
       } else {
-        window.visualLogger.warning("🎉 [APP] No hay datos pendientes de depósito completado");
+        window.visualLogger.warning(
+          "🎉 [APP] No hay datos pendientes de depósito completado"
+        );
       }
     } catch (error) {
       window.visualLogger.error(
@@ -543,7 +571,9 @@ class DepositApp {
    */
   handleContactAdmin() {
     // Por ahora no hace nada, se implementará en el futuro
-    window.visualLogger.info("📞 [APP] Contactar admin (funcionalidad pendiente)");
+    window.visualLogger.info(
+      "📞 [APP] Contactar admin (funcionalidad pendiente)"
+    );
     // TODO: Implementar cuando tengamos dashboard de admin
   }
 
@@ -564,27 +594,30 @@ class DepositApp {
       // Construir mensaje personalizado según categoría
       let titulo = "Depósito Rechazado";
       let mensaje = "";
-      
+
       const motivo = data.motivo || "El cajero rechazó la transacción";
       const categoria = data.categoria || "otro";
-      
+
       switch (categoria) {
         case "monto_insuficiente":
           titulo = "Monto Insuficiente";
           mensaje = `⚠️ El monto que depositaste es menor al mínimo permitido.\n\n${motivo}`;
           break;
-          
+
         case "datos_incorrectos":
           titulo = "Datos Incorrectos";
-          const severidad = data.severidad === "leve" ? "Revisa tus datos" : "Los datos no coinciden";
+          const severidad =
+            data.severidad === "leve"
+              ? "Revisa tus datos"
+              : "Los datos no coinciden";
           mensaje = `📝 ${severidad}.\n\n${motivo}\n\nPor favor, verifica la información que enviaste.`;
           break;
-          
+
         case "pago_no_recibido":
           titulo = "Pago No Recibido";
           mensaje = `❌ El cajero no recibió tu pago.\n\n${motivo}\n\nPor favor, verifica tu comprobante.`;
           break;
-          
+
         default:
           mensaje = `El cajero rechazó la transacción:\n\n${motivo}`;
       }
@@ -606,7 +639,9 @@ class DepositApp {
    */
   handleTransaccionEnRevision(data) {
     try {
-      window.visualLogger.warning("⏳ [APP] handleTransaccionEnRevision llamado");
+      window.visualLogger.warning(
+        "⏳ [APP] handleTransaccionEnRevision llamado"
+      );
       window.visualLogger.info("⏳ [APP] Datos recibidos:", data);
 
       // Mostrar mensaje informativo
