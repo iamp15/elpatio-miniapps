@@ -366,6 +366,18 @@ class DepositApp {
       if (this.currentTransaction) {
         UI.updateWaitingTransaction(this.currentTransaction);
       }
+
+      // Mostrar una pantalla informativa al usuario indicando aprobación con ajuste
+      // Reusamos la pantalla de "pago confirmado por usuario" para mostrar la info del nuevo monto
+      const paymentData = {
+        monto: data.montoReal,
+        infoPago: {
+          fechaPago: new Date(),
+          numeroReferencia: this.currentTransaction?.referencia || "-",
+        },
+      };
+      UI.updateRegisteredInfo(paymentData);
+      UI.showUserPaymentConfirmedScreen();
     } catch (error) {
       window.visualLogger.error(
         `Error manejando ajuste de monto: ${error.message}`
