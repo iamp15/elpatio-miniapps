@@ -396,6 +396,16 @@ class DepositApp {
       window.visualLogger.debug("🖥️ [APP] paymentData:", paymentData);
       UI.updateRegisteredInfo(paymentData);
 
+      // Ajustar mensaje de estado visible en la pantalla para que el usuario vea el ajuste
+      if (UI.elements && UI.elements.registeredStatus) {
+        const statusMsg = `Aprobado con ajuste: ${montoOriginalBs} Bs → ${montoRealBs} Bs`;
+        UI.elements.registeredStatus.textContent = statusMsg;
+        UI.elements.registeredStatus.className = "status-success";
+        window.visualLogger.success(`🖥️ [APP] Estado actualizado en UI: ${statusMsg}`);
+      } else {
+        window.visualLogger.error("🖥️ [APP] registeredStatus NO encontrado para actualizar estado");
+      }
+
       window.visualLogger.info(
         "🖥️ [APP] Mostrando pantalla: USER_PAYMENT_CONFIRMED"
       );
