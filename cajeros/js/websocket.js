@@ -73,6 +73,7 @@ class CajeroWebSocket {
    * Configurar manejadores de eventos
    */
   setupEventHandlers() {
+    console.log("🔧 [WebSocket] Configurando event handlers...");
     this.socket.on("connect", () => {
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
@@ -217,7 +218,11 @@ class CajeroWebSocket {
     // Evento de monto ajustado
     this.socket.on("monto-ajustado", (data) => {
       console.log("💰 [WebSocket] Evento monto-ajustado recibido:", data);
+      console.log("💰 [WebSocket] Callback onMontoAjustado existe:", !!this.callbacks.onMontoAjustado);
+      console.log("💰 [WebSocket] Socket conectado:", this.isConnected);
+      console.log("💰 [WebSocket] Socket autenticado:", this.isAuthenticated);
       if (this.callbacks.onMontoAjustado) {
+        console.log("💰 [WebSocket] Ejecutando callback onMontoAjustado");
         this.callbacks.onMontoAjustado(data);
       } else {
         console.warn(
@@ -225,6 +230,9 @@ class CajeroWebSocket {
         );
       }
     });
+    
+    // Log para confirmar que el listener está configurado
+    console.log("✅ [WebSocket] Listener 'monto-ajustado' configurado");
 
     // Evento de transacción cancelada por jugador
     this.socket.on("transaccion-cancelada-por-jugador", (data) => {
