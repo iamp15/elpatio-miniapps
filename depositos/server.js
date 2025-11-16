@@ -75,12 +75,13 @@ const server = http.createServer((req, res) => {
       // Si es index.html, inyectar la versión como variable global
       if (filePath === "./index.html" || filePath === "index.html") {
         let htmlContent = content.toString("utf-8");
-        // Inyectar script con la versión ANTES de los otros scripts para que esté disponible cuando app.js se ejecute
-        const versionScript = `<script>window.APP_VERSION = "${APP_VERSION}";</script>`;
-        // Buscar el primer <script> y agregar el script de versión antes
+        // Inyectar script con la versión en el <head> para que se ejecute inmediatamente
+        // Usar IIFE para asegurar ejecución síncrona
+        const versionScript = `<script>(function(){window.APP_VERSION="${APP_VERSION}";})();</script>`;
+        // Buscar el cierre de </head> y agregar el script de versión justo antes
         htmlContent = htmlContent.replace(
-          /(<script[^>]*src="js\/logger\.js"[^>]*>)/i,
-          `${versionScript}\n    $1`
+          /(<\/head>)/i,
+          `    ${versionScript}\n$1`
         );
         res.writeHead(200, { "Content-Type": contentType });
         res.end(htmlContent, "utf-8");

@@ -9,16 +9,19 @@ import { TransactionManager } from "./js/transactions.js";
 import { API } from "./js/api.js";
 import { MESSAGES, APP_STATES, TRANSACTION_CONFIG, API_CONFIG } from "./js/config.js";
 
-// Leer versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
+// Función para obtener la versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
 // Si no está disponible, usar versión por defecto
-const APP_VERSION = window.APP_VERSION || "0.0.0";
+function getAppVersion() {
+  return window.APP_VERSION || "0.0.0";
+}
 
 class DepositApp {
   constructor() {
     this.isInitialized = false;
     this.userData = null;
     this.currentBalance = 0;
-    this.version = APP_VERSION;
+    // La versión se leerá cuando se inicialice la app, no cuando se carga el módulo
+    this.version = null;
     this.montoMinimo = 1; // Valor por defecto, se actualiza al cargar configuración
     this.hasAmountAdjustment = false; // Rastrear si hubo un ajuste de monto
     this.pendingDepositoCompletadoData = null; // Guardar datos de depósito completado si hay ajuste pendiente
@@ -31,6 +34,11 @@ class DepositApp {
     if (this.isInitialized) return;
 
     try {
+      // Leer la versión al inicializar (para asegurar que window.APP_VERSION esté disponible)
+      if (!this.version) {
+        this.version = getAppVersion();
+      }
+      
       window.visualLogger.info(
         `🚀 Iniciando aplicación de depósitos v${this.version} [ALPHA]...`
       );
