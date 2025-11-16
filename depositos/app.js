@@ -350,11 +350,22 @@ class DepositApp {
         TransactionManager.setCurrentTransaction(this.currentTransaction);
       }
 
-      // Mostrar notificación al usuario
-      UI.showNotification(
-        `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`,
-        data.razon || "Ajuste de monto por discrepancia"
-      );
+      // Mostrar al usuario con logs visuales y refrescar UI
+      if (data.razon) {
+        window.visualLogger.warning(
+          `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`
+        );
+        window.visualLogger.info(`📌 Razón del ajuste: ${data.razon}`);
+      } else {
+        window.visualLogger.warning(
+          `💰 Monto ajustado: ${montoOriginalBs} Bs → ${montoRealBs} Bs`
+        );
+      }
+
+      // Refrescar los montos visibles en la pantalla de espera
+      if (this.currentTransaction) {
+        UI.updateWaitingTransaction(this.currentTransaction);
+      }
     } catch (error) {
       window.visualLogger.error(
         `Error manejando ajuste de monto: ${error.message}`
