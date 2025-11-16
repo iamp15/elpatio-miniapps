@@ -381,8 +381,7 @@ class DepositApp {
         UI.updateWaitingTransaction(this.currentTransaction);
       }
 
-      // Mostrar una pantalla informativa al usuario indicando aprobación con ajuste
-      // Reusamos la pantalla de "pago confirmado por usuario" para mostrar la info del nuevo monto
+      // Datos para pantallas
       const paymentData = {
         monto: data.montoReal,
         infoPago: {
@@ -390,26 +389,19 @@ class DepositApp {
           numeroReferencia: this.currentTransaction?.referencia || "-",
         },
       };
-      window.visualLogger.info(
-        "🖥️ [APP] Actualizando UI registrada con paymentData (updateRegisteredInfo)"
-      );
-      window.visualLogger.debug("🖥️ [APP] paymentData:", paymentData);
-      UI.updateRegisteredInfo(paymentData);
 
-      // Ajustar mensaje de estado visible en la pantalla para que el usuario vea el ajuste
-      if (UI.elements && UI.elements.registeredStatus) {
-        const statusMsg = `Aprobado con ajuste: ${montoOriginalBs} Bs → ${montoRealBs} Bs`;
-        UI.elements.registeredStatus.textContent = statusMsg;
-        UI.elements.registeredStatus.className = "status-success";
-        window.visualLogger.success(`🖥️ [APP] Estado actualizado en UI: ${statusMsg}`);
-      } else {
-        window.visualLogger.error("🖥️ [APP] registeredStatus NO encontrado para actualizar estado");
-      }
+      // Construir data para pantalla de ajuste aprobado
+      const adjustedData = {
+        montoOriginal: data.montoOriginal,
+        monto: data.montoReal,
+        razon: data.razon,
+        infoPago: paymentData.infoPago,
+      };
 
-      window.visualLogger.info(
-        "🖥️ [APP] Mostrando pantalla: USER_PAYMENT_CONFIRMED"
-      );
-      UI.showUserPaymentConfirmedScreen();
+      // Mostrar nueva pantalla dedicada de "ajuste aprobado"
+      window.visualLogger.info("🖥️ [APP] Mostrando pantalla: ADJUSTED_APPROVED");
+      UI.updateAdjustedApprovedInfo(adjustedData);
+      UI.showAdjustedApprovedScreen();
     } catch (error) {
       window.visualLogger.error(
         `Error manejando ajuste de monto: ${error.message}`

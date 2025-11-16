@@ -81,6 +81,7 @@ export const APP_STATES = {
   PAYMENT_CONFIRMATION: "payment-confirmation-screen",
   USER_PAYMENT_CONFIRMED: "user-payment-confirmed-screen",
   CASHIER_VERIFIED: "cashier-verified-screen",
+  ADJUSTED_APPROVED: "adjusted-approved-screen",
   ERROR: "error-screen",
 };
 
@@ -141,6 +142,11 @@ export const DOM_SELECTORS = {
   FINAL_DATE: "#final-date",
   FINAL_REFERENCE: "#final-reference",
   FINAL_BALANCE: "#final-balance",
+  // Ajuste aprobado
+  ADJUSTED_AMOUNT: "#adjusted-amount",
+  ADJUSTED_DATE: "#adjusted-date",
+  ADJUSTED_REFERENCE: "#adjusted-reference",
+  ADJUSTED_NOTE: "#adjusted-note",
   REGISTERED_AMOUNT: "#registered-amount",
   REGISTERED_DATE: "#registered-date",
   REGISTERED_REFERENCE: "#registered-reference",

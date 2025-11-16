@@ -355,6 +355,41 @@
         </div>
       </div>
 
+      <!-- Pantalla de depósito verificado con ajuste de monto -->
+      <div id="adjusted-approved-screen" class="screen">
+        <div class="header">
+          <h1>🎯 Depósito Acreditado con Ajuste</h1>
+          <p class="subtitle">Tu depósito fue verificado por el cajero con un ajuste en el monto</p>
+        </div>
+
+        <div class="confirmation-info">
+          <h3>Detalles de acreditación</h3>
+
+          <div class="info-card">
+            <div class="info-row">
+              <span>Monto acreditado:</span>
+              <span id="adjusted-amount">0 Bs</span>
+            </div>
+            <div class="info-row">
+              <span>Fecha:</span>
+              <span id="adjusted-date">-</span>
+            </div>
+            <div class="info-row">
+              <span>Referencia:</span>
+              <span id="adjusted-reference">-</span>
+            </div>
+          </div>
+
+          <div class="completion-message">
+            <p id="adjusted-note">
+              Se acreditó tu depósito con un ajuste de monto. Si consideras que hubo un error, por favor contacta a un administrador.
+            </p>
+          </div>
+
+          <button class="btn btn-primary" id="close-app-btn">Cerrar</button>
+        </div>
+      </div>
+
       <!-- Pantalla de error -->
       <div id="error-screen" class="screen">
         <div class="header">

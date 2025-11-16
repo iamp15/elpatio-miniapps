@@ -133,6 +133,19 @@ class UIManager {
     this.elements.finalBalance = document.querySelector(
       DOM_SELECTORS.FINAL_BALANCE
     );
+    // Elementos de pantalla de ajuste aprobado
+    this.elements.adjustedAmount = document.querySelector(
+      DOM_SELECTORS.ADJUSTED_AMOUNT
+    );
+    this.elements.adjustedDate = document.querySelector(
+      DOM_SELECTORS.ADJUSTED_DATE
+    );
+    this.elements.adjustedReference = document.querySelector(
+      DOM_SELECTORS.ADJUSTED_REFERENCE
+    );
+    this.elements.adjustedNote = document.querySelector(
+      DOM_SELECTORS.ADJUSTED_NOTE
+    );
     this.elements.registeredAmount = document.querySelector(
       DOM_SELECTORS.REGISTERED_AMOUNT
     );
@@ -305,6 +318,13 @@ class UIManager {
   }
 
   /**
+   * Mostrar pantalla de depósito verificado con ajuste de monto
+   */
+  showAdjustedApprovedScreen() {
+    this.showScreen(APP_STATES.ADJUSTED_APPROVED);
+  }
+
+  /**
    * Mostrar pantalla de espera de verificación
    */
   showWaitingVerificationScreen() {
@@ -453,6 +473,52 @@ class UIManager {
       const newBalance =
         transaction.saldoNuevo || transaction.saldoAnterior + transaction.monto;
       this.elements.finalBalance.textContent = this.formatCurrency(newBalance);
+    }
+  }
+
+  /**
+   * Actualizar información de pantalla "ajuste aprobado"
+   */
+  updateAdjustedApprovedInfo(data) {
+    if (window.visualLogger) {
+      window.visualLogger.info("🖥️ [UI] updateAdjustedApprovedInfo llamado");
+      window.visualLogger.debug("🖥️ [UI] Datos:", data);
+    }
+
+    if (this.elements.adjustedAmount) {
+      this.elements.adjustedAmount.textContent = this.formatCurrency(
+        data.monto
+      );
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] adjustedAmount NO encontrado");
+    }
+
+    if (this.elements.adjustedDate) {
+      const paymentDate = data.infoPago?.fechaPago || new Date();
+      this.elements.adjustedDate.textContent = this.formatDate(paymentDate);
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] adjustedDate NO encontrado");
+    }
+
+    if (this.elements.adjustedReference) {
+      const ref = data.infoPago?.numeroReferencia || "-";
+      this.elements.adjustedReference.textContent = ref;
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] adjustedReference NO encontrado");
+    }
+
+    if (this.elements.adjustedNote) {
+      const originalBs = (data.montoOriginal / TRANSACTION_CONFIG.AMOUNT_DIVISOR).toFixed(2);
+      const realBs = (data.monto / TRANSACTION_CONFIG.AMOUNT_DIVISOR).toFixed(2);
+      const razon = data.razon || "Ajuste de monto por discrepancia";
+      this.elements.adjustedNote.innerHTML = `
+        🎯 Se acreditó tu depósito con un ajuste de monto.<br/>
+        Ajuste: ${originalBs} Bs → ${realBs} Bs.<br/>
+        Motivo: ${razon}.<br/>
+        Si consideras que hubo un error, por favor contacta a un administrador.
+      `;
+    } else if (window.visualLogger) {
+      window.visualLogger.error("🖥️ [UI] adjustedNote NO encontrado");
     }
   }
 
