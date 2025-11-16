@@ -17,14 +17,16 @@ import {
 // Función para obtener la versión dinámicamente desde window.APP_VERSION (inyectada por el servidor)
 // Si no está disponible, usar versión por defecto
 function getAppVersion() {
-  // Verificar si window.APP_VERSION está disponible
+  // Primero intentar leer desde window.APP_VERSION (inyectado por script)
   if (typeof window !== "undefined" && window.APP_VERSION) {
     return window.APP_VERSION;
   }
-  // Si no está disponible, intentar leer desde un meta tag como fallback
-  const metaVersion = document.querySelector('meta[name="app-version"]');
-  if (metaVersion) {
-    return metaVersion.getAttribute("content") || "0.0.0";
+  // Si no está disponible, intentar leer desde un meta tag (siempre disponible en el DOM)
+  if (typeof document !== "undefined") {
+    const metaVersion = document.querySelector('meta[name="app-version"]');
+    if (metaVersion && metaVersion.getAttribute("content")) {
+      return metaVersion.getAttribute("content");
+    }
   }
   return "0.0.0";
 }

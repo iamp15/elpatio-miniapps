@@ -78,15 +78,19 @@ const server = http.createServer((req, res) => {
       // Si es index.html, inyectar la versión como variable global
       if (filePath === "./index.html" || filePath === "index.html") {
         let htmlContent = content.toString("utf-8");
-        // Inyectar script con la versión AL INICIO del <head> para que se ejecute antes que cualquier otro script
-        // Esto asegura que window.APP_VERSION esté disponible cuando se carguen los módulos ES6
-        // También agregar un meta tag como fallback
-        const versionScript = `<script>window.APP_VERSION="${APP_VERSION}";</script>`;
+        // Inyectar script con la versión en el <head> (meta tag como fallback)
         const versionMeta = `<meta name="app-version" content="${APP_VERSION}">`;
-        // Buscar la apertura de <head> y agregar el script y meta tag justo después
         htmlContent = htmlContent.replace(
           /(<head[^>]*>)/i,
-          `$1\n    ${versionScript}\n    ${versionMeta}`
+          `$1\n    ${versionMeta}`
+        );
+        // Inyectar script INLINE en el body JUSTO ANTES de los módulos ES6 para ejecución síncrona
+        // Esto asegura que window.APP_VERSION esté disponible cuando se carguen los módulos
+        const versionScript = `<script>window.APP_VERSION="${APP_VERSION}";</script>`;
+        // Buscar el primer script en el body y agregar el script de versión justo antes
+        htmlContent = htmlContent.replace(
+          /(<script[^>]*src="js\/logger\.js"[^>]*>)/i,
+          `${versionScript}\n    $1`
         );
         res.writeHead(200, { "Content-Type": contentType });
         res.end(htmlContent, "utf-8");
