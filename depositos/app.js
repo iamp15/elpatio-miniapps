@@ -738,6 +738,15 @@ class DepositApp {
   async loadUserBalance() {
     try {
       const telegramId = TelegramAuth.getTelegramId();
+      
+      if (!telegramId) {
+        window.visualLogger.error("No se pudo obtener el Telegram ID del usuario");
+        this.currentBalance = 0;
+        UI.updateBalance(this.currentBalance);
+        return;
+      }
+
+      window.visualLogger.info(`📊 Cargando saldo para usuario: ${telegramId}`);
       const response = await API.getJugadorSaldo(telegramId);
 
       if (response.ok) {
@@ -746,14 +755,22 @@ class DepositApp {
         UI.updateBalance(this.currentBalance);
         window.visualLogger.info(`💰 Saldo cargado: ${this.currentBalance} Bs`);
       } else {
-        window.visualLogger.warning(
-          "No se pudo cargar el saldo, usando valor por defecto"
-        );
+        // Intentar obtener más información del error
+        let errorMessage = "No se pudo cargar el saldo";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // Si no se puede parsear el error, usar el mensaje por defecto
+        }
+        
+        window.visualLogger.warning(`⚠️ ${errorMessage} (código: ${response.status})`);
         this.currentBalance = 0;
         UI.updateBalance(this.currentBalance);
       }
     } catch (error) {
       window.visualLogger.error(`Error cargando saldo: ${error.message}`);
+      console.error("Error completo:", error);
       this.currentBalance = 0;
       UI.updateBalance(this.currentBalance);
     }

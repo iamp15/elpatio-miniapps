@@ -33,16 +33,24 @@ class APIManager {
 
   /**
    * Realizar request con datos de Telegram
+   * @param {string} url - URL de la petición
+   * @param {object} options - Opciones de la petición
+   * @param {string} options.telegramId - ID de Telegram (opcional, si no se proporciona se intenta obtener de window.Telegram)
    */
   async telegramRequest(url, options = {}) {
-    const telegramId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    // Obtener telegramId de las opciones o de window.Telegram
+    const telegramId =
+      options.telegramId || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+    // Remover telegramId de las opciones para no enviarlo en el body
+    const { telegramId: _, ...restOptions } = options;
 
     const telegramOptions = {
-      ...options,
+      ...restOptions,
       headers: {
         "Content-Type": "application/json",
-        "X-Telegram-Id": telegramId || "",
-        ...options.headers,
+        "X-Telegram-Id": telegramId ? telegramId.toString() : "",
+        ...restOptions.headers,
       },
     };
 
@@ -56,6 +64,7 @@ class APIManager {
     const url = `${this.baseURL}${this.endpoints.JUGADOR_SALDO}/${telegramId}/saldo`;
     return this.telegramRequest(url, {
       method: "GET",
+      telegramId: telegramId, // Pasar el telegramId explícitamente
     });
   }
 
