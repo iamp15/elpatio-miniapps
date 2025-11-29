@@ -759,7 +759,9 @@ body {
   }
   
   .modal-rechazo-deposito .modal-content,
-  .modal-ajuste-monto .modal-content {
+  .modal-ajuste-monto .modal-content,
+  .deposito-completado-modal .modal-content,
+  .deposito-rechazado-modal .modal-content {
     padding: 16px 20px;
   }
   
@@ -898,9 +900,31 @@ body {
 }
 
 /* Estilos para pop-up de depósito completado */
+.deposito-completado-modal {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 .deposito-completado-modal .modal-header.success {
   background: linear-gradient(135deg, #4caf50, #388e3c);
   color: white;
+  border-bottom: none;
+}
+
+.deposito-completado-modal .modal-header.success .close-btn {
+  color: white;
+}
+
+.deposito-completado-modal .modal-header.success .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.deposito-completado-modal .modal-content {
+  padding: 20px 24px;
+  background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .deposito-completado-modal .success-info {
@@ -958,9 +982,31 @@ body {
 }
 
 /* Estilos para pop-up de depósito rechazado */
+.deposito-rechazado-modal {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 .deposito-rechazado-modal .modal-header.error {
   background: linear-gradient(135deg, #f44336, #d32f2f);
   color: white;
+  border-bottom: none;
+}
+
+.deposito-rechazado-modal .modal-header.error .close-btn {
+  color: white;
+}
+
+.deposito-rechazado-modal .modal-header.error .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.deposito-rechazado-modal .modal-content {
+  padding: 20px 24px;
+  background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .deposito-rechazado-modal .error-info {
