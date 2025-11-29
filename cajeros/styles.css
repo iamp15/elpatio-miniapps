@@ -1844,13 +1844,31 @@ body {
 }
 
 /* ===== Estilos para Modal de Rechazo Estructurado ===== */
+.modal-rechazo-deposito {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 .modal-rechazo-deposito .modal-header.error {
   background: linear-gradient(135deg, #f44336, #d32f2f);
   color: white;
+  border-bottom: none;
+}
+
+.modal-rechazo-deposito .modal-header.error .close-btn {
+  color: white;
+}
+
+.modal-rechazo-deposito .modal-header.error .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
 }
 
 .modal-rechazo-deposito .modal-content {
   padding: 20px 24px;
+  background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .modal-rechazo-deposito .form-group {
