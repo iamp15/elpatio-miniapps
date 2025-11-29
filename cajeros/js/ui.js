@@ -575,20 +575,9 @@ class UIManager {
       return;
     }
 
-    // Si el monto es mayor al solicitado pero mayor al mínimo, permitir ajuste
-    if (montoRecibido > montoSolicitado) {
-      this.showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido);
-    } else {
-      // Si es menor al solicitado pero mayor al mínimo, preguntar
-      this.showConfirmDialog(
-        `El monto recibido (${montoRecibido} Bs) es menor al solicitado (${montoSolicitado} Bs). ¿Deseas ajustar el monto o rechazar el depósito?`,
-        (confirmed) => {
-          if (confirmed) {
-            this.showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido);
-          }
-        }
-      );
-    }
+    // Mostrar modal de ajuste directamente para cualquier diferencia (mayor o menor)
+    // El comportamiento debe ser consistente independientemente de si el monto es mayor o menor
+    this.showModalAjusteMonto(transaccionId, montoSolicitado, montoRecibido);
   }
 
   /**
