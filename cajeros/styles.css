@@ -440,8 +440,9 @@ body {
 .transaction-details-modal {
   background: var(--tg-theme-bg-color, #ffffff);
   border-radius: 16px;
-  max-width: 500px;
-  width: 100%;
+  max-width: 600px;
+  width: 90%;
+  max-width: min(600px, 90vw);
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -753,6 +754,19 @@ body {
 
   .transaction-details-modal {
     max-height: 95vh;
+    width: 95%;
+    max-width: 95vw;
+  }
+  
+  .modal-rechazo-deposito .modal-content,
+  .modal-ajuste-monto .modal-content {
+    padding: 16px 20px;
+  }
+  
+  .modal-rechazo-deposito .form-textarea,
+  .modal-ajuste-monto .form-textarea {
+    min-height: 80px;
+    font-size: 14px;
   }
 
   .modal-header,
@@ -2067,6 +2081,24 @@ body {
 }
 
 .modal-ajuste-monto .form-input:focus {
+  outline: none;
+  border-color: var(--patio-verde-esmeralda, #2e7d32);
+}
+
+.modal-ajuste-monto .form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.modal-ajuste-monto .form-textarea:focus {
   outline: none;
   border-color: var(--patio-verde-esmeralda, #2e7d32);
 }
