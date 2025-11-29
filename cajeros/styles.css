@@ -1996,9 +1996,31 @@ body {
 }
 
 /* ===== Estilos para Modal de Ajuste de Monto ===== */
+.modal-ajuste-monto {
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 .modal-ajuste-monto .modal-header.warning {
   background: linear-gradient(135deg, #ff9800, #f57c00);
   color: white;
+  border-bottom: none;
+}
+
+.modal-ajuste-monto .modal-header.warning .close-btn {
+  color: white;
+}
+
+.modal-ajuste-monto .modal-header.warning .close-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.modal-ajuste-monto .modal-content {
+  padding: 20px 24px;
+  background: var(--tg-theme-bg-color, #ffffff);
 }
 
 .modal-ajuste-monto .monto-comparison {
