@@ -63,6 +63,20 @@ self.addEventListener("notificationclick", (event) => {
 
 // Manejo básico de fetch (opcional, para cache futuro)
 self.addEventListener("fetch", (event) => {
-  // Por ahora, solo pasar las peticiones sin cachear
-  event.respondWith(fetch(event.request));
+  const url = new URL(event.request.url);
+  
+  // NO interceptar peticiones al backend - dejar que el navegador las maneje directamente
+  // Esto evita que el Service Worker interfiera con CORS y errores de red
+  if (url.hostname.includes("elpatio-backend.fly.dev") || 
+      url.hostname.includes("localhost") && url.port === "3000") {
+    // Peticiones al backend: no interceptar
+    return;
+  }
+  
+  // Solo interceptar peticiones locales (assets, etc.)
+  if (url.origin === self.location.origin) {
+    // Peticiones locales: pasar sin cachear
+    event.respondWith(fetch(event.request));
+  }
+  // Para cualquier otra petición externa, no interceptar
 });
