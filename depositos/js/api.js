@@ -23,10 +23,20 @@ class APIManager {
     };
 
     try {
+      console.log(`[API] Realizando petición a: ${url}`);
+      console.log(`[API] Headers:`, defaultOptions.headers);
       const response = await fetch(url, defaultOptions);
+      console.log(
+        `[API] Respuesta recibida:`,
+        response.status,
+        response.statusText
+      );
       return response;
     } catch (error) {
-      console.error("Error en request:", error);
+      console.error("[API] Error en request:", error);
+      console.error("[API] URL:", url);
+      console.error("[API] Tipo de error:", error.name);
+      console.error("[API] Mensaje de error:", error.message);
       throw new Error(MESSAGES.ERROR.CONNECTION);
     }
   }
@@ -42,6 +52,8 @@ class APIManager {
     const telegramId =
       options.telegramId || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
 
+    console.log(`[API] telegramRequest - telegramId obtenido: ${telegramId}`);
+
     // Remover telegramId de las opciones para no enviarlo en el body
     const { telegramId: _, ...restOptions } = options;
 
@@ -54,6 +66,10 @@ class APIManager {
       },
     };
 
+    console.log(
+      `[API] telegramRequest - Header X-Telegram-Id: ${telegramOptions.headers["X-Telegram-Id"]}`
+    );
+
     return this.request(url, telegramOptions);
   }
 
@@ -62,6 +78,8 @@ class APIManager {
    */
   async getJugadorSaldo(telegramId) {
     const url = `${this.baseURL}${this.endpoints.JUGADOR_SALDO}/${telegramId}/saldo`;
+    console.log(`[API] getJugadorSaldo - URL construida: ${url}`);
+    console.log(`[API] getJugadorSaldo - telegramId: ${telegramId}`);
     return this.telegramRequest(url, {
       method: "GET",
       telegramId: telegramId, // Pasar el telegramId explícitamente
