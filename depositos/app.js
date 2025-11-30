@@ -1270,7 +1270,7 @@ class DepositApp {
             cedula: data.cajero.datosPago.cedula
               ? `${data.cajero.datosPago.cedula.prefijo}-${data.cajero.datosPago.cedula.numero}`
               : "N/A",
-            monto: data.monto / 100, // Convertir centavos a bolívares
+            monto: data.monto, // El monto viene en centavos, formatCurrency hará la conversión
           };
 
           window.visualLogger.debug("Datos bancarios", bankInfo);
