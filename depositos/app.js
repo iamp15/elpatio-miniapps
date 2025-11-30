@@ -229,10 +229,60 @@ class DepositApp {
         window.visualLogger.success(
           `🔐 Autenticación WebSocket exitosa: ${result.user.nombre}`
         );
+
+        // Si estábamos reconectando, verificar si hay transacciones para recuperar
+        if (this.isReconnecting) {
+          // El backend puede enviar información de recuperación en result.recovery
+          const hasRecovery =
+            result.recovery &&
+            result.recovery.transactionsRecovered &&
+            result.recovery.transactionsRecovered.length > 0;
+
+          if (!hasRecovery) {
+            // Esperar un momento para ver si llega alguna transacción para recuperar
+            setTimeout(() => {
+              // Si después de 1 segundo no hay transacción activa, mostrar pantalla principal
+              const hasActiveTransaction =
+                window.depositoWebSocket.activeTransactionId ||
+                TransactionManager.getCurrentTransaction() ||
+                this.currentTransaction;
+
+              if (!hasActiveTransaction) {
+                this.isReconnecting = false;
+                this.reconnectAttempts = 0;
+                window.visualLogger.success(
+                  "✅ Reconexión completada sin transacciones pendientes"
+                );
+                UI.showMainScreen();
+              }
+            }, 1500);
+          }
+          // Si hay recovery, handleTransactionRecovered se encargará de mostrar la pantalla correcta
+        } else {
+          // Si no estábamos reconectando y no hay transacción activa, mostrar pantalla principal
+          const hasActiveTransaction =
+            window.depositoWebSocket.activeTransactionId ||
+            TransactionManager.getCurrentTransaction() ||
+            this.currentTransaction;
+
+          if (!hasActiveTransaction) {
+            UI.showMainScreen();
+          }
+        }
       } else {
         window.visualLogger.error(
           `🔐 Error de autenticación WebSocket: ${result.message}`
         );
+
+        // Si falla la autenticación y estábamos reconectando, mostrar error
+        if (this.isReconnecting) {
+          this.isReconnecting = false;
+          this.reconnectAttempts = 0;
+          UI.showErrorScreen(
+            "Error de Autenticación",
+            "No se pudo autenticar con el servidor. Por favor, recarga la página."
+          );
+        }
       }
     });
 
@@ -1231,11 +1281,13 @@ class DepositApp {
     window.visualLogger.debug("Monto", data.monto);
     window.visualLogger.debug("Cajero", data.cajero);
 
-    // Limpiar estado de reconexión
+    // Limpiar estado de reconexión cuando se recupera una transacción
     if (this.isReconnecting) {
       this.isReconnecting = false;
       this.reconnectAttempts = 0;
-      window.visualLogger.success("✅ Reconexión completada");
+      window.visualLogger.success(
+        "✅ Reconexión completada - Transacción recuperada"
+      );
     }
 
     window.visualLogger.success(
@@ -1275,6 +1327,28 @@ class DepositApp {
       );
     } else {
       window.visualLogger.success("¡Reconexión exitosa!");
+
+      // Si no hay transacciones recuperadas y estábamos reconectando,
+      // mostrar la pantalla principal
+      if (this.isReconnecting) {
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+
+        // Esperar un momento para asegurarse de que no llegue ninguna transacción
+        setTimeout(() => {
+          const hasActiveTransaction =
+            window.depositoWebSocket.activeTransactionId ||
+            TransactionManager.getCurrentTransaction() ||
+            this.currentTransaction;
+
+          if (!hasActiveTransaction) {
+            window.visualLogger.success(
+              "✅ No hay transacciones pendientes, mostrando pantalla principal"
+            );
+            UI.showMainScreen();
+          }
+        }, 500);
+      }
     }
   }
 
