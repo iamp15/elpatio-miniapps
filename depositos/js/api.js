@@ -78,8 +78,6 @@ class APIManager {
    */
   async getJugadorSaldo(telegramId) {
     const url = `${this.baseURL}${this.endpoints.JUGADOR_SALDO}/${telegramId}/saldo`;
-    console.log(`[API] getJugadorSaldo - URL construida: ${url}`);
-    console.log(`[API] getJugadorSaldo - telegramId: ${telegramId}`);
     return this.telegramRequest(url, {
       method: "GET",
       telegramId: telegramId, // Pasar el telegramId explícitamente
