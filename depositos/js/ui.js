@@ -381,11 +381,11 @@ class UIManager {
     if (reconnectingScreen) {
       this.showScreen(APP_STATES.RECONNECTING);
     } else {
-      // Fallback: usar pantalla de carga con mensaje personalizado
+      // Fallback: usar pantalla de carga con mensaje genérico
       this.showLoadingScreen();
       const loadingText = document.querySelector("#loading p");
       if (loadingText) {
-        loadingText.textContent = "Reconectando al servidor...";
+        loadingText.textContent = "Cargando...";
       }
     }
   }

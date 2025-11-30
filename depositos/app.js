@@ -412,7 +412,7 @@ class DepositApp {
       if (!this.isReconnecting) {
         this.isReconnecting = true;
         this.reconnectAttempts = 0;
-        window.visualLogger.warning("🔄 Reconectando al servidor...");
+        window.visualLogger.warning("🔄 Conectando al servidor...");
         // Mostrar pantalla de reconexión
         UI.showReconnectingScreen();
       }
@@ -885,7 +885,7 @@ class DepositApp {
       // Verificar si estamos reconectando
       if (this.isReconnecting) {
         window.visualLogger.warning(
-          "⏳ Por favor espera, estamos reconectando al servidor..."
+          "⏳ Por favor espera, estamos conectando al servidor..."
         );
         UI.showReconnectingScreen();
         return;
@@ -1060,7 +1060,7 @@ class DepositApp {
       // Verificar si estamos reconectando
       if (this.isReconnecting) {
         window.visualLogger.warning(
-          "⏳ Por favor espera, estamos reconectando al servidor..."
+          "⏳ Por favor espera, estamos conectando al servidor..."
         );
         UI.showReconnectingScreen();
         return;
