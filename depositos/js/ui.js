@@ -373,6 +373,24 @@ class UIManager {
   }
 
   /**
+   * Mostrar pantalla de reconexión
+   */
+  showReconnectingScreen() {
+    // Si no existe el elemento, usar la pantalla de carga
+    const reconnectingScreen = document.getElementById("reconnecting-screen");
+    if (reconnectingScreen) {
+      this.showScreen(APP_STATES.RECONNECTING);
+    } else {
+      // Fallback: usar pantalla de carga con mensaje personalizado
+      this.showLoadingScreen();
+      const loadingText = document.querySelector("#loading p");
+      if (loadingText) {
+        loadingText.textContent = "Reconectando al servidor...";
+      }
+    }
+  }
+
+  /**
    * Actualizar saldo actual
    */
   updateBalance(balance) {

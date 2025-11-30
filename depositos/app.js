@@ -77,6 +77,8 @@ class DepositApp {
     this.montoMinimo = 1; // Valor por defecto, se actualiza al cargar configuración
     this.hasAmountAdjustment = false; // Rastrear si hubo un ajuste de monto
     this.pendingDepositoCompletadoData = null; // Guardar datos de depósito completado si hay ajuste pendiente
+    this.isReconnecting = false; // Estado de reconexión en progreso
+    this.reconnectAttempts = 0; // Contador de intentos de reconexión
   }
 
   /**
@@ -324,8 +326,11 @@ class DepositApp {
       // Cargar saldo del usuario
       await this.loadUserBalance();
 
-      // Mostrar pantalla principal
-      UI.showMainScreen();
+      // Solo mostrar pantalla principal si no estamos reconectando
+      // (si estamos reconectando, se mostrará la pantalla de reconexión)
+      if (!this.isReconnecting) {
+        UI.showMainScreen();
+      }
     } catch (error) {
       console.error("Error cargando datos del usuario:", error);
       UI.showErrorScreen(
@@ -343,12 +348,43 @@ class DepositApp {
       const telegramId = userData.id.toString();
       const initData = TelegramAuth.getInitData();
 
+      // Si estaba reconectando, limpiar el estado
+      if (this.isReconnecting) {
+        this.isReconnecting = false;
+        this.reconnectAttempts = 0;
+        window.visualLogger.success("✅ Reconexión completada");
+      }
+
       window.visualLogger.info(`🔐 Autenticando con WebSocket: ${telegramId}`);
       window.depositoWebSocket.authenticateJugador(telegramId, initData);
     } else {
+      // Marcar que estamos reconectando
+      if (!this.isReconnecting) {
+        this.isReconnecting = true;
+        this.reconnectAttempts = 0;
+        window.visualLogger.warning("🔄 Reconectando al servidor...");
+        // Mostrar pantalla de reconexión
+        UI.showReconnectingScreen();
+      }
+
+      this.reconnectAttempts++;
       window.visualLogger.warning(
-        "WebSocket no conectado, reintentando en 2 segundos..."
+        `WebSocket no conectado, reintentando en 2 segundos... (Intento ${this.reconnectAttempts})`
       );
+
+      // Limitar intentos de reconexión (máximo 30 intentos = 60 segundos)
+      if (this.reconnectAttempts > 30) {
+        this.isReconnecting = false;
+        window.visualLogger.error(
+          "❌ No se pudo conectar después de múltiples intentos"
+        );
+        UI.showErrorScreen(
+          "Error de Conexión",
+          "No se pudo establecer conexión con el servidor. Por favor, verifica tu conexión a internet e intenta recargar la página."
+        );
+        return;
+      }
+
       setTimeout(() => {
         this.authenticateWithWebSocket(userData);
       }, 2000);
@@ -796,6 +832,15 @@ class DepositApp {
         return;
       }
 
+      // Verificar si estamos reconectando
+      if (this.isReconnecting) {
+        window.visualLogger.warning(
+          "⏳ Por favor espera, estamos reconectando al servidor..."
+        );
+        UI.showReconnectingScreen();
+        return;
+      }
+
       // Verificar si WebSocket está conectado y autenticado
       if (
         !window.depositoWebSocket.isConnected ||
@@ -804,13 +849,20 @@ class DepositApp {
         window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
         window.visualLogger.info("🔄 Intentando reconectar...");
 
+        // Marcar que estamos reconectando
+        this.isReconnecting = true;
+        UI.showReconnectingScreen();
+
         // Intentar reconectar
         window.depositoWebSocket.connect();
 
-        UI.showErrorScreen(
-          "Error de Conexión",
-          "No hay conexión WebSocket activa. Intentando reconectar..."
-        );
+        // Reintentar autenticación
+        if (this.userData) {
+          setTimeout(() => {
+            this.authenticateWithWebSocket(this.userData);
+          }, 1000);
+        }
+
         return;
       }
 
@@ -955,6 +1007,15 @@ class DepositApp {
         return;
       }
 
+      // Verificar si estamos reconectando
+      if (this.isReconnecting) {
+        window.visualLogger.warning(
+          "⏳ Por favor espera, estamos reconectando al servidor..."
+        );
+        UI.showReconnectingScreen();
+        return;
+      }
+
       // Verificar si WebSocket está conectado y autenticado
       if (
         !window.depositoWebSocket.isConnected ||
@@ -963,13 +1024,20 @@ class DepositApp {
         window.visualLogger.error("❌ WebSocket no conectado o no autenticado");
         window.visualLogger.info("🔄 Intentando reconectar...");
 
+        // Marcar que estamos reconectando
+        this.isReconnecting = true;
+        UI.showReconnectingScreen();
+
         // Intentar reconectar
         window.depositoWebSocket.connect();
 
-        UI.showErrorScreen(
-          "Error de Conexión",
-          "No hay conexión WebSocket activa. Intentando reconectar..."
-        );
+        // Reintentar autenticación
+        if (this.userData) {
+          setTimeout(() => {
+            this.authenticateWithWebSocket(this.userData);
+          }, 1000);
+        }
+
         return;
       }
 
@@ -1162,6 +1230,13 @@ class DepositApp {
     window.visualLogger.debug("Estado", data.estado);
     window.visualLogger.debug("Monto", data.monto);
     window.visualLogger.debug("Cajero", data.cajero);
+
+    // Limpiar estado de reconexión
+    if (this.isReconnecting) {
+      this.isReconnecting = false;
+      this.reconnectAttempts = 0;
+      window.visualLogger.success("✅ Reconexión completada");
+    }
 
     window.visualLogger.success(
       "¡Conexión recuperada! Continuando con tu depósito..."

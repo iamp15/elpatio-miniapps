@@ -75,6 +75,7 @@ export const MESSAGES = {
 // Estados de la aplicación
 export const APP_STATES = {
   LOADING: "loading",
+  RECONNECTING: "reconnecting",
   MAIN: "main-screen",
   WAITING: "waiting-screen",
   BANK_INFO: "bank-info-screen",
