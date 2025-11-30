@@ -749,49 +749,19 @@ class DepositApp {
       }
 
       window.visualLogger.info(`📊 Cargando saldo para usuario: ${telegramId}`);
-
-      let response;
-      try {
-        response = await API.getJugadorSaldo(telegramId);
-        window.visualLogger.info(
-          `📡 Respuesta recibida: ${response.status} ${response.statusText}`
-        );
-      } catch (fetchError) {
-        // Error de red (CORS, conexión, etc.)
-        window.visualLogger.error(
-          `❌ Error de red al cargar saldo: ${fetchError.message}`
-        );
-        console.error("Detalles del error de red:", fetchError);
-        console.error("Tipo de error:", fetchError.name);
-        console.error("Stack:", fetchError.stack);
-        this.currentBalance = 0;
-        UI.updateBalance(this.currentBalance);
-        return;
-      }
+      const response = await API.getJugadorSaldo(telegramId);
 
       if (response.ok) {
-        try {
-          const data = await response.json();
-          this.currentBalance = data.saldo || 0;
-          UI.updateBalance(this.currentBalance);
-          window.visualLogger.info(
-            `💰 Saldo cargado: ${this.currentBalance} Bs`
-          );
-        } catch (parseError) {
-          window.visualLogger.error(
-            `❌ Error parseando respuesta: ${parseError.message}`
-          );
-          this.currentBalance = 0;
-          UI.updateBalance(this.currentBalance);
-        }
+        const data = await response.json();
+        this.currentBalance = data.saldo || 0;
+        UI.updateBalance(this.currentBalance);
+        window.visualLogger.info(`💰 Saldo cargado: ${this.currentBalance} Bs`);
       } else {
         // Intentar obtener más información del error
         let errorMessage = "No se pudo cargar el saldo";
-        let errorDetails = null;
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorData.mensaje || errorMessage;
-          errorDetails = errorData;
         } catch (e) {
           // Si no se puede parsear el error, usar el mensaje por defecto
           errorMessage = `Error HTTP ${response.status}: ${response.statusText}`;
@@ -800,18 +770,12 @@ class DepositApp {
         window.visualLogger.warning(
           `⚠️ ${errorMessage} (código: ${response.status})`
         );
-        if (errorDetails) {
-          console.error("Detalles del error:", errorDetails);
-        }
         this.currentBalance = 0;
         UI.updateBalance(this.currentBalance);
       }
     } catch (error) {
-      window.visualLogger.error(
-        `❌ Error inesperado cargando saldo: ${error.message}`
-      );
+      window.visualLogger.error(`Error cargando saldo: ${error.message}`);
       console.error("Error completo:", error);
-      console.error("Stack:", error.stack);
       this.currentBalance = 0;
       UI.updateBalance(this.currentBalance);
     }
