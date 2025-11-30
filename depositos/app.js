@@ -702,10 +702,10 @@ class DepositApp {
       );
       window.visualLogger.info("⏳ [APP] Datos recibidos:", data);
 
-      // Mostrar mensaje informativo
-      UI.showInfoScreen(
-        "Transacción en Revisión",
-        `⏳ Tu depósito está siendo revisado por un administrador.\n\nUn miembro de nuestro equipo se pondrá en contacto contigo pronto para resolver cualquier inconveniente.\n\nGracias por tu paciencia.`
+      // Mostrar mensaje informativo usando la pantalla de error (que es genérica)
+      UI.showErrorScreen(
+        "⏳ Transacción en Revisión",
+        `Tu depósito está siendo revisado por un administrador.\n\nUn miembro de nuestro equipo se pondrá en contacto contigo pronto para resolver cualquier inconveniente.\n\nGracias por tu paciencia.`
       );
 
       window.visualLogger.info("⏳ [APP] Transacción en revisión procesada");
