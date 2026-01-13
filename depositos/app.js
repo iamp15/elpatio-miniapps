@@ -1446,6 +1446,11 @@ class DepositApp {
 
       case "realizada":
         // Usuario ya confirmó pago, esperando verificación
+        // Actualizar información de pago registrado con los datos recuperados
+        UI.updateRegisteredInfo({
+          monto: data.monto,
+          infoPago: data.infoPago,
+        });
         UI.showUserPaymentConfirmedScreen();
         window.visualLogger.info(
           "Tu pago fue registrado. Esperando verificación del cajero..."
