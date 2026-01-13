@@ -1,0 +1,1020 @@
+---
+description: Convenciones y estándares específicos para las Mini Apps de El Patio
+globs: ["elpatio-miniapps/**/*.js", "elpatio-miniapps/**/*.html"]
+alwaysApply: false
+---
+
+# Mini Apps - El Patio - Convenciones y Estándares
+
+## Estado del proyecto
+
+- Las miniapps están desplegadas en **Vercel** (producción)
+- El backend se encuentra corriendo en una VM de **fly.io**
+- Todas las pruebas se hacen con el servidor live, no se hacen en local
+- Las miniapps funcionan dentro del navegador de Telegram, que no puede comunicarse con servidores locales
+
+## 📋 Estructura del Módulo
+
+Las miniapps siguen una arquitectura modular con ES6 modules:
+
+```
+elpatio-miniapps/
+├── server.js              # Servidor Express para desarrollo local
+├── config.js              # Configuración compartida
+├── vercel.json            # Configuración de Vercel
+├── package.json           # Dependencias y scripts
+├── cajeros/               # Mini app de cajeros
+│   ├── app.js             # Aplicación principal (clase principal)
+│   ├── index.html         # HTML principal
+│   ├── styles.css         # Estilos CSS
+│   ├── sw.js              # Service Worker (notificaciones push)
+│   └── js/                # Módulos JavaScript
+│       ├── api.js         # Comunicación con backend (fetch)
+│       ├── auth.js        # Autenticación (JWT para cajeros)
+│       ├── config.js      # Configuración específica
+│       ├── ui.js          # Gestión de interfaz de usuario
+│       ├── websocket.js   # Cliente WebSocket
+│       ├── transactions.js # Gestión de transacciones
+│       ├── notifications.js # Sistema de notificaciones toast
+│       ├── notification-manager.js # Gestor de notificaciones persistentes
+│       └── push-notifications.js # Notificaciones del navegador
+├── depositos/             # Mini app de depósitos
+│   ├── app.js             # Aplicación principal
+│   ├── index.html         # HTML principal
+│   ├── styles.css         # Estilos CSS
+│   └── js/                # Módulos JavaScript
+│       ├── api.js         # Comunicación con backend
+│       ├── auth.js        # Autenticación Telegram Web App
+│       ├── config.js      # Configuración específica
+│       ├── ui.js          # Gestión de interfaz
+│       ├── websocket.js   # Cliente WebSocket
+│       ├── transactions.js # Gestión de transacciones
+│       └── logger.js      # Sistema de logging visual
+└── env.example            # Ejemplo de variables de entorno
+```
+
+## 🔧 Convenciones de Código
+
+### Módulos ES6
+
+- **Usar ES6 modules** (import/export) en lugar de CommonJS
+- Un archivo por módulo/clase
+- Exportar clases o instancias únicas (singleton pattern)
+- Importar solo lo necesario (no usar `import *`)
+
+### Patrón de Clases
+
+```javascript
+/**
+ * Descripción del módulo
+ * @version X.X.X
+ */
+
+class ModuleManager {
+  constructor() {
+    this.property = null;
+    this.callbacks = {};
+  }
+
+  /**
+   * Descripción del método
+   * @param {Type} param - Descripción del parámetro
+   * @returns {Type} Descripción del retorno
+   */
+  async methodName(param) {
+    try {
+      // Lógica del método
+    } catch (error) {
+      console.error("Error en methodName:", error);
+      throw error;
+    }
+  }
+}
+
+// Crear instancia única (singleton)
+export const ModuleInstance = new ModuleManager();
+```
+
+### Estructura de la Aplicación Principal
+
+```javascript
+/**
+ * Aplicación principal - Versión modular
+ * @version X.X.X
+ */
+
+import { Auth } from "./js/auth.js";
+import { UI } from "./js/ui.js";
+import { TransactionManager } from "./js/transactions.js";
+import { MESSAGES, API_CONFIG } from "./js/config.js";
+
+class App {
+  constructor() {
+    this.isInitialized = false;
+    this.version = "X.X.X";
+  }
+
+  /**
+   * Inicializar la aplicación
+   */
+  async init() {
+    if (this.isInitialized) return;
+
+    try {
+      // Configurar WebSocket
+      this.setupWebSocket();
+
+      // Configurar callbacks
+      Auth.setCallbacks({
+        onLoginSuccess: this.handleLoginSuccess.bind(this),
+        onError: this.handleError.bind(this),
+      });
+
+      // Configurar event listeners de la UI
+      UI.setupEventListeners({
+        onAction: this.handleAction.bind(this),
+      });
+
+      // Inicializar autenticación
+      await Auth.init();
+
+      // Hacer disponibles instancias globalmente
+      window.app = this;
+      window.transactionManager = TransactionManager;
+
+      this.isInitialized = true;
+    } catch (error) {
+      console.error("Error inicializando la aplicación:", error);
+      UI.showError("Error al inicializar la aplicación");
+    }
+  }
+}
+
+// Crear instancia única
+const app = new App();
+
+// Inicializar cuando se carga el DOM
+document.addEventListener("DOMContentLoaded", () => {
+  app.init();
+});
+
+// Exportar para uso en otros módulos
+export default app;
+```
+
+## 🌐 API y Comunicación
+
+### Módulo API (api.js)
+
+- Clase `APIManager` para gestionar todas las peticiones HTTP
+- Usar `fetch` API nativo (no axios u otras librerías)
+- Métodos async/await (nunca Promises.then())
+- Try-catch en todos los métodos async
+- Centralizar configuración de URLs en `API_CONFIG`
+
+### Patrón de API
+
+```javascript
+class APIManager {
+  constructor() {
+    this.baseURL = API_CONFIG.BASE_URL;
+    this.endpoints = API_CONFIG.ENDPOINTS;
+  }
+
+  /**
+   * Realizar request HTTP genérico
+   */
+  async request(url, options = {}) {
+    const defaultOptions = {
+      headers: {
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+      ...options,
+    };
+
+    try {
+      const response = await fetch(url, defaultOptions);
+      return response;
+    } catch (error) {
+      console.error("Error en request:", error);
+      throw new Error(MESSAGES.ERROR.CONNECTION);
+    }
+  }
+
+  /**
+   * Realizar request autenticado
+   */
+  async authenticatedRequest(url, token, options = {}) {
+    if (!token) {
+      throw new Error(MESSAGES.ERROR.NO_TOKEN);
+    }
+
+    const authOptions = {
+      ...options,
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        ...options.headers,
+      },
+    };
+
+    return this.request(url, authOptions);
+  }
+
+  /**
+   * Realizar request con datos de Telegram
+   */
+  async telegramRequest(url, options = {}) {
+    const telegramId =
+      options.telegramId || window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+
+    const { telegramId: _, ...restOptions } = options;
+
+    const telegramOptions = {
+      ...restOptions,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Telegram-Id": telegramId ? telegramId.toString() : "",
+        ...restOptions.headers,
+      },
+    };
+
+    return this.request(url, telegramOptions);
+  }
+}
+
+// Crear instancia única
+export const API = new APIManager();
+```
+
+### Convenciones de Endpoints
+
+- URLs base en `API_CONFIG.BASE_URL`
+- Endpoints específicos en `API_CONFIG.ENDPOINTS`
+- Usar nombres descriptivos en español o inglés según contexto
+- Agrupar endpoints relacionados (ej: todos los de transacciones juntos)
+
+## 🔌 WebSocket
+
+### Cliente WebSocket (websocket.js)
+
+- Clase para gestionar conexión WebSocket con Socket.IO
+- Sistema de callbacks para eventos
+- Manejo de reconexión automática
+- Autenticación automática después de reconexión
+- Tracking de transacciones activas para recuperación
+
+### Patrón de WebSocket
+
+```javascript
+class AppWebSocket {
+  constructor() {
+    this.socket = null;
+    this.isConnected = false;
+    this.isAuthenticated = false;
+    this.reconnectAttempts = 0;
+    this.maxReconnectAttempts = 10;
+    this.activeTransactionId = null;
+    this.callbacks = {};
+  }
+
+  /**
+   * Conectar al servidor WebSocket
+   */
+  connect() {
+    if (this.socket && this.isConnected) return;
+
+    const socketUrl = this.getSocketUrl();
+    
+    this.socket = io(socketUrl, {
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 10,
+      reconnectionDelay: 1000,
+    });
+
+    this.setupEventHandlers();
+  }
+
+  /**
+   * Configurar manejadores de eventos
+   */
+  setupEventHandlers() {
+    this.socket.on("connect", () => {
+      this.isConnected = true;
+      this.reconnectAttempts = 0;
+      
+      // Re-autenticar automáticamente si hay token
+      if (this.lastAuthToken) {
+        this.reauthenticate();
+      }
+
+      if (this.callbacks.onConnect) {
+        this.callbacks.onConnect();
+      }
+    });
+
+    this.socket.on("disconnect", (reason) => {
+      this.isConnected = false;
+      this.isAuthenticated = false;
+      
+      if (this.callbacks.onDisconnect) {
+        this.callbacks.onDisconnect(reason);
+      }
+    });
+
+    // Eventos específicos de la aplicación
+    this.socket.on("evento-especifico", (data) => {
+      if (this.callbacks.onEventoEspecifico) {
+        this.callbacks.onEventoEspecifico(data);
+      }
+    });
+  }
+
+  /**
+   * Configurar callbacks
+   */
+  setCallbacks(callbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  /**
+   * Método para usar callbacks (compatibilidad)
+   */
+  on(event, callback) {
+    if (this.callbacks.hasOwnProperty(event)) {
+      this.callbacks[event] = callback;
+    }
+  }
+}
+
+// Crear instancia global
+window.appWebSocket = new AppWebSocket();
+```
+
+### Convenciones WebSocket
+
+- Nombres de eventos en kebab-case y español
+- Callbacks con nombres descriptivos: `onEventoRecibido`
+- Manejar desconexiones gracefully con reconexión automática
+- Re-autenticar automáticamente después de reconexión
+- Trackear transacciones activas para sistema de recuperación
+
+## 🔐 Autenticación
+
+### Autenticación de Cajeros (cajeros/js/auth.js)
+
+- Usar JWT tokens almacenados en localStorage
+- Verificar token al iniciar aplicación
+- Callbacks para eventos de autenticación
+- Limpiar sesión en logout
+
+### Autenticación de Telegram (depositos/js/auth.js)
+
+- Usar Telegram Web App API (`window.Telegram.WebApp`)
+- Validar datos de inicialización con backend
+- Obtener datos del usuario desde Telegram
+- Manejar timeout si Telegram no está disponible
+
+### Patrón de Autenticación
+
+```javascript
+class AuthManager {
+  constructor() {
+    this.currentToken = null;
+    this.userData = null;
+    this.callbacks = {
+      onLoginSuccess: null,
+      onError: null,
+      onTokenExpired: null,
+    };
+  }
+
+  /**
+   * Inicializar autenticación
+   */
+  async init() {
+    const savedToken = localStorage.getItem(STORAGE_KEYS.TOKEN);
+    if (savedToken) {
+      await this.verifyToken(savedToken);
+    }
+  }
+
+  /**
+   * Configurar callbacks
+   */
+  setCallbacks(callbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  /**
+   * Realizar login
+   */
+  async login(email, password) {
+    try {
+      const response = await API.login(email, password);
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.currentToken = data.token;
+        localStorage.setItem(STORAGE_KEYS.TOKEN, this.currentToken);
+        
+        await this.loadUserInfo();
+        
+        if (this.callbacks.onLoginSuccess) {
+          this.callbacks.onLoginSuccess(this.userData);
+        }
+        
+        return { success: true, userData: this.userData };
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.mensaje || MESSAGES.ERROR.INVALID_CREDENTIALS);
+      }
+    } catch (error) {
+      if (this.callbacks.onError) {
+        this.callbacks.onError(error);
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Logout
+   */
+  logout() {
+    this.clearSession();
+  }
+
+  /**
+   * Limpiar sesión
+   */
+  clearSession() {
+    this.currentToken = null;
+    this.userData = null;
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+  }
+}
+
+export const Auth = new AuthManager();
+```
+
+## 🎨 Interfaz de Usuario (UI)
+
+### Módulo UI (ui.js)
+
+- Clase `UIManager` para gestionar toda la interfaz
+- Separar lógica de presentación de lógica de negocio
+- Métodos para mostrar/ocultar pantallas
+- Validación de formularios
+- Actualización de elementos del DOM
+
+### Patrón de UI
+
+```javascript
+class UIManager {
+  constructor() {
+    this.elements = {};
+    this.currentState = null;
+    this.initElements();
+  }
+
+  /**
+   * Inicializar referencias a elementos del DOM
+   */
+  initElements() {
+    this.elements.screen1 = document.querySelector("#screen-1");
+    this.elements.screen2 = document.querySelector("#screen-2");
+    this.elements.form = document.querySelector("#form");
+    // ... más elementos
+  }
+
+  /**
+   * Configurar event listeners
+   */
+  setupEventListeners(eventHandlers) {
+    if (this.elements.form && eventHandlers.onSubmit) {
+      this.elements.form.addEventListener("submit", eventHandlers.onSubmit);
+    }
+    // ... más listeners
+  }
+
+  /**
+   * Mostrar pantalla
+   */
+  showScreen(screenId) {
+    // Ocultar todas las pantallas
+    document.querySelectorAll(".screen").forEach((screen) => {
+      screen.classList.remove("active");
+    });
+
+    // Mostrar pantalla específica
+    const screen = document.querySelector(screenId);
+    if (screen) {
+      screen.classList.add("active");
+      this.currentState = screenId;
+    }
+  }
+
+  /**
+   * Obtener datos del formulario
+   */
+  getFormData() {
+    const form = this.elements.form;
+    if (!form) return null;
+
+    const formData = new FormData(form);
+    return {
+      field1: formData.get("field1"),
+      field2: formData.get("field2"),
+    };
+  }
+
+  /**
+   * Validar formulario
+   */
+  validateForm(formData) {
+    if (!formData.field1) {
+      return {
+        valid: false,
+        message: "Campo requerido",
+      };
+    }
+    return { valid: true };
+  }
+
+  /**
+   * Mostrar error
+   */
+  showError(message) {
+    const errorElement = this.elements.errorMessage;
+    if (errorElement) {
+      errorElement.textContent = message;
+      errorElement.style.display = "block";
+    }
+  }
+
+  /**
+   * Ocultar error
+   */
+  hideError() {
+    const errorElement = this.elements.errorMessage;
+    if (errorElement) {
+      errorElement.style.display = "none";
+    }
+  }
+}
+
+export const UI = new UIManager();
+```
+
+### Convenciones de UI
+
+- Usar selectores CSS en `DOM_SELECTORS` (config.js)
+- Pantallas con clase `.screen` y estado `.active`
+- Formularios con validación antes de enviar
+- Mensajes de error descriptivos en español
+- Estados de carga con spinners o indicadores visuales
+
+## 📝 Configuración
+
+### Archivo config.js
+
+- Centralizar toda la configuración en un archivo
+- Exportar objetos constantes con configuración
+- Separar por categorías: API, UI, Mensajes, Estados, etc.
+
+### Patrón de Configuración
+
+```javascript
+/**
+ * Configuración de la aplicación
+ */
+
+// Configuración de la API
+export const API_CONFIG = {
+  BASE_URL: "https://elpatio-backend.fly.dev/api",
+  ENDPOINTS: {
+    LOGIN: "/cajeros/login",
+    PERFIL: "/cajeros/mi-perfil",
+    TRANSACCIONES: "/transacciones",
+  },
+};
+
+// Configuración de localStorage
+export const STORAGE_KEYS = {
+  TOKEN: "app_token",
+  USER_DATA: "user_data",
+};
+
+// Configuración de la UI
+export const UI_CONFIG = {
+  LOADING_DELAY: 300,
+  ANIMATION_DURATION: 300,
+};
+
+// Mensajes de la aplicación
+export const MESSAGES = {
+  ERROR: {
+    CONNECTION: "Error de conexión. Verifica tu conexión a internet.",
+    INVALID_CREDENTIALS: "Error al iniciar sesión",
+    INCOMPLETE_FIELDS: "Por favor, completa todos los campos",
+  },
+  SUCCESS: {
+    LOGIN: "Sesión iniciada exitosamente",
+  },
+};
+
+// Estados de la aplicación
+export const APP_STATES = {
+  LOGIN: "login",
+  DASHBOARD: "dashboard",
+  LOADING: "loading",
+  ERROR: "error",
+};
+
+// Selectores DOM
+export const DOM_SELECTORS = {
+  LOGIN_SCREEN: "#login-screen",
+  DASHBOARD_SCREEN: "#dashboard-screen",
+  LOGIN_FORM: "#login-form",
+  ERROR_MESSAGE: "#error-message",
+};
+```
+
+## 📊 Logging y Debugging
+
+### Sistema de Logging Visual
+
+- Usar `window.visualLogger` para logs visuales (si está disponible)
+- Diferentes niveles: `info`, `success`, `error`, `warning`, `debug`
+- Logs con emojis para mejor identificación visual
+- Console.log para debugging en desarrollo
+
+### Patrón de Logging
+
+```javascript
+// Si existe visualLogger, usarlo
+if (window.visualLogger) {
+  window.visualLogger.info("Mensaje informativo");
+  window.visualLogger.success("Operación exitosa");
+  window.visualLogger.error("Error ocurrido");
+  window.visualLogger.warning("Advertencia");
+  window.visualLogger.debug("Información de debug");
+} else {
+  // Fallback a console
+  console.log("ℹ️ Mensaje informativo");
+  console.log("✅ Operación exitosa");
+  console.error("❌ Error ocurrido");
+  console.warn("⚠️ Advertencia");
+  console.debug("🔍 Información de debug");
+}
+```
+
+### Emojis para Logs
+
+- ✅ Éxito
+- ❌ Error
+- ⚠️ Advertencia
+- 🔄 Proceso/Recarga
+- 🔗 Conexión
+- 🔌 Desconexión
+- 🔐 Autenticación
+- 💰 Transacciones/Dinero
+- 📋 Información/Listas
+- 🛑 Detención
+- 🔍 Búsqueda/Verificación
+- ⏱️ Tiempo/Timeout
+- 🎉 Celebración/Completado
+
+## 🎯 Gestión de Transacciones
+
+### Módulo Transactions (transactions.js)
+
+- Clase `TransactionManager` para gestionar transacciones
+- Métodos para crear, actualizar, cancelar transacciones
+- Callbacks para eventos de transacciones
+- Conversión de montos (centavos ↔ bolívares)
+
+### Patrón de Transactions
+
+```javascript
+class TransactionManager {
+  constructor() {
+    this.currentTransaction = null;
+    this.transactions = [];
+    this.callbacks = {
+      onTransactionCreated: null,
+      onTransactionUpdated: null,
+      onTransactionCompleted: null,
+      onTransactionError: null,
+    };
+  }
+
+  /**
+   * Configurar callbacks
+   */
+  setCallbacks(callbacks) {
+    this.callbacks = { ...this.callbacks, ...callbacks };
+  }
+
+  /**
+   * Convertir bolívares a centavos
+   */
+  convertToCents(amount) {
+    return Math.round(amount * 100);
+  }
+
+  /**
+   * Convertir centavos a bolívares
+   */
+  convertToBolivares(cents) {
+    return (cents / 100).toFixed(2);
+  }
+
+  /**
+   * Cargar transacciones
+   */
+  async loadTransactions(token) {
+    try {
+      const response = await API.getTransacciones(token);
+      if (response.ok) {
+        const data = await response.json();
+        this.transactions = data.transacciones;
+        this.updateUI();
+      }
+    } catch (error) {
+      console.error("Error cargando transacciones:", error);
+      if (this.callbacks.onTransactionError) {
+        this.callbacks.onTransactionError(error);
+      }
+    }
+  }
+}
+
+export const TransactionManager = new TransactionManager();
+```
+
+## 🌐 HTML y Estructura
+
+### Estructura HTML
+
+- HTML semántico con secciones claras
+- Pantallas separadas con clase `.screen`
+- Una pantalla activa a la vez (clase `.active`)
+- IDs descriptivos para elementos importantes
+- Formularios con validación HTML5
+
+### Patrón HTML
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>El Patio - Nombre de la App</title>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Pantalla 1 -->
+      <div id="screen-1" class="screen active">
+        <!-- Contenido -->
+      </div>
+
+      <!-- Pantalla 2 -->
+      <div id="screen-2" class="screen">
+        <!-- Contenido -->
+      </div>
+    </div>
+
+    <script src="js/websocket.js"></script>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>
+```
+
+### Convenciones HTML
+
+- Usar `lang="es"` en el tag `<html>`
+- Meta viewport para responsive design
+- Cargar Socket.IO desde CDN antes de los scripts propios
+- Scripts con `type="module"` para ES6 modules
+- IDs en kebab-case (ej: `#login-screen`)
+
+## 🎨 CSS y Estilos
+
+### Estilos CSS
+
+- Un archivo `styles.css` por miniapp
+- Clases semánticas y descriptivas
+- Usar variables CSS para colores y valores comunes
+- Diseño responsive (mobile-first)
+- Animaciones suaves para transiciones
+- Usar paleta de colores pre-establecida en referencia a un patio de juegos
+
+### Convenciones CSS
+
+- Clases en kebab-case (ej: `.login-screen`)
+- IDs solo para elementos únicos importantes
+- Variables CSS para valores reutilizables
+- Media queries para responsive design
+- Animaciones con `transition` o `@keyframes`
+
+## 🔄 Manejo de Estados
+
+### Estados de Transacciones
+
+- Estados definidos en `TRANSACTION_STATES` (config.js)
+- Transiciones de estado claras y documentadas
+- Callbacks para cambios de estado
+- UI actualizada según estado actual
+
+### Estados Comunes
+
+```javascript
+export const TRANSACTION_STATES = {
+  PENDIENTE: "pendiente",
+  EN_PROCESO: "en_proceso",
+  REALIZADA: "realizada",
+  CONFIRMADA: "confirmada",
+  COMPLETADA: "completada",
+  CANCELADA: "cancelada",
+  EXPIRADA: "expirada",
+  RECHAZADA: "rechazada",
+};
+```
+
+## 🚀 Despliegue y Configuración
+
+### Vercel
+
+- Configuración en `vercel.json`
+- Variables de entorno en dashboard de Vercel
+- Headers para permitir iframe de Telegram
+- Rewrites para rutas de miniapps
+
+### Variables de Entorno
+
+- `API_BASE_URL`: URL del backend
+- `NODE_ENV`: Entorno (production/development)
+- `TELEGRAM_BOT_TOKEN`: Token del bot (si se usa)
+- Documentar en `env.example`
+
+### Servidor Local (server.js)
+
+- Express para servir archivos estáticos
+- Headers para Telegram Web Apps
+- Rutas para cada miniapp
+- Health check endpoint
+
+## 🚫 Errores Comunes a Evitar
+
+1. **No usar try-catch en funciones async** - Siempre incluir manejo de errores
+2. **Lógica de negocio en módulos UI** - Separar responsabilidades
+3. **Validaciones solo en el cliente** - Validar también en el backend
+4. **No manejar desconexiones WebSocket** - Implementar reconexión automática
+5. **No limpiar callbacks** - Limpiar listeners al destruir componentes
+6. **Hardcodear URLs** - Usar configuración centralizada
+7. **No manejar estados de carga** - Mostrar indicadores durante operaciones async
+8. **Exponer tokens en logs** - No loggear información sensible
+9. **No validar datos de Telegram** - Validar siempre datos de `window.Telegram`
+10. **No manejar timeouts** - Implementar timeouts para operaciones async
+
+## ✅ Buenas Prácticas
+
+1. **Modularidad** - Un archivo por responsabilidad
+2. **Callbacks configurables** - Permitir configurar callbacks desde fuera
+3. **Manejo de errores consistente** - Usar try-catch y callbacks de error
+4. **Logging descriptivo** - Logs claros con contexto
+5. **Configuración centralizada** - Todo en archivos config.js
+6. **Validación de entrada** - Validar datos antes de enviar
+7. **Estados claros** - Definir y documentar todos los estados
+8. **Reconexión automática** - WebSocket debe reconectar automáticamente
+9. **Recuperación de estado** - Recuperar transacciones activas después de reconexión
+10. **Documentación JSDoc** - Comentar funciones complejas
+
+## 📱 Telegram Web App
+
+### Integración con Telegram
+
+- Usar `window.Telegram.WebApp` para integración
+- Validar que Telegram esté disponible antes de usar
+- Expandir la app cuando esté lista
+- Obtener datos del usuario desde `initDataUnsafe`
+- Manejar eventos de Telegram (back button, viewport, etc.)
+
+### Patrón de Telegram Auth
+
+```javascript
+class TelegramAuth {
+  constructor() {
+    this.userData = null;
+    this.initData = null;
+  }
+
+  /**
+   * Inicializar Telegram Web App
+   */
+  async init() {
+    if (!window.Telegram || !window.Telegram.WebApp) {
+      throw new Error(MESSAGES.ERROR.TELEGRAM_NOT_AVAILABLE);
+    }
+
+    const tg = window.Telegram.WebApp;
+    
+    // Expandir la app
+    tg.expand();
+    
+    // Obtener datos de inicialización
+    this.initData = tg.initData;
+    
+    // Obtener datos del usuario
+    const user = tg.initDataUnsafe?.user;
+    if (!user) {
+      throw new Error(MESSAGES.ERROR.USER_DATA_MISSING);
+    }
+
+    this.userData = user;
+    
+    // Validar con backend
+    await this.validateWithBackend();
+  }
+
+  /**
+   * Validar con backend
+   */
+  async validateWithBackend() {
+    // Enviar initData al backend para validación
+    const response = await API.validateTelegramAuth(this.initData);
+    if (!response.ok) {
+      throw new Error("Error validando autenticación de Telegram");
+    }
+  }
+}
+
+export const TelegramAuth = new TelegramAuth();
+```
+
+## 🔔 Notificaciones
+
+### Sistema de Notificaciones
+
+- Notificaciones toast para feedback inmediato
+- Notificaciones persistentes para eventos importantes
+- Notificaciones push del navegador (si está disponible)
+- Service Worker para notificaciones en background
+
+### Patrón de Notificaciones
+
+```javascript
+// Notificaciones toast (temporales)
+if (window.notificationManager) {
+  window.notificationManager.success("Título", "Mensaje");
+  window.notificationManager.error("Título", "Mensaje");
+  window.notificationManager.info("Título", "Mensaje");
+  window.notificationManager.warning("Título", "Mensaje");
+}
+
+// Notificaciones del navegador (persistentes)
+if (window.browserNotifications) {
+  await window.browserNotifications.showNotification("Título", {
+    body: "Mensaje",
+    icon: "/icon.png",
+  });
+}
+```
+
+## 🧪 Testing y Desarrollo
+
+### Desarrollo Local
+
+- Usar `npm run dev` para servidor local
+- Conectar a backend en fly.io (no local)
+- Probar en navegador normal (no Telegram)
+- Usar herramientas de desarrollo del navegador
+
+### Debugging
+
+- Usar `console.log` con emojis para identificación rápida
+- Usar `window.visualLogger` si está disponible
+- Inspeccionar WebSocket en DevTools
+- Verificar peticiones HTTP en Network tab
+
+## 📝 Documentación
+
+### Comentarios JSDoc
+
+- Comentar todas las clases y métodos públicos
+- Documentar parámetros y retornos
+- Incluir ejemplos cuando sea útil
+- Mantener comentarios actualizados
+
+### README por Miniapp
+
+- Cada miniapp debe tener su README.md
+- Documentar propósito, estructura, y uso
+- Incluir instrucciones de desarrollo
+- Documentar variables de entorno necesarias
