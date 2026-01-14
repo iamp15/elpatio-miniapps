@@ -369,6 +369,31 @@ class UIManager {
     if (this.elements.errorMessage) {
       this.elements.errorMessage.textContent = message;
     }
+    // Ocultar imagen si existe
+    const errorImageContainer = document.getElementById('error-image-container');
+    if (errorImageContainer) {
+      errorImageContainer.style.display = 'none';
+    }
+    this.showScreen(APP_STATES.ERROR);
+  }
+
+  /**
+   * Mostrar pantalla de error con imagen
+   */
+  showErrorScreenWithImage(title, message, imageUrl) {
+    if (this.elements.errorTitle) {
+      this.elements.errorTitle.textContent = title;
+    }
+    if (this.elements.errorMessage) {
+      this.elements.errorMessage.textContent = message;
+    }
+    // Mostrar imagen si existe el contenedor
+    const errorImageContainer = document.getElementById('error-image-container');
+    const errorImage = document.getElementById('error-image');
+    if (errorImageContainer && errorImage) {
+      errorImage.src = imageUrl;
+      errorImageContainer.style.display = 'block';
+    }
     this.showScreen(APP_STATES.ERROR);
   }
 

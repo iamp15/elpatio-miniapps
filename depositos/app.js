@@ -735,38 +735,24 @@ class DepositApp {
       // Actualizar saldo
       this.loadUserBalance();
 
-      // Construir mensaje personalizado según categoría
-      let titulo = "Depósito Rechazado";
-      let mensaje = "";
+      // Construir mensaje simplificado
+      const titulo = "Depósito Rechazado";
+      const motivo = data.motivo || data.descripcionDetallada || "El cajero rechazó la transacción";
+      const imagenRechazoUrl = data.imagenRechazoUrl || null;
 
-      const motivo = data.motivo || "El cajero rechazó la transacción";
-      const categoria = data.categoria || "otro";
+      let mensaje = `El cajero rechazó la transacción:\n\n${motivo}`;
 
-      switch (categoria) {
-        case "monto_insuficiente":
-          titulo = "Monto Insuficiente";
-          mensaje = `⚠️ El monto que depositaste es menor al mínimo permitido.\n\n${motivo}`;
-          break;
-
-        case "datos_incorrectos":
-          titulo = "Datos Incorrectos";
-          const severidad =
-            data.severidad === "leve"
-              ? "Revisa tus datos"
-              : "Los datos no coinciden";
-          mensaje = `📝 ${severidad}.\n\n${motivo}\n\nPor favor, verifica la información que enviaste.`;
-          break;
-
-        case "pago_no_recibido":
-          titulo = "Pago No Recibido";
-          mensaje = `❌ El cajero no recibió tu pago.\n\n${motivo}\n\nPor favor, verifica tu comprobante.`;
-          break;
-
-        default:
-          mensaje = `El cajero rechazó la transacción:\n\n${motivo}`;
+      // Si hay imagen, agregarla al mensaje
+      if (imagenRechazoUrl) {
+        mensaje += `\n\n📷 El cajero adjuntó una imagen como evidencia del rechazo.`;
       }
 
-      UI.showErrorScreen(titulo, mensaje);
+      // Mostrar pantalla de error con imagen si existe
+      if (imagenRechazoUrl) {
+        UI.showErrorScreenWithImage(titulo, mensaje, imagenRechazoUrl);
+      } else {
+        UI.showErrorScreen(titulo, mensaje);
+      }
 
       // No redirigir automáticamente - dejar que el usuario decida cuándo continuar
       window.visualLogger.info("⚠️ [APP] Depósito rechazado procesado");

@@ -2149,6 +2149,105 @@ body {
   border-color: var(--patio-verde-esmeralda, #2e7d32);
 }
 
+/* Estilos para subida de imágenes en rechazo */
+.file-upload-container {
+  margin-top: 12px;
+}
+
+.file-input {
+  display: none;
+}
+
+.file-input-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px dashed var(--patio-gris-piedra);
+  border-radius: 8px;
+  background: var(--patio-blanco-nube, #fafafa);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: var(--patio-marron-madera);
+  font-size: 14px;
+}
+
+.file-input-label:hover {
+  border-color: var(--patio-azul-cielo);
+  background: rgba(33, 150, 243, 0.05);
+}
+
+.file-input-icon {
+  font-size: 20px;
+}
+
+.file-input-text {
+  font-weight: 500;
+}
+
+.imagen-preview-container {
+  margin-top: 16px;
+  position: relative;
+  border: 2px solid var(--patio-gris-piedra);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--patio-blanco-nube, #fafafa);
+}
+
+.imagen-preview {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 6px;
+  display: block;
+}
+
+.btn-eliminar-imagen {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--patio-rojo-ladrillo);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.btn-eliminar-imagen:hover {
+  background: var(--patio-rojo-ladrillo-oscuro);
+  transform: scale(1.1);
+}
+
+.imagen-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--patio-gris-piedra);
+}
+
+.imagen-info span {
+  word-break: break-all;
+}
+
+.form-help-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--patio-gris-piedra);
+  font-style: italic;
+}
+
 .modal-ajuste-monto .warning-message {
   background: #ffebee;
   border-left: 4px solid #f44336;

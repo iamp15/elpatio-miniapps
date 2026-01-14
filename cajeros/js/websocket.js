@@ -429,7 +429,7 @@ class CajeroWebSocket {
   }
 
   /**
-   * Rechazar pago (verificación de pago) con estructura mejorada
+   * Rechazar pago (verificación de pago) con estructura simplificada
    */
   rechazarPagoCajero(transaccionId, motivoRechazo) {
     if (!this.isConnected || !this.isAuthenticated) {
@@ -439,16 +439,16 @@ class CajeroWebSocket {
     
     console.log("❌ Rechazando pago:", { transaccionId, motivoRechazo });
     
-    // Soportar tanto el formato antiguo (string) como el nuevo (objeto)
+    // Estructura simplificada: solo descripcionDetallada e imagenRechazoUrl
     const motivoData = typeof motivoRechazo === 'string' 
-      ? { descripcionDetallada: motivoRechazo, categoria: 'otro' }
+      ? { descripcionDetallada: motivoRechazo }
       : motivoRechazo;
     
     this.socket.emit("verificar-pago-cajero", {
       transaccionId,
       accion: "rechazar",
       motivoRechazo: motivoData,
-      motivo: motivoData.descripcionDetallada, // Mantener compatibilidad
+      motivo: motivoData.descripcionDetallada, // Mantener para compatibilidad con backend
     });
   }
 
