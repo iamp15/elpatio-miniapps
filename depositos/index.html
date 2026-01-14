@@ -425,11 +425,16 @@
           <h3 id="error-title">Error en el proceso</h3>
           <p id="error-message">Ha ocurrido un error inesperado.</p>
 
-          <!-- Contenedor para imagen de evidencia (opcional) -->
+          <!-- Contenedor para imagen de evidencia (oculto para jugadores, solo para admin) -->
           <div id="error-image-container" class="error-image-container" style="display: none;">
             <p class="error-image-label">📷 Evidencia del rechazo:</p>
             <img id="error-image" class="error-image" alt="Evidencia del rechazo" />
           </div>
+
+          <!-- Botón para contactar admin (se muestra solo cuando es necesario) -->
+          <button class="btn btn-primary" id="contact-admin-btn" style="display: none;">
+            📞 Contactar Administrador
+          </button>
 
           <button class="btn btn-primary" id="retry-btn">Reintentar</button>
           <button class="btn btn-secondary" id="close-error-btn">Cerrar</button>

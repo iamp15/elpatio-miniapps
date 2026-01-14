@@ -479,6 +479,22 @@ class DepositoWebSocket {
   }
 
   /**
+   * Solicitar revisión administrativa de una transacción rechazada
+   */
+  solicitarRevisionAdmin(transaccionId, motivo) {
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("No hay conexión o no está autenticado");
+      return;
+    }
+
+    console.log("📞 Solicitando revisión admin para transacción:", transaccionId);
+    this.socket.emit("solicitar-revision-admin", {
+      transaccionId,
+      motivo: motivo || "El jugador solicita revisión del depósito rechazado",
+    });
+  }
+
+  /**
    * Autenticar como jugador
    */
   authenticateJugador(telegramId, initData) {

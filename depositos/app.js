@@ -711,13 +711,19 @@ class DepositApp {
   }
 
   /**
-   * Manejar botón "Contactar admin" desde la pantalla de monto ajustado
+   * Manejar botón "Contactar admin" para revisar depósito rechazado
+   * Por ahora no hace nada, se implementará cuando se cree el dashboard de admin
    */
   handleContactAdmin() {
-    // Por ahora no hace nada, se implementará en el futuro
+    // Por ahora solo mostrar mensaje informativo
     window.visualLogger.info(
       "📞 [APP] Contactar admin (funcionalidad pendiente)"
     );
+    
+    UI.showAlert(
+      "Esta funcionalidad estará disponible próximamente cuando se implemente el dashboard de administradores.\n\nPor favor, contacta directamente con soporte si necesitas ayuda."
+    );
+    
     // TODO: Implementar cuando tengamos dashboard de admin
   }
 
@@ -726,6 +732,9 @@ class DepositApp {
    */
   handleDepositoRechazado(data) {
     try {
+      // Guardar transaccionId para poder contactar admin después
+      this.rejectedTransactionId = data.transaccionId;
+
       // Limpiar transacción activa (ya rechazada)
       window.depositoWebSocket.clearActiveTransaction();
 
@@ -738,21 +747,11 @@ class DepositApp {
       // Construir mensaje simplificado
       const titulo = "Depósito Rechazado";
       const motivo = data.motivo || data.descripcionDetallada || "El cajero rechazó la transacción";
-      const imagenRechazoUrl = data.imagenRechazoUrl || null;
 
-      let mensaje = `El cajero rechazó la transacción:\n\n${motivo}`;
+      const mensaje = `El cajero rechazó la transacción:\n\n${motivo}\n\nSi consideras que hubo un error, puedes contactar a un administrador para revisar tu caso.`;
 
-      // Si hay imagen, agregarla al mensaje
-      if (imagenRechazoUrl) {
-        mensaje += `\n\n📷 El cajero adjuntó una imagen como evidencia del rechazo.`;
-      }
-
-      // Mostrar pantalla de error con imagen si existe
-      if (imagenRechazoUrl) {
-        UI.showErrorScreenWithImage(titulo, mensaje, imagenRechazoUrl);
-      } else {
-        UI.showErrorScreen(titulo, mensaje);
-      }
+      // Mostrar pantalla de error sin imagen (las imágenes son solo para admin)
+      UI.showErrorScreenWithContactAdmin(titulo, mensaje, data.transaccionId);
 
       // No redirigir automáticamente - dejar que el usuario decida cuándo continuar
       window.visualLogger.info("⚠️ [APP] Depósito rechazado procesado");

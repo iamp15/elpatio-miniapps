@@ -1,6 +1,6 @@
 {
   "name": "elpatio-miniapps",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Mini Apps para El Patio - Telegram Bot",
   "main": "index.html",
   "scripts": {

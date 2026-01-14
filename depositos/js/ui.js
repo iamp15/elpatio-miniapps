@@ -378,22 +378,30 @@ class UIManager {
   }
 
   /**
-   * Mostrar pantalla de error con imagen
+   * Mostrar pantalla de error con opción de contactar admin
    */
-  showErrorScreenWithImage(title, message, imageUrl) {
+  showErrorScreenWithContactAdmin(title, message, transaccionId) {
     if (this.elements.errorTitle) {
       this.elements.errorTitle.textContent = title;
     }
     if (this.elements.errorMessage) {
       this.elements.errorMessage.textContent = message;
     }
-    // Mostrar imagen si existe el contenedor
+    
+    // Ocultar imagen si existe (no se muestra al jugador)
     const errorImageContainer = document.getElementById('error-image-container');
-    const errorImage = document.getElementById('error-image');
-    if (errorImageContainer && errorImage) {
-      errorImage.src = imageUrl;
-      errorImageContainer.style.display = 'block';
+    if (errorImageContainer) {
+      errorImageContainer.style.display = 'none';
     }
+    
+    // Mostrar botón de contactar admin si existe
+    const contactAdminBtn = document.getElementById('contact-admin-btn');
+    if (contactAdminBtn) {
+      contactAdminBtn.style.display = 'block';
+      // Guardar transaccionId en el botón para poder usarlo después
+      contactAdminBtn.dataset.transaccionId = transaccionId;
+    }
+    
     this.showScreen(APP_STATES.ERROR);
   }
 
