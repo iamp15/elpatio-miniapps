@@ -750,10 +750,10 @@ class DepositApp {
       // Obtener el motivo del rechazo (puede venir como 'motivo' o 'descripcionDetallada')
       const motivoCajero = data.motivo || data.descripcionDetallada || "No se especificó un motivo";
       
-      // Construir mensaje con formato claro y estructurado
-      const mensaje = `Tu depósito fue rechazado por el cajero.\n\n` +
-        `📋 Motivo del rechazo:\n` +
-        `${motivoCajero}\n\n` +
+      // Construir mensaje con formato claro y estructurado usando <br> para saltos de línea
+      const mensaje = `Tu depósito fue rechazado por el cajero.<br><br>` +
+        `<strong>📋 Motivo del rechazo:</strong><br>` +
+        `${motivoCajero}<br><br>` +
         `Si consideras que hubo un error, puedes contactar a un administrador para revisar tu caso.`;
 
       // Mostrar pantalla de error sin imagen (las imágenes son solo para admin)

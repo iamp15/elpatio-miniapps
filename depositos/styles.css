@@ -628,6 +628,8 @@ body {
   color: var(--tg-theme-hint-color);
   margin-bottom: 30px;
   font-size: 14px;
+  white-space: pre-line; /* Respeta los saltos de línea (\n) */
+  line-height: 1.6; /* Mejora la legibilidad */
 }
 
 .error-image-container {

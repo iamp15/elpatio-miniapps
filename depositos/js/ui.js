@@ -367,7 +367,12 @@ class UIManager {
       this.elements.errorTitle.textContent = title;
     }
     if (this.elements.errorMessage) {
-      this.elements.errorMessage.textContent = message;
+      // Usar innerHTML si el mensaje contiene HTML (como <br>), sino usar textContent
+      if (message && (message.includes('<br>') || message.includes('<strong>'))) {
+        this.elements.errorMessage.innerHTML = message;
+      } else {
+        this.elements.errorMessage.textContent = message;
+      }
     }
     // Ocultar imagen si existe
     const errorImageContainer = document.getElementById('error-image-container');
@@ -388,7 +393,12 @@ class UIManager {
       this.elements.errorTitle.textContent = title;
     }
     if (this.elements.errorMessage) {
-      this.elements.errorMessage.textContent = message;
+      // Usar innerHTML si el mensaje contiene HTML (como <br>), sino usar textContent
+      if (message && (message.includes('<br>') || message.includes('<strong>'))) {
+        this.elements.errorMessage.innerHTML = message;
+      } else {
+        this.elements.errorMessage.textContent = message;
+      }
     }
     
     // Ocultar imagen si existe (no se muestra al jugador)
