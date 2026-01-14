@@ -415,11 +415,6 @@
 
       <!-- Pantalla de error -->
       <div id="error-screen" class="screen">
-        <div class="header">
-          <h1>❌ Error</h1>
-          <p class="subtitle">Algo salió mal</p>
-        </div>
-
         <div class="error-info">
           <div class="error-icon">❌</div>
           <h3 id="error-title">Error en el proceso</h3>
@@ -431,13 +426,15 @@
             <img id="error-image" class="error-image" alt="Evidencia del rechazo" />
           </div>
 
-          <!-- Botón para contactar admin (se muestra solo cuando es necesario) -->
-          <button class="btn btn-primary" id="contact-admin-btn" style="display: none;">
-            📞 Contactar Administrador
-          </button>
+          <div class="error-actions">
+            <!-- Botón para contactar admin (se muestra solo cuando es necesario) -->
+            <button class="btn btn-primary" id="contact-admin-btn" style="display: none;">
+              📞 Contactar Administrador
+            </button>
 
-          <button class="btn btn-primary" id="retry-btn">Reintentar</button>
-          <button class="btn btn-secondary" id="close-error-btn">Cerrar</button>
+            <button class="btn btn-primary" id="retry-btn">Reintentar</button>
+            <button class="btn btn-secondary" id="close-error-btn">Cerrar</button>
+          </div>
         </div>
       </div>
     </div>

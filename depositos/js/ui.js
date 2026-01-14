@@ -374,6 +374,11 @@ class UIManager {
     if (errorImageContainer) {
       errorImageContainer.style.display = 'none';
     }
+    // Ocultar botón de contactar admin por defecto
+    const contactAdminBtn = document.getElementById('contact-admin-btn');
+    if (contactAdminBtn) {
+      contactAdminBtn.style.display = 'none';
+    }
     this.showScreen(APP_STATES.ERROR);
   }
 
@@ -381,6 +386,8 @@ class UIManager {
    * Mostrar pantalla de error con opción de contactar admin
    */
   showErrorScreenWithContactAdmin(title, message, transaccionId) {
+    console.log('🔍 [UI] showErrorScreenWithContactAdmin llamado con:', { title, message, transaccionId });
+    
     if (this.elements.errorTitle) {
       this.elements.errorTitle.textContent = title;
     }
@@ -394,15 +401,28 @@ class UIManager {
       errorImageContainer.style.display = 'none';
     }
     
-    // Mostrar botón de contactar admin si existe
-    const contactAdminBtn = document.getElementById('contact-admin-btn');
-    if (contactAdminBtn) {
-      contactAdminBtn.style.display = 'block';
-      // Guardar transaccionId en el botón para poder usarlo después
-      contactAdminBtn.dataset.transaccionId = transaccionId;
-    }
-    
+    // Mostrar pantalla primero
     this.showScreen(APP_STATES.ERROR);
+    
+    // Luego mostrar botón de contactar admin (usar setTimeout para asegurar que el DOM esté actualizado)
+    setTimeout(() => {
+      const contactAdminBtn = document.getElementById('contact-admin-btn');
+      if (contactAdminBtn) {
+        contactAdminBtn.style.display = 'block';
+        contactAdminBtn.style.visibility = 'visible';
+        contactAdminBtn.style.opacity = '1';
+        // Guardar transaccionId en el botón para poder usarlo después
+        contactAdminBtn.dataset.transaccionId = transaccionId;
+        console.log('✅ Botón de contactar admin mostrado para transacción:', transaccionId);
+        console.log('✅ Estilos del botón:', {
+          display: contactAdminBtn.style.display,
+          visibility: contactAdminBtn.style.visibility,
+          opacity: contactAdminBtn.style.opacity
+        });
+      } else {
+        console.error('❌ No se encontró el botón contact-admin-btn en el DOM');
+      }
+    }, 100);
   }
 
   /**
