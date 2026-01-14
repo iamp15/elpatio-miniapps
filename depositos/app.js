@@ -744,11 +744,17 @@ class DepositApp {
       // Actualizar saldo
       this.loadUserBalance();
 
-      // Construir mensaje simplificado
+      // Construir mensaje estructurado y claro
       const titulo = "Depósito Rechazado";
-      const motivo = data.motivo || data.descripcionDetallada || "El cajero rechazó la transacción";
-
-      const mensaje = `El cajero rechazó la transacción:\n\n${motivo}\n\nSi consideras que hubo un error, puedes contactar a un administrador para revisar tu caso.`;
+      
+      // Obtener el motivo del rechazo (puede venir como 'motivo' o 'descripcionDetallada')
+      const motivoCajero = data.motivo || data.descripcionDetallada || "No se especificó un motivo";
+      
+      // Construir mensaje con formato claro y estructurado
+      const mensaje = `Tu depósito fue rechazado por el cajero.\n\n` +
+        `📋 Motivo del rechazo:\n` +
+        `${motivoCajero}\n\n` +
+        `Si consideras que hubo un error, puedes contactar a un administrador para revisar tu caso.`;
 
       // Mostrar pantalla de error sin imagen (las imágenes son solo para admin)
       UI.showErrorScreenWithContactAdmin(titulo, mensaje, data.transaccionId);
