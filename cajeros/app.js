@@ -505,19 +505,62 @@ class CajerosApp {
    */
   handleLogout() {
     // Emitir evento de logout al WebSocket para actualizar el estado en el backend
-    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected) {
+    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.socket) {
       try {
-        window.cajeroWebSocket.socket.emit("logout-cajero");
-        console.log("🚪 [LOGOUT] Evento logout-cajero emitido al servidor");
+        // Usar un callback para confirmar que el evento fue recibido
+        // Esto asegura que el servidor procesó el logout antes de desconectar
+        const socket = window.cajeroWebSocket.socket;
+        
+        // Verificar que el socket realmente esté conectado
+        if (socket.connected) {
+          console.log("🚪 [LOGOUT] Emitiendo evento logout-cajero...");
+          
+          // Emitir con callback para confirmar recepción
+          socket.emit("logout-cajero", {}, (response) => {
+            if (response && response.success) {
+              console.log("✅ [LOGOUT] Servidor confirmó recepción del logout");
+            }
+            // Desconectar después de recibir confirmación o timeout
+            this.finalizeLogout();
+          });
+          
+          // Timeout de seguridad: desconectar después de 500ms aunque no haya confirmación
+          setTimeout(() => {
+            console.log("⏱️ [LOGOUT] Timeout: desconectando después de 500ms");
+            this.finalizeLogout();
+          }, 500);
+          
+          return; // Salir temprano, finalizeLogout se llamará después
+        } else {
+          console.warn("⚠️ [LOGOUT] Socket no está conectado, continuando con logout normal");
+        }
       } catch (error) {
         console.error("❌ Error emitiendo logout-cajero:", error);
+        // Si hay error, continuar con logout normal
       }
     }
 
+    // Si no hay WebSocket conectado o hubo error, desconectar y continuar
+    this.finalizeLogout();
+  }
+
+  /**
+   * Finalizar desconexión y completar logout
+   */
+  finalizeLogout() {
     // Desconectar WebSocket
     if (window.cajeroWebSocket) {
       window.cajeroWebSocket.disconnect();
     }
+    
+    // Completar proceso de logout
+    this.completeLogout();
+  }
+
+  /**
+   * Completar proceso de logout (limpiar sesión, UI, etc.)
+   */
+  completeLogout() {
 
     // Crear notificación de cierre de sesión
     if (window.notificationManager) {
