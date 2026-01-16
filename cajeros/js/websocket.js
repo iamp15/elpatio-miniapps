@@ -8,10 +8,11 @@ class CajeroWebSocket {
     this.socket = null;
     this.isConnected = false;
     this.isAuthenticated = false;
+    this.isAuthenticating = false; // Flag para evitar múltiples autenticaciones simultáneas
     this.userData = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10; // Más intentos
-    this.reconnectDelay = 1000; // Menos delay
+    this.maxReconnectAttempts = 5; // Reducido para evitar spam de conexiones
+    this.reconnectDelay = 2000; // Aumentado para dar tiempo entre reconexiones
     this.activeTransactionRooms = new Set(); // Track active transaction rooms
     this.lastAuthToken = null; // Store token for re-authentication
     this.processingTransactions = new Set(); // Track transactions being processed to prevent double submission
@@ -28,6 +29,7 @@ class CajeroWebSocket {
       onTransaccionCanceladaPorTimeout: null,
       onNuevaNotificacion: null,
       onMontoAjustado: null,
+      onSessionReplaced: null, // Nuevo: cuando otra conexión reemplaza la sesión
       onError: null,
     };
   }
@@ -36,12 +38,25 @@ class CajeroWebSocket {
    * Conectar al servidor WebSocket
    */
   connect() {
+    // Si ya hay un socket conectado, no crear otro
     if (this.socket && this.isConnected) {
+      console.log("🔗 [WebSocket] Ya hay una conexión activa, reutilizando...");
       return;
     }
 
+    // Desconectar socket anterior si existe (importante para evitar conexiones duplicadas)
+    if (this.socket) {
+      console.log("🔄 [WebSocket] Cerrando conexión anterior antes de reconectar...");
+      this.socket.disconnect();
+      this.socket = null;
+    }
+
+    // Resetear flags de estado
+    this.isConnected = false;
+    this.isAuthenticated = false;
+    this.isAuthenticating = false;
+
     // Detectar URL del servidor
-    // En producción, siempre usar Railway
     const isLocalhost =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
@@ -49,23 +64,23 @@ class CajeroWebSocket {
       ? "http://localhost:3001"
       : "https://elpatio-backend.fly.dev";
 
-    // Conectando a WebSocket
+    console.log(`🔗 [WebSocket] Conectando a ${socketUrl}...`);
 
     // Importar Socket.IO dinámicamente
     if (typeof io === "undefined") {
-      console.error("Socket.IO no está cargado");
+      console.error("❌ [WebSocket] Socket.IO no está cargado");
       return;
     }
 
+    // IMPORTANTE: No usar forceNew para permitir reutilización de conexiones
     this.socket = io(socketUrl, {
       transports: ["websocket", "polling"],
-      timeout: 30000, // Más tiempo para conectar
-      forceNew: true,
+      timeout: 30000,
+      // forceNew: REMOVIDO - causaba múltiples conexiones
       reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      maxReconnectionAttempts: 10,
+      reconnectionAttempts: 5, // Reducido para evitar spam
+      reconnectionDelay: 2000, // Aumentado para dar tiempo entre intentos
+      reconnectionDelayMax: 10000,
     });
 
     this.setupEventHandlers();
@@ -76,17 +91,17 @@ class CajeroWebSocket {
    */
   setupEventHandlers() {
     console.log("🔧 [WebSocket] Configurando event handlers...");
+    
     this.socket.on("connect", () => {
+      console.log(`✅ [WebSocket] Conectado al servidor (socket.id: ${this.socket.id})`);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
 
       // Re-autenticar automáticamente si tenemos token guardado
-      // Esto maneja tanto la conexión inicial como las reconexiones
-      if (this.lastAuthToken && !this.isAuthenticated) {
+      // IMPORTANTE: Verificar isAuthenticating para evitar múltiples auth simultáneas
+      if (this.lastAuthToken && !this.isAuthenticated && !this.isAuthenticating) {
         console.log("🔐 [RECOVERY] Re-autenticando cajero automáticamente...");
-        setTimeout(() => {
-          this.reauthenticateAndRejoinRooms();
-        }, 500);
+        this.reauthenticateAndRejoinRooms();
       }
 
       if (this.callbacks.onConnect) {
@@ -95,55 +110,50 @@ class CajeroWebSocket {
     });
 
     this.socket.on("disconnect", (reason) => {
-      console.log("❌ Desconectado del servidor WebSocket:", reason);
+      console.log(`❌ [WebSocket] Desconectado: ${reason}`);
       this.isConnected = false;
       this.isAuthenticated = false;
+      this.isAuthenticating = false; // Resetear flag de autenticación
       if (this.callbacks.onDisconnect) {
         this.callbacks.onDisconnect(reason);
       }
     });
 
-    // Reconexión automática de Socket.IO
+    // Reconexión automática de Socket.IO - ÚNICO mecanismo de reconexión
     this.socket.on("reconnect", (attemptNumber) => {
-      console.log(`🔄 Reconectado automáticamente (intento ${attemptNumber})`);
+      console.log(`🔄 [WebSocket] Reconectado automáticamente (intento ${attemptNumber})`);
       this.isConnected = true;
-      this.reconnectAttempts = 0; // Resetear contador manual
+      this.reconnectAttempts = 0;
 
-      // Re-autenticar y re-unirse a rooms
-      setTimeout(() => {
+      // Re-autenticar y re-unirse a rooms (sin delay, el flag evita duplicados)
+      if (!this.isAuthenticating) {
         this.reauthenticateAndRejoinRooms();
-      }, 500);
+      }
     });
 
     this.socket.on("reconnect_attempt", (attemptNumber) => {
-      console.log(`🔄 Intento de reconexión automática ${attemptNumber}`);
+      console.log(`🔄 [WebSocket] Intento de reconexión automática ${attemptNumber}`);
     });
 
     this.socket.on("reconnect_error", (error) => {
-      console.error("❌ Error en reconexión automática:", error);
+      console.error("❌ [WebSocket] Error en reconexión automática:", error.message);
     });
 
     this.socket.on("reconnect_failed", () => {
-      console.error(
-        "❌ Falló la reconexión automática, iniciando reconexión manual"
-      );
-      this.attemptReconnect();
+      console.error("❌ [WebSocket] Falló la reconexión automática después de todos los intentos");
+      // NO llamar a attemptReconnect() - dejar que Socket.IO maneje esto
+      // El usuario puede refrescar la página si necesita reconectar
     });
 
     this.socket.on("connect_error", (error) => {
-      console.error("❌ Error de conexión WebSocket:", error);
-      console.error("❌ Detalles del error:", {
-        message: error.message,
-        description: error.description,
-        context: error.context,
-        type: error.type,
-      });
-
-      // Intentar reconexión automática
-      this.attemptReconnect();
+      console.error("❌ [WebSocket] Error de conexión:", error.message);
+      // NO llamar a attemptReconnect() - Socket.IO ya tiene su propio mecanismo
+      // Esto evita crear múltiples conexiones en paralelo
     });
 
     this.socket.on("auth-result", (result) => {
+      // Resetear flag de autenticación
+      this.isAuthenticating = false;
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
 
@@ -288,6 +298,23 @@ class CajeroWebSocket {
       }
     });
 
+    // Evento de sesión reemplazada (otra conexión tomó la sesión)
+    this.socket.on("session-replaced", (data) => {
+      console.log("⚠️ [SESSION] Sesión reemplazada por otra conexión:", data);
+      
+      // Marcar como no autenticado para evitar conflictos
+      this.isAuthenticated = false;
+      this.isAuthenticating = false;
+      
+      // Notificar a la UI si hay callback configurado
+      if (this.callbacks.onSessionReplaced) {
+        this.callbacks.onSessionReplaced(data);
+      }
+      
+      // NO intentar reconectar automáticamente - la nueva sesión tiene prioridad
+      // El usuario debe refrescar la página si quiere volver a conectar
+    });
+
     // Nuevos eventos de recuperación
     this.socket.on("transaction-state-recovered", (data) => {
       console.log("✅ [RECOVERY] Estado de transacción recuperado:", data);
@@ -351,14 +378,27 @@ class CajeroWebSocket {
    */
   authenticateCajero(token) {
     if (!this.isConnected) {
-      console.error("No hay conexión WebSocket");
+      console.error("❌ [WebSocket] No hay conexión WebSocket");
+      return;
+    }
+
+    // Evitar múltiples autenticaciones simultáneas
+    if (this.isAuthenticating) {
+      console.log("⚠️ [WebSocket] Ya hay una autenticación en progreso, ignorando...");
+      return;
+    }
+
+    // Si ya está autenticado con el mismo token, no re-autenticar
+    if (this.isAuthenticated && this.lastAuthToken === token) {
+      console.log("✅ [WebSocket] Ya autenticado, saltando re-autenticación...");
       return;
     }
 
     // Guardar token para reconexión
     this.lastAuthToken = token;
+    this.isAuthenticating = true;
 
-    console.log("🔐 Autenticando cajero...");
+    console.log("🔐 [WebSocket] Autenticando cajero...");
     this.socket.emit("auth-cajero", {
       token,
     });
@@ -548,26 +588,32 @@ class CajeroWebSocket {
 
   /**
    * Intentar reconexión automática
+   * NOTA: Este método ahora solo se usa como fallback.
+   * Socket.IO maneja la reconexión automáticamente.
    */
   attemptReconnect() {
+    // Si ya está conectado o Socket.IO está manejando la reconexión, no hacer nada
+    if (this.isConnected || (this.socket && this.socket.connected)) {
+      console.log("⚠️ [WebSocket] Ya hay una conexión activa o en progreso");
+      return;
+    }
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("❌ Máximo número de intentos de reconexión alcanzado");
+      console.error("❌ [WebSocket] Máximo número de intentos de reconexión alcanzado");
       return;
     }
 
     this.reconnectAttempts++;
     console.log(
-      `🔄 Intentando reconexión ${this.reconnectAttempts}/${this.maxReconnectAttempts} en ${this.reconnectDelay}ms...`
+      `🔄 [WebSocket] Intento de reconexión manual ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`
     );
 
-    setTimeout(() => {
-      this.connect();
-
-      // Después de conectar, re-autenticar y re-unirse a rooms
+    // Solo reconectar si no hay socket o está completamente desconectado
+    if (!this.socket) {
       setTimeout(() => {
-        this.reauthenticateAndRejoinRooms();
-      }, 1000);
-    }, this.reconnectDelay);
+        this.connect();
+      }, this.reconnectDelay);
+    }
   }
 
   /**
@@ -575,16 +621,29 @@ class CajeroWebSocket {
    */
   reauthenticateAndRejoinRooms() {
     if (!this.isConnected) {
-      console.log("⚠️ No hay conexión para re-autenticación");
+      console.log("⚠️ [WebSocket] No hay conexión para re-autenticación");
+      return;
+    }
+
+    // Evitar múltiples re-autenticaciones simultáneas
+    if (this.isAuthenticating) {
+      console.log("⚠️ [WebSocket] Ya hay una autenticación en progreso");
+      return;
+    }
+
+    // Si ya está autenticado, solo re-unirse a rooms
+    if (this.isAuthenticated) {
+      console.log("✅ [WebSocket] Ya autenticado, re-uniéndose a rooms...");
+      this.rejoinTransactionRooms();
       return;
     }
 
     // Re-autenticar si tenemos token guardado
     if (this.lastAuthToken) {
-      console.log("🔐 Re-autenticando después de reconexión...");
+      console.log("🔐 [WebSocket] Re-autenticando después de reconexión...");
       this.authenticateCajero(this.lastAuthToken);
 
-      // Re-unirse a rooms de transacciones activas
+      // Re-unirse a rooms de transacciones activas después de autenticar
       setTimeout(() => {
         this.rejoinTransactionRooms();
       }, 500);
@@ -615,13 +674,17 @@ class CajeroWebSocket {
    */
   disconnect() {
     if (this.socket) {
+      console.log("🔌 [WebSocket] Desconectando...");
       this.socket.disconnect();
       this.socket = null;
-      this.isConnected = false;
-      this.isAuthenticated = false;
-      this.userData = null;
-      this.reconnectAttempts = 0;
     }
+    // Resetear todos los estados
+    this.isConnected = false;
+    this.isAuthenticated = false;
+    this.isAuthenticating = false;
+    this.userData = null;
+    this.reconnectAttempts = 0;
+    // NO limpiar lastAuthToken para poder reconectar más tarde si es necesario
   }
 
   /**

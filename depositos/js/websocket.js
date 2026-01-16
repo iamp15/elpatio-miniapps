@@ -8,10 +8,11 @@ class DepositoWebSocket {
     this.socket = null;
     this.isConnected = false;
     this.isAuthenticated = false;
+    this.isAuthenticating = false; // Flag para evitar múltiples autenticaciones simultáneas
     this.userData = null;
     this.reconnectAttempts = 0;
-    this.maxReconnectAttempts = 10; // Más intentos
-    this.reconnectDelay = 1000; // Menos delay
+    this.maxReconnectAttempts = 5; // Reducido para evitar spam de conexiones
+    this.reconnectDelay = 2000; // Aumentado para dar tiempo entre reconexiones
 
     // Sistema de recuperación de transacciones
     this.activeTransactionId = null; // Transacción activa actual
@@ -31,6 +32,7 @@ class DepositoWebSocket {
       onSolicitudCreada: null,
       onPagoConfirmado: null,
       onMontoAjustado: null,
+      onSessionReplaced: null, // Nuevo: cuando otra conexión reemplaza la sesión
       onError: null,
       // Nuevos callbacks para recuperación
       onTransactionRecovered: null,
@@ -53,13 +55,25 @@ class DepositoWebSocket {
    * Conectar al servidor WebSocket
    */
   connect() {
+    // Si ya hay un socket conectado, no crear otro
     if (this.socket && this.isConnected) {
-      console.log("Ya hay una conexión activa");
+      console.log("🔗 [WebSocket] Ya hay una conexión activa, reutilizando...");
       return;
     }
 
+    // Desconectar socket anterior si existe (importante para evitar conexiones duplicadas)
+    if (this.socket) {
+      console.log("🔄 [WebSocket] Cerrando conexión anterior antes de reconectar...");
+      this.socket.disconnect();
+      this.socket = null;
+    }
+
+    // Resetear flags de estado
+    this.isConnected = false;
+    this.isAuthenticated = false;
+    this.isAuthenticating = false;
+
     // Detectar URL del servidor
-    // En Telegram Web App, siempre usar Railway (producción)
     const isLocalhost =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1";
@@ -67,23 +81,23 @@ class DepositoWebSocket {
       ? "http://localhost:3001"
       : "https://elpatio-backend.fly.dev";
 
-    console.log("Conectando a WebSocket:", socketUrl);
+    console.log(`🔗 [WebSocket] Conectando a ${socketUrl}...`);
 
     // Importar Socket.IO dinámicamente
     if (typeof io === "undefined") {
-      console.error("Socket.IO no está cargado");
+      console.error("❌ [WebSocket] Socket.IO no está cargado");
       return;
     }
 
+    // IMPORTANTE: No usar forceNew para permitir reutilización de conexiones
     this.socket = io(socketUrl, {
       transports: ["websocket", "polling"],
-      timeout: 30000, // Más tiempo para conectar
-      forceNew: true,
+      timeout: 30000,
+      // forceNew: REMOVIDO - causaba múltiples conexiones
       reconnection: true,
-      reconnectionAttempts: 10,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      maxReconnectionAttempts: 10,
+      reconnectionAttempts: 5, // Reducido para evitar spam
+      reconnectionDelay: 2000, // Aumentado para dar tiempo entre intentos
+      reconnectionDelayMax: 10000,
     });
 
     this.setupEventHandlers();
@@ -115,19 +129,16 @@ class DepositoWebSocket {
     });
 
     this.socket.on("connect", () => {
-      console.log("✅ Conectado al servidor WebSocket");
-      console.log("📡 Socket ID:", this.socket.id);
+      console.log(`✅ [WebSocket] Conectado al servidor (socket.id: ${this.socket.id})`);
       console.log("📡 Transport:", this.socket.io.engine.transport.name);
       this.isConnected = true;
       this.reconnectAttempts = 0; // Resetear intentos de reconexión
 
       // Re-autenticar automáticamente si tenemos datos guardados
-      // Esto maneja tanto la conexión inicial como las reconexiones
-      if (this.lastInitData && !this.isAuthenticated) {
+      // IMPORTANTE: Verificar isAuthenticating para evitar múltiples auth simultáneas
+      if (this.lastInitData && !this.isAuthenticated && !this.isAuthenticating) {
         console.log("🔐 [RECOVERY] Re-autenticando automáticamente...");
-        setTimeout(() => {
-          this.reauthenticateAndRecover();
-        }, 500);
+        this.reauthenticateAndRecover();
       }
 
       if (this.callbacks.onConnect) {
@@ -136,53 +147,49 @@ class DepositoWebSocket {
     });
 
     this.socket.on("disconnect", (reason) => {
-      console.log("❌ Desconectado del servidor WebSocket:", reason);
+      console.log(`❌ [WebSocket] Desconectado: ${reason}`);
       this.isConnected = false;
       this.isAuthenticated = false;
+      this.isAuthenticating = false; // Resetear flag de autenticación
       if (this.callbacks.onDisconnect) {
         this.callbacks.onDisconnect(reason);
       }
     });
 
-    // Manejar reconexión automática de Socket.IO
+    // Manejar reconexión automática de Socket.IO - ÚNICO mecanismo de reconexión
     this.socket.on("reconnect", (attemptNumber) => {
-      console.log(`🔄 Reconectado automáticamente (intento ${attemptNumber})`);
+      console.log(`🔄 [WebSocket] Reconectado automáticamente (intento ${attemptNumber})`);
       this.isConnected = true;
       this.reconnectAttempts = 0;
 
-      // Re-autenticar automáticamente
-      setTimeout(() => {
+      // Re-autenticar automáticamente (sin delay, el flag evita duplicados)
+      if (!this.isAuthenticating) {
         this.reauthenticateAndRecover();
-      }, 500);
+      }
     });
 
     this.socket.on("reconnect_attempt", (attemptNumber) => {
-      console.log(`🔄 Intento de reconexión automática ${attemptNumber}`);
+      console.log(`🔄 [WebSocket] Intento de reconexión automática ${attemptNumber}`);
     });
 
     this.socket.on("reconnect_error", (error) => {
-      console.error("❌ Error en reconexión automática:", error);
+      console.error("❌ [WebSocket] Error en reconexión automática:", error.message);
     });
 
     this.socket.on("reconnect_failed", () => {
-      console.error("❌ Falló la reconexión automática");
+      console.error("❌ [WebSocket] Falló la reconexión automática después de todos los intentos");
+      // NO llamar a attemptReconnect() - dejar que Socket.IO maneje esto
     });
 
     this.socket.on("connect_error", (error) => {
-      console.error("❌ Error de conexión WebSocket:", error);
-      console.error("❌ Detalles del error:", {
-        message: error.message,
-        description: error.description,
-        context: error.context,
-        type: error.type,
-      });
-
-      // Intentar reconexión automática
-      this.attemptReconnect();
+      console.error("❌ [WebSocket] Error de conexión:", error.message);
+      // NO llamar a attemptReconnect() - Socket.IO ya tiene su propio mecanismo
     });
 
     this.socket.on("auth-result", (result) => {
       console.log("🔐 Resultado de autenticación:", result);
+      // Resetear flag de autenticación
+      this.isAuthenticating = false;
       this.isAuthenticated = result.success;
       this.userData = result.success ? result.user : null;
 
@@ -204,6 +211,20 @@ class DepositoWebSocket {
 
       if (this.callbacks.onAuthResult) {
         this.callbacks.onAuthResult(result);
+      }
+    });
+    
+    // Evento de sesión reemplazada (otra conexión tomó la sesión)
+    this.socket.on("session-replaced", (data) => {
+      console.log("⚠️ [SESSION] Sesión reemplazada por otra conexión:", data);
+      
+      // Marcar como no autenticado para evitar conflictos
+      this.isAuthenticated = false;
+      this.isAuthenticating = false;
+      
+      // Notificar a la UI si hay callback configurado
+      if (this.callbacks.onSessionReplaced) {
+        this.callbacks.onSessionReplaced(data);
       }
     });
 
@@ -499,14 +520,27 @@ class DepositoWebSocket {
    */
   authenticateJugador(telegramId, initData) {
     if (!this.isConnected) {
-      console.error("No hay conexión WebSocket");
+      console.error("❌ [WebSocket] No hay conexión WebSocket");
+      return;
+    }
+
+    // Evitar múltiples autenticaciones simultáneas
+    if (this.isAuthenticating) {
+      console.log("⚠️ [WebSocket] Ya hay una autenticación en progreso, ignorando...");
+      return;
+    }
+
+    // Si ya está autenticado con los mismos datos, no re-autenticar
+    if (this.isAuthenticated && this.lastInitData?.telegramId === telegramId) {
+      console.log("✅ [WebSocket] Ya autenticado, saltando re-autenticación...");
       return;
     }
 
     // Guardar datos para posible reconexión
     this.lastInitData = { telegramId, initData };
+    this.isAuthenticating = true;
 
-    console.log("🔐 Autenticando jugador:", telegramId);
+    console.log("🔐 [WebSocket] Autenticando jugador:", telegramId);
     this.socket.emit("auth-jugador", {
       telegramId,
       initData,
@@ -554,6 +588,21 @@ class DepositoWebSocket {
       return;
     }
 
+    // Evitar múltiples re-autenticaciones simultáneas
+    if (this.isAuthenticating) {
+      console.log("⚠️ [RECOVERY] Ya hay una autenticación en progreso");
+      return;
+    }
+
+    // Si ya está autenticado, solo re-unirse a rooms
+    if (this.isAuthenticated) {
+      console.log("✅ [RECOVERY] Ya autenticado, re-uniéndose a rooms...");
+      if (this.activeTransactionId) {
+        this.rejoinTransactionRoom();
+      }
+      return;
+    }
+
     if (!this.lastInitData) {
       console.log("⚠️ [RECOVERY] No hay datos guardados para re-autenticación");
       return;
@@ -563,11 +612,11 @@ class DepositoWebSocket {
     const { telegramId, initData } = this.lastInitData;
     this.authenticateJugador(telegramId, initData);
 
-    // Si hay transacción activa, intentar re-unirse al room
+    // Si hay transacción activa, intentar re-unirse al room después de autenticar
     if (this.activeTransactionId) {
       setTimeout(() => {
         this.rejoinTransactionRoom();
-      }, 1000);
+      }, 500);
     }
   }
 
@@ -623,21 +672,32 @@ class DepositoWebSocket {
 
   /**
    * Intentar reconexión automática
+   * NOTA: Este método ahora solo se usa como fallback.
+   * Socket.IO maneja la reconexión automáticamente.
    */
   attemptReconnect() {
+    // Si ya está conectado o Socket.IO está manejando la reconexión, no hacer nada
+    if (this.isConnected || (this.socket && this.socket.connected)) {
+      console.log("⚠️ [WebSocket] Ya hay una conexión activa o en progreso");
+      return;
+    }
+
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      console.error("❌ Máximo número de intentos de reconexión alcanzado");
+      console.error("❌ [WebSocket] Máximo número de intentos de reconexión alcanzado");
       return;
     }
 
     this.reconnectAttempts++;
     console.log(
-      `🔄 Intentando reconexión ${this.reconnectAttempts}/${this.maxReconnectAttempts} en ${this.reconnectDelay}ms...`
+      `🔄 [WebSocket] Intento de reconexión manual ${this.reconnectAttempts}/${this.maxReconnectAttempts}...`
     );
 
-    setTimeout(() => {
-      this.connect();
-    }, this.reconnectDelay);
+    // Solo reconectar si no hay socket o está completamente desconectado
+    if (!this.socket) {
+      setTimeout(() => {
+        this.connect();
+      }, this.reconnectDelay);
+    }
   }
 
   /**
@@ -645,13 +705,17 @@ class DepositoWebSocket {
    */
   disconnect() {
     if (this.socket) {
+      console.log("🔌 [WebSocket] Desconectando...");
       this.socket.disconnect();
       this.socket = null;
-      this.isConnected = false;
-      this.isAuthenticated = false;
-      this.userData = null;
-      this.reconnectAttempts = 0;
     }
+    // Resetear todos los estados
+    this.isConnected = false;
+    this.isAuthenticated = false;
+    this.isAuthenticating = false;
+    this.userData = null;
+    this.reconnectAttempts = 0;
+    // NO limpiar lastInitData para poder reconectar más tarde si es necesario
   }
 
   /**

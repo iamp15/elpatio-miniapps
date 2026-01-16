@@ -146,6 +146,27 @@ class CajerosApp {
       }
     });
 
+    // Listener para sesión reemplazada (otra pestaña/dispositivo tomó la sesión)
+    window.cajeroWebSocket.on("onSessionReplaced", (data) => {
+      console.log("⚠️ [SESSION] Sesión reemplazada:", data);
+      
+      // Mostrar notificación al usuario
+      if (window.notificationManager) {
+        window.notificationManager.warning(
+          "Sesión cerrada",
+          "Tu sesión fue cerrada porque iniciaste sesión en otro lugar"
+        );
+      }
+      
+      // Desconectar WebSocket para evitar conflictos
+      window.cajeroWebSocket.disconnect();
+      
+      // Limpiar sesión y mostrar pantalla de login
+      Auth.logout();
+      UI.showLoginScreen();
+      TransactionManager.clearTransactions();
+    });
+
     // Agregar callback para errores de conexión
     window.cajeroWebSocket.socket?.on("connect_error", (error) => {
       console.error(`❌ Error de conexión WebSocket: ${error.message}`);
