@@ -137,7 +137,13 @@ class CajerosApp {
     window.cajeroWebSocket.on("onError", (error) => {
       console.error(`❌ Error WebSocket: ${error.message || error}`);
       // Limpiar el estado de procesamiento en caso de error
+      const transaccionId = error.transaccionId || UI.processingPayment;
       UI.processingPayment = null;
+      
+      // Rehabilitar botones de pago
+      if (transaccionId) {
+        UI.setPaymentButtonsDisabled(transaccionId, false);
+      }
     });
 
     // Agregar callback para errores de conexión
@@ -342,8 +348,15 @@ class CajerosApp {
    */
   handleDepositoCompletado(data) {
     try {
+      const transaccionId = data.transaccionId;
+
       // Limpiar el estado de procesamiento
       UI.processingPayment = null;
+
+      // Rehabilitar botones de pago
+      if (transaccionId) {
+        UI.setPaymentButtonsDisabled(transaccionId, false);
+      }
 
       // Mostrar pop-up de depósito completado
       UI.showDepositoCompletadoPopup(data);
@@ -352,6 +365,8 @@ class CajerosApp {
       this.loadTransactions();
     } catch (error) {
       console.error("Error manejando depósito completado:", error);
+      // Asegurar limpieza incluso en caso de error
+      UI.processingPayment = null;
     }
   }
 
@@ -360,8 +375,15 @@ class CajerosApp {
    */
   handleDepositoRechazado(data) {
     try {
+      const transaccionId = data.transaccionId;
+
       // Limpiar el estado de procesamiento
       UI.processingPayment = null;
+
+      // Rehabilitar botones de pago
+      if (transaccionId) {
+        UI.setPaymentButtonsDisabled(transaccionId, false);
+      }
 
       // Mostrar pop-up de depósito rechazado
       UI.showDepositoRechazadoPopup(data);
@@ -370,6 +392,8 @@ class CajerosApp {
       this.loadTransactions();
     } catch (error) {
       console.error("Error manejando depósito rechazado:", error);
+      // Asegurar limpieza incluso en caso de error
+      UI.processingPayment = null;
     }
   }
 

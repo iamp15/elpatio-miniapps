@@ -924,15 +924,19 @@ class UIManager {
    * Manejar confirmación de pago
    */
   handleConfirmPayment(transaccionId) {
-    // handleConfirmPayment llamado
-
     // Verificar si ya se está procesando esta transacción
     if (this.processingPayment === transaccionId) {
+      console.warn(
+        `⚠️ [UI] Transacción ${transaccionId} ya está siendo procesada, ignorando solicitud duplicada`
+      );
       return;
     }
 
     // Marcar como procesando
     this.processingPayment = transaccionId;
+
+    // Deshabilitar botones de confirmar y rechazar para prevenir doble envío
+    this.setPaymentButtonsDisabled(transaccionId, true);
 
     // Cerrar el modal
     this.closeTransactionDetailsModal();
@@ -949,6 +953,47 @@ class UIManager {
       console.error("No hay conexión WebSocket disponible");
       this.showAlert("Error: No hay conexión disponible");
       this.processingPayment = null; // Limpiar en caso de error
+      this.setPaymentButtonsDisabled(transaccionId, false); // Rehabilitar botones
+    }
+  }
+
+  /**
+   * Habilitar/deshabilitar botones de pago para prevenir doble envío
+   */
+  setPaymentButtonsDisabled(transaccionId, disabled) {
+    // Buscar botón de confirmar en el modal abierto
+    const confirmBtn = document.getElementById("btn-verificar-confirmar");
+    const confirmBtnByClass = document.querySelector(
+      `.confirm-payment-btn[data-transaction-id="${transaccionId}"]`
+    );
+    const rejectBtn = document.querySelector(
+      `.reject-payment-btn[data-transaction-id="${transaccionId}"]`
+    );
+
+    if (confirmBtn) {
+      confirmBtn.disabled = disabled;
+      if (disabled) {
+        confirmBtn.innerHTML = "⏳ Procesando...";
+        confirmBtn.classList.add("processing");
+      } else {
+        confirmBtn.innerHTML = "✅ Confirmar Pago";
+        confirmBtn.classList.remove("processing");
+      }
+    }
+
+    if (confirmBtnByClass) {
+      confirmBtnByClass.disabled = disabled;
+      if (disabled) {
+        confirmBtnByClass.innerHTML = "⏳ Procesando...";
+        confirmBtnByClass.classList.add("processing");
+      } else {
+        confirmBtnByClass.innerHTML = "✅ Confirmar Pago";
+        confirmBtnByClass.classList.remove("processing");
+      }
+    }
+
+    if (rejectBtn) {
+      rejectBtn.disabled = disabled;
     }
   }
 

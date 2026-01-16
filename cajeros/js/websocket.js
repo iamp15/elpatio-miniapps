@@ -14,6 +14,7 @@ class CajeroWebSocket {
     this.reconnectDelay = 1000; // Menos delay
     this.activeTransactionRooms = new Set(); // Track active transaction rooms
     this.lastAuthToken = null; // Store token for re-authentication
+    this.processingTransactions = new Set(); // Track transactions being processed to prevent double submission
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -181,15 +182,27 @@ class CajeroWebSocket {
 
     this.socket.on("deposito-completado", (data) => {
       // Filtrar por target: solo procesar si es para cajero
-      if (data.target === "cajero" && this.callbacks.onDepositoCompletado) {
-        this.callbacks.onDepositoCompletado(data);
+      if (data.target === "cajero") {
+        // Limpiar estado de procesamiento cuando se completa
+        if (data.transaccionId) {
+          this.clearProcessingTransaction(data.transaccionId);
+        }
+        if (this.callbacks.onDepositoCompletado) {
+          this.callbacks.onDepositoCompletado(data);
+        }
       }
     });
 
     this.socket.on("deposito-rechazado", (data) => {
       // Filtrar por target: solo procesar si es para cajero
-      if (data.target === "cajero" && this.callbacks.onDepositoRechazado) {
-        this.callbacks.onDepositoRechazado(data);
+      if (data.target === "cajero") {
+        // Limpiar estado de procesamiento cuando se rechaza
+        if (data.transaccionId) {
+          this.clearProcessingTransaction(data.transaccionId);
+        }
+        if (this.callbacks.onDepositoRechazado) {
+          this.callbacks.onDepositoRechazado(data);
+        }
       }
     });
 
@@ -202,6 +215,15 @@ class CajeroWebSocket {
 
     this.socket.on("error", (error) => {
       console.error("❌ Error en WebSocket:", error);
+      // Limpiar estado de procesamiento en caso de error
+      // Si el error tiene transaccionId, limpiar solo esa transacción
+      // Si no, limpiar todas (por seguridad en caso de error de conexión)
+      if (error.transaccionId) {
+        this.clearProcessingTransaction(error.transaccionId);
+      } else {
+        // En caso de error general, limpiar todas las transacciones en proceso
+        this.processingTransactions.clear();
+      }
       if (this.callbacks.onError) {
         this.callbacks.onError(error);
       }
@@ -401,20 +423,21 @@ class CajeroWebSocket {
    * Confirmar pago (verificación de pago)
    */
   confirmarPagoCajero(transaccionId, notas = null) {
-    console.log(
-      "🔍 [WebSocket] confirmarPagoCajero llamado para transacción:",
-      transaccionId
-    );
-    console.log("🔍 [WebSocket] Estado conexión:", {
-      isConnected: this.isConnected,
-      isAuthenticated: this.isAuthenticated,
-    });
-    console.log("🔍 [WebSocket] Stack trace:", new Error().stack);
+    // Verificar si ya se está procesando esta transacción
+    if (this.processingTransactions.has(transaccionId)) {
+      console.warn(
+        `⚠️ [WebSocket] Transacción ${transaccionId} ya está siendo procesada, ignorando solicitud duplicada`
+      );
+      return;
+    }
 
     if (!this.isConnected || !this.isAuthenticated) {
       console.error("No hay conexión o no está autenticado");
       return;
     }
+
+    // Marcar como procesando
+    this.processingTransactions.add(transaccionId);
 
     console.log("✅ [WebSocket] Enviando evento verificar-pago-cajero:", {
       transaccionId,
@@ -426,6 +449,13 @@ class CajeroWebSocket {
       accion: "confirmar",
       notas,
     });
+  }
+
+  /**
+   * Limpiar estado de procesamiento de una transacción
+   */
+  clearProcessingTransaction(transaccionId) {
+    this.processingTransactions.delete(transaccionId);
   }
 
   /**
