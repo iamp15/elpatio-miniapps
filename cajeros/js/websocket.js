@@ -435,41 +435,51 @@ class CajeroWebSocket {
    * Confirmar pago (verificación de pago)
    */
   confirmarPagoCajero(transaccionId, notas = null) {
-    // Verificar si ya se está procesando esta transacción
+    // PROTECCIÓN 1: Verificar si ya se está procesando esta transacción
     if (this.processingTransactions.has(transaccionId)) {
       console.warn(
-        `⚠️ [WebSocket] Transacción ${transaccionId} ya está siendo procesada, ignorando solicitud duplicada`
+        `⚠️ [WebSocket] BLOQUEADO: Transacción ${transaccionId} ya está siendo procesada`
       );
-      return;
+      return false;
     }
 
-    if (!this.isConnected || !this.isAuthenticated) {
-      console.error("No hay conexión o no está autenticado");
-      return;
-    }
-
-    // Verificar si ya se completó esta transacción (protección adicional)
-    // Esto previene envíos después de recibir deposito-completado
+    // PROTECCIÓN 2: Verificar si ya se completó esta transacción
     if (this.completedTransactions && this.completedTransactions.has(transaccionId)) {
       console.warn(
-        `⚠️ [WebSocket] Transacción ${transaccionId} ya fue completada, ignorando solicitud`
+        `⚠️ [WebSocket] BLOQUEADO: Transacción ${transaccionId} ya fue completada`
       );
-      return;
+      return false;
     }
 
-    // Marcar como procesando
+    // PROTECCIÓN 3: Verificar conexión
+    if (!this.isConnected || !this.isAuthenticated) {
+      console.error("❌ [WebSocket] No hay conexión o no está autenticado");
+      return false;
+    }
+
+    // Marcar como procesando ANTES de enviar
     this.processingTransactions.add(transaccionId);
+
+    // Generar ID único para este intento de envío
+    const requestId = `${transaccionId}-${Date.now()}`;
 
     console.log("✅ [WebSocket] Enviando evento verificar-pago-cajero:", {
       transaccionId,
       accion: "confirmar",
       notas,
+      requestId,
     });
-    this.socket.emit("verificar-pago-cajero", {
+
+    // Usar volatile.emit para evitar reintentos automáticos de Socket.IO
+    // Esto previene que Socket.IO reenvíe el evento si no recibe ACK
+    this.socket.volatile.emit("verificar-pago-cajero", {
       transaccionId,
       accion: "confirmar",
       notas,
+      requestId, // ID único para rastrear duplicados en el backend
     });
+
+    return true;
   }
 
   /**
