@@ -504,6 +504,21 @@ class CajerosApp {
    * Manejar logout
    */
   handleLogout() {
+    // Emitir evento de logout al WebSocket para actualizar el estado en el backend
+    if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected) {
+      try {
+        window.cajeroWebSocket.socket.emit("logout-cajero");
+        console.log("🚪 [LOGOUT] Evento logout-cajero emitido al servidor");
+      } catch (error) {
+        console.error("❌ Error emitiendo logout-cajero:", error);
+      }
+    }
+
+    // Desconectar WebSocket
+    if (window.cajeroWebSocket) {
+      window.cajeroWebSocket.disconnect();
+    }
+
     // Crear notificación de cierre de sesión
     if (window.notificationManager) {
       window.notificationManager.info(
