@@ -15,6 +15,7 @@ class CajeroWebSocket {
     this.activeTransactionRooms = new Set(); // Track active transaction rooms
     this.lastAuthToken = null; // Store token for re-authentication
     this.processingTransactions = new Set(); // Track transactions being processed to prevent double submission
+    this.completedTransactions = new Set(); // Track completed transactions to prevent re-submission
     this.callbacks = {
       onConnect: null,
       onDisconnect: null,
@@ -186,6 +187,12 @@ class CajeroWebSocket {
         // Limpiar estado de procesamiento cuando se completa
         if (data.transaccionId) {
           this.clearProcessingTransaction(data.transaccionId);
+          // Marcar como completada para prevenir re-envíos
+          this.completedTransactions.add(data.transaccionId);
+          // Limpiar después de 5 minutos para evitar acumulación de memoria
+          setTimeout(() => {
+            this.completedTransactions.delete(data.transaccionId);
+          }, 5 * 60 * 1000);
         }
         if (this.callbacks.onDepositoCompletado) {
           this.callbacks.onDepositoCompletado(data);
@@ -199,6 +206,11 @@ class CajeroWebSocket {
         // Limpiar estado de procesamiento cuando se rechaza
         if (data.transaccionId) {
           this.clearProcessingTransaction(data.transaccionId);
+          // También marcar como completada (rechazada) para prevenir re-envíos
+          this.completedTransactions.add(data.transaccionId);
+          setTimeout(() => {
+            this.completedTransactions.delete(data.transaccionId);
+          }, 5 * 60 * 1000);
         }
         if (this.callbacks.onDepositoRechazado) {
           this.callbacks.onDepositoRechazado(data);
@@ -433,6 +445,15 @@ class CajeroWebSocket {
 
     if (!this.isConnected || !this.isAuthenticated) {
       console.error("No hay conexión o no está autenticado");
+      return;
+    }
+
+    // Verificar si ya se completó esta transacción (protección adicional)
+    // Esto previene envíos después de recibir deposito-completado
+    if (this.completedTransactions && this.completedTransactions.has(transaccionId)) {
+      console.warn(
+        `⚠️ [WebSocket] Transacción ${transaccionId} ya fue completada, ignorando solicitud`
+      );
       return;
     }
 

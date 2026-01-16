@@ -932,6 +932,18 @@ class UIManager {
       return;
     }
 
+    // Verificar si la transacción ya fue completada (protección adicional)
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.completedTransactions &&
+      window.cajeroWebSocket.completedTransactions.has(transaccionId)
+    ) {
+      console.warn(
+        `⚠️ [UI] Transacción ${transaccionId} ya fue completada, ignorando solicitud`
+      );
+      return;
+    }
+
     // Marcar como procesando
     this.processingPayment = transaccionId;
 
