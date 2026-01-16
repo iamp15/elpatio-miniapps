@@ -436,6 +436,12 @@ class UIManager {
         rejectBtn.removeEventListener("click", this.handleRejectPaymentClick);
       }
 
+      // Limpiar listener del botón de verificar confirmar si existe
+      const verificarConfirmBtn = overlay.querySelector("#btn-verificar-confirmar");
+      if (verificarConfirmBtn && this.handleVerificarConfirmClick) {
+        verificarConfirmBtn.removeEventListener("click", this.handleVerificarConfirmClick);
+      }
+
       overlay.remove();
       // Modal removido del DOM
     }
@@ -445,6 +451,21 @@ class UIManager {
    * Mostrar pop-up de verificación de pago
    */
   showVerificarPagoPopup(data) {
+    // Verificar si la transacción ya fue completada antes de abrir el modal
+    if (
+      window.cajeroWebSocket &&
+      window.cajeroWebSocket.completedTransactions &&
+      window.cajeroWebSocket.completedTransactions.has(data.transaccionId)
+    ) {
+      console.warn(
+        `⚠️ [UI] Transacción ${data.transaccionId} ya fue completada, no abriendo modal de verificación`
+      );
+      return;
+    }
+
+    // Cerrar modal anterior si existe para evitar listeners duplicados
+    this.closeTransactionDetailsModal();
+
     const montoSolicitado = data.monto / 100;
     
     const modalHTML = `
@@ -540,24 +561,48 @@ class UIManager {
     });
 
     // Botón de confirmar con validación de monto
-    document.getElementById('btn-verificar-confirmar').addEventListener('click', (e) => {
-      const transaccionId = e.target.dataset.transactionId;
-      const montoSolicitado = parseFloat(e.target.dataset.montoSolicitado);
-      const montoRecibido = parseFloat(montoRecibidoInput.value) || 0;
-
-      if (montoRecibido <= 0) {
-        this.showAlert('Debes ingresar el monto recibido');
-        return;
+    // Usar una función nombrada para poder remover el listener después
+    const confirmBtn = document.getElementById('btn-verificar-confirmar');
+    if (confirmBtn) {
+      // Remover listener anterior si existe
+      if (this.handleVerificarConfirmClick) {
+        confirmBtn.removeEventListener('click', this.handleVerificarConfirmClick);
       }
 
-      // Si hay diferencia en el monto, manejar apropiadamente
-      if (montoRecibido !== montoSolicitado) {
-        this.handleDiferenciaMonto(transaccionId, montoSolicitado, montoRecibido);
-      } else {
-        // Confirmar directamente si el monto coincide
-        this.handleConfirmPayment(transaccionId);
-      }
-    });
+      // Crear nuevo listener
+      this.handleVerificarConfirmClick = (e) => {
+        const transaccionId = e.target.dataset.transactionId;
+        const montoSolicitado = parseFloat(e.target.dataset.montoSolicitado);
+        const montoRecibido = parseFloat(montoRecibidoInput.value) || 0;
+
+        // Verificar si ya fue completada antes de procesar
+        if (
+          window.cajeroWebSocket &&
+          window.cajeroWebSocket.completedTransactions &&
+          window.cajeroWebSocket.completedTransactions.has(transaccionId)
+        ) {
+          console.warn(
+            `⚠️ [UI] Transacción ${transaccionId} ya fue completada, ignorando click`
+          );
+          return;
+        }
+
+        if (montoRecibido <= 0) {
+          this.showAlert('Debes ingresar el monto recibido');
+          return;
+        }
+
+        // Si hay diferencia en el monto, manejar apropiadamente
+        if (montoRecibido !== montoSolicitado) {
+          this.handleDiferenciaMonto(transaccionId, montoSolicitado, montoRecibido);
+        } else {
+          // Confirmar directamente si el monto coincide
+          this.handleConfirmPayment(transaccionId);
+        }
+      };
+
+      confirmBtn.addEventListener('click', this.handleVerificarConfirmClick);
+    }
   }
 
   /**

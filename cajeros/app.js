@@ -328,6 +328,19 @@ class CajerosApp {
   handleVerificarPago(data) {
     try {
       console.log("🔍 [VERIFICAR-PAGO] Evento recibido:", data);
+
+      // Verificar si la transacción ya fue completada antes de procesar
+      if (
+        window.cajeroWebSocket &&
+        window.cajeroWebSocket.completedTransactions &&
+        window.cajeroWebSocket.completedTransactions.has(data.transaccionId)
+      ) {
+        console.warn(
+          `⚠️ [VERIFICAR-PAGO] Transacción ${data.transaccionId} ya fue completada, ignorando evento verificar-pago`
+        );
+        return;
+      }
+
       console.log("🔍 [VERIFICAR-PAGO] Abriendo modal automáticamente...");
 
       // PRIMERO actualizar la lista para que muestre el nuevo estado
@@ -349,6 +362,9 @@ class CajerosApp {
   handleDepositoCompletado(data) {
     try {
       const transaccionId = data.transaccionId;
+
+      // Cerrar modal de verificación si está abierto
+      UI.closeTransactionDetailsModal();
 
       // Limpiar el estado de procesamiento
       UI.processingPayment = null;
