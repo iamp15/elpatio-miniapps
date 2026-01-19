@@ -86,7 +86,8 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  text-align: left;
+  text-align: right;
+  flex-direction: row-reverse;
 }
 
 .header-with-menu .header-content {
@@ -112,6 +113,7 @@ body {
   justify-content: center;
   transition: all 0.3s ease;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  margin-right: 16px;
 }
 
 .menu-toggle-btn:hover {
@@ -148,21 +150,21 @@ body {
 .sidebar-menu {
   position: fixed;
   top: 0;
-  right: -300px;
+  left: -300px;
   width: 280px;
   max-width: 85vw;
   height: 100%;
   background: white;
   z-index: 1600;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-  transition: right 0.3s ease;
+  box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+  transition: left 0.3s ease;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
 }
 
 .sidebar-menu.active {
-  right: 0;
+  left: 0;
 }
 
 /* Header del sidebar */
@@ -280,7 +282,7 @@ body {
 .sidebar-nav-item.active {
   background: var(--patio-verde-suave);
   color: var(--patio-verde-pasto);
-  border-right: 4px solid var(--patio-verde-pasto);
+  border-left: 4px solid var(--patio-verde-pasto);
 }
 
 .sidebar-nav-item .nav-icon {
