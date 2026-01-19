@@ -293,14 +293,39 @@ class CajerosApp {
 
   /**
    * Autenticar con WebSocket
+   * @param {Object} cajeroInfo - Información del cajero
+   * @param {number} retryCount - Contador de reintentos (interno)
    */
-  authenticateWithWebSocket(cajeroInfo) {
+  authenticateWithWebSocket(cajeroInfo, retryCount = 0) {
+    const maxRetries = 10; // Máximo 10 reintentos (20 segundos)
+    
     if (window.cajeroWebSocket.isConnected) {
       const token = Auth.getToken();
+      console.log("🔐 [LOGIN] WebSocket conectado, autenticando cajero...");
       window.cajeroWebSocket.authenticateCajero(token);
     } else {
+      // Si el WebSocket no está conectado, reconectarlo primero
+      // Esto es necesario después de un logout donde se desconecta el socket
+      if (!window.cajeroWebSocket.socket) {
+        console.log("🔄 [LOGIN] WebSocket desconectado, reconectando...");
+        window.cajeroWebSocket.connect();
+      }
+      
+      // Evitar reintentos infinitos
+      if (retryCount >= maxRetries) {
+        console.error("❌ [LOGIN] No se pudo conectar el WebSocket después de múltiples intentos");
+        if (window.notificationManager) {
+          window.notificationManager.error(
+            "Error de conexión",
+            "No se pudo establecer conexión con el servidor. Intenta recargar la página."
+          );
+        }
+        return;
+      }
+      
+      // Esperar y reintentar autenticación
       setTimeout(() => {
-        this.authenticateWithWebSocket(cajeroInfo);
+        this.authenticateWithWebSocket(cajeroInfo, retryCount + 1);
       }, 2000);
     }
   }
