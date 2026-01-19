@@ -59,6 +59,7 @@ class CajerosApp {
         onBackFromHistory: this.handleBackFromHistory.bind(this),
         onApplyHistoryFilters: this.handleApplyHistoryFilters.bind(this),
         onClearHistoryFilters: this.handleClearHistoryFilters.bind(this),
+        onLoadMoreHistory: this.handleLoadMoreHistory.bind(this),
       });
 
       // Inicializar autenticación
@@ -765,12 +766,10 @@ class CajerosApp {
   /**
    * Manejar mostrar historial
    */
-  async handleShowHistory() {
+  handleShowHistory() {
     UI.showHistoryScreen();
-    const token = this.getToken();
-    if (token) {
-      await HistoryManager.loadHistory(token);
-    }
+    // Mostrar estado inicial sin cargar transacciones automáticamente
+    HistoryManager.showInitialState();
   }
 
   /**
@@ -779,27 +778,33 @@ class CajerosApp {
   handleBackFromHistory() {
     UI.hideHistoryScreen();
     UI.showDashboard();
+    // Limpiar historial al salir
+    HistoryManager.clearHistory();
   }
 
   /**
-   * Manejar aplicar filtros del historial
+   * Manejar aplicar filtros del historial (buscar)
    */
   async handleApplyHistoryFilters() {
     const filters = UI.getHistoryFilters();
     const token = this.getToken();
     if (token) {
-      await HistoryManager.applyFilters(filters, token);
+      await HistoryManager.loadHistory(token, filters, true);
     }
   }
 
   /**
    * Manejar limpiar filtros del historial
    */
-  async handleClearHistoryFilters() {
-    const token = this.getToken();
-    if (token) {
-      await HistoryManager.clearFilters(token);
-    }
+  handleClearHistoryFilters() {
+    HistoryManager.clearFilters();
+  }
+
+  /**
+   * Manejar cargar más transacciones del historial
+   */
+  handleLoadMoreHistory() {
+    HistoryManager.loadMore();
   }
 }
 

@@ -81,6 +81,16 @@ class UIManager {
     );
     this.elements.historyList = document.querySelector(DOM_SELECTORS.HISTORY_LIST);
     this.elements.noHistory = document.querySelector(DOM_SELECTORS.NO_HISTORY);
+    this.elements.historyInitialState = document.querySelector(
+      DOM_SELECTORS.HISTORY_INITIAL_STATE
+    );
+    this.elements.historyCount = document.querySelector(DOM_SELECTORS.HISTORY_COUNT);
+    this.elements.historyShowing = document.querySelector(DOM_SELECTORS.HISTORY_SHOWING);
+    this.elements.historyTotal = document.querySelector(DOM_SELECTORS.HISTORY_TOTAL);
+    this.elements.loadMoreContainer = document.querySelector(
+      DOM_SELECTORS.LOAD_MORE_CONTAINER
+    );
+    this.elements.loadMoreBtn = document.querySelector(DOM_SELECTORS.LOAD_MORE_BTN);
     this.elements.filterEstado = document.querySelector(DOM_SELECTORS.FILTER_ESTADO);
     this.elements.filterTipo = document.querySelector(DOM_SELECTORS.FILTER_TIPO);
     this.elements.filterFechaInicio = document.querySelector(
@@ -131,6 +141,7 @@ class UIManager {
     const clearFiltersBtn = document.querySelector(
       DOM_SELECTORS.CLEAR_FILTERS_BTN
     );
+    const loadMoreBtn = document.querySelector(DOM_SELECTORS.LOAD_MORE_BTN);
 
     if (historyBtn && eventHandlers.onShowHistory) {
       historyBtn.addEventListener("click", eventHandlers.onShowHistory);
@@ -146,6 +157,10 @@ class UIManager {
 
     if (clearFiltersBtn && eventHandlers.onClearHistoryFilters) {
       clearFiltersBtn.addEventListener("click", eventHandlers.onClearHistoryFilters);
+    }
+
+    if (loadMoreBtn && eventHandlers.onLoadMoreHistory) {
+      loadMoreBtn.addEventListener("click", eventHandlers.onLoadMoreHistory);
     }
   }
 
@@ -1514,6 +1529,74 @@ class UIManager {
       fechaInicio: this.elements.filterFechaInicio?.value || "",
       fechaFin: this.elements.filterFechaFin?.value || "",
     };
+  }
+
+  /**
+   * Mostrar estado inicial del historial
+   */
+  showHistoryInitialState() {
+    if (this.elements.historyInitialState) {
+      this.elements.historyInitialState.style.display = "block";
+    }
+    this.hideNoHistory();
+    this.clearHistoryList();
+    this.hideLoadMoreButton();
+    this.hideHistoryCount();
+  }
+
+  /**
+   * Ocultar estado inicial del historial
+   */
+  hideHistoryInitialState() {
+    if (this.elements.historyInitialState) {
+      this.elements.historyInitialState.style.display = "none";
+    }
+  }
+
+  /**
+   * Mostrar botón de cargar más
+   */
+  showLoadMoreButton() {
+    if (this.elements.loadMoreContainer) {
+      this.elements.loadMoreContainer.style.display = "block";
+    }
+  }
+
+  /**
+   * Ocultar botón de cargar más
+   */
+  hideLoadMoreButton() {
+    if (this.elements.loadMoreContainer) {
+      this.elements.loadMoreContainer.style.display = "none";
+    }
+  }
+
+  /**
+   * Actualizar contador de historial
+   */
+  updateHistoryCount(showing, total) {
+    if (this.elements.historyCount) {
+      if (total > 0) {
+        this.elements.historyCount.style.display = "block";
+        if (this.elements.historyShowing) {
+          this.elements.historyShowing.textContent = showing;
+        }
+        if (this.elements.historyTotal) {
+          this.elements.historyTotal.textContent = total;
+        }
+      } else {
+        this.elements.historyCount.style.display = "none";
+      }
+    }
+  }
+
+  /**
+   * Ocultar contador de historial
+   */
+  hideHistoryCount() {
+    if (this.elements.historyCount) {
+      this.elements.historyCount.style.display = "none";
+    }
   }
 }
 

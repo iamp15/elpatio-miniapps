@@ -6,9 +6,19 @@ import { TRANSACTION_CONFIG, TRANSACTION_TYPES, FINALIZED_STATES } from "./confi
 import { API } from "./api.js";
 import { UI } from "./ui.js";
 
+// Configuración de carga de historial
+const HISTORY_CONFIG = {
+  ITEMS_PER_PAGE: 15, // Transacciones por carga
+  MAX_ITEMS: 100, // Máximo total de transacciones a cargar
+};
+
 class HistoryManager {
   constructor() {
     this.transactions = [];
+    this.allTransactions = []; // Todas las transacciones sin paginar
+    this.currentPage = 0;
+    this.hasMore = false;
+    this.isInitialState = true; // Estado inicial sin búsqueda
     this.currentFilters = {
       estado: "",
       tipo: "",
@@ -18,16 +28,39 @@ class HistoryManager {
   }
 
   /**
+   * Mostrar estado inicial del historial (sin transacciones cargadas)
+   */
+  showInitialState() {
+    this.isInitialState = true;
+    this.transactions = [];
+    this.allTransactions = [];
+    this.currentPage = 0;
+    this.hasMore = false;
+    UI.showHistoryInitialState();
+  }
+
+  /**
    * Cargar historial de transacciones con filtros
    * @param {string} token - Token de autenticación
    * @param {Object} filters - Filtros opcionales
+   * @param {boolean} reset - Si es true, reinicia la paginación
    */
-  async loadHistory(token, filters = {}) {
+  async loadHistory(token, filters = {}, reset = true) {
     if (!token) return;
 
     try {
       UI.showLoadingHistory(true);
       UI.hideNoHistory();
+      UI.hideHistoryInitialState();
+
+      // Si es reset, reiniciar paginación
+      if (reset) {
+        this.currentPage = 0;
+        this.allTransactions = [];
+        this.transactions = [];
+      }
+
+      this.isInitialState = false;
 
       // Combinar filtros actuales con nuevos filtros
       const activeFilters = { ...this.currentFilters, ...filters };
@@ -53,12 +86,22 @@ class HistoryManager {
         apiFilters.fechaFin = activeFilters.fechaFin;
       }
 
-      // Obtener transacciones del historial
-      this.transactions = await API.getHistorialTransacciones(
+      // Obtener todas las transacciones del historial (hasta el máximo)
+      const todasTransacciones = await API.getHistorialTransacciones(
         estadosAConsultar,
         token,
         apiFilters
       );
+
+      // Guardar todas las transacciones
+      this.allTransactions = todasTransacciones.slice(0, HISTORY_CONFIG.MAX_ITEMS);
+
+      // Calcular paginación
+      const inicio = 0;
+      const fin = HISTORY_CONFIG.ITEMS_PER_PAGE;
+      this.transactions = this.allTransactions.slice(inicio, fin);
+      this.currentPage = 1;
+      this.hasMore = this.allTransactions.length > fin;
 
       // Mostrar transacciones en la UI
       this.displayHistory();
@@ -72,6 +115,25 @@ class HistoryManager {
   }
 
   /**
+   * Cargar más transacciones (siguiente página)
+   */
+  loadMore() {
+    if (!this.hasMore) return;
+
+    const inicio = this.currentPage * HISTORY_CONFIG.ITEMS_PER_PAGE;
+    const fin = inicio + HISTORY_CONFIG.ITEMS_PER_PAGE;
+    
+    // Agregar más transacciones a las ya mostradas
+    const nuevasTransacciones = this.allTransactions.slice(inicio, fin);
+    this.transactions = [...this.transactions, ...nuevasTransacciones];
+    this.currentPage++;
+    this.hasMore = fin < this.allTransactions.length;
+
+    // Actualizar la UI
+    this.displayHistory();
+  }
+
+  /**
    * Aplicar filtros y recargar historial
    * @param {Object} filters - Nuevos filtros a aplicar
    * @param {string} token - Token de autenticación
@@ -82,10 +144,9 @@ class HistoryManager {
   }
 
   /**
-   * Limpiar filtros y recargar historial
-   * @param {string} token - Token de autenticación
+   * Limpiar filtros y volver al estado inicial
    */
-  async clearFilters(token) {
+  clearFilters() {
     this.currentFilters = {
       estado: "",
       tipo: "",
@@ -96,8 +157,8 @@ class HistoryManager {
     // Resetear UI de filtros
     UI.clearHistoryFilters();
     
-    // Recargar historial sin filtros
-    await this.loadHistory(token);
+    // Volver al estado inicial (sin transacciones)
+    this.showInitialState();
   }
 
   /**
@@ -106,10 +167,22 @@ class HistoryManager {
   displayHistory() {
     if (!this.transactions || this.transactions.length === 0) {
       UI.showNoHistory();
+      UI.hideLoadMoreButton();
+      UI.updateHistoryCount(0, 0);
       return;
     }
 
     UI.displayHistoryTransactions(this.transactions);
+    
+    // Mostrar/ocultar botón de cargar más
+    if (this.hasMore) {
+      UI.showLoadMoreButton();
+    } else {
+      UI.hideLoadMoreButton();
+    }
+
+    // Actualizar contador
+    UI.updateHistoryCount(this.transactions.length, this.allTransactions.length);
   }
 
   /**
@@ -338,7 +411,37 @@ class HistoryManager {
    */
   clearHistory() {
     this.transactions = [];
+    this.allTransactions = [];
+    this.currentPage = 0;
+    this.hasMore = false;
+    this.isInitialState = true;
     UI.clearHistoryList();
+  }
+
+  /**
+   * Verificar si hay más transacciones para cargar
+   */
+  hasMoreTransactions() {
+    return this.hasMore;
+  }
+
+  /**
+   * Verificar si está en estado inicial
+   */
+  isInInitialState() {
+    return this.isInitialState;
+  }
+
+  /**
+   * Obtener información de paginación
+   */
+  getPaginationInfo() {
+    return {
+      showing: this.transactions.length,
+      total: this.allTransactions.length,
+      hasMore: this.hasMore,
+      currentPage: this.currentPage,
+    };
   }
 }
 

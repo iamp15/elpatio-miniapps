@@ -332,12 +332,20 @@
               </div>
               <div class="filters-actions">
                 <button id="apply-filters-btn" class="btn btn-primary">
-                  🔍 Aplicar Filtros
+                  🔍 Buscar Transacciones
                 </button>
                 <button id="clear-filters-btn" class="btn btn-secondary">
-                  🗑️ Limpiar Filtros
+                  🗑️ Limpiar
                 </button>
               </div>
+            </div>
+
+            <!-- Estado inicial (antes de buscar) -->
+            <div id="history-initial-state" class="history-initial-state">
+              <div class="initial-state-icon">📜</div>
+              <h4>Historial de Transacciones</h4>
+              <p>Selecciona los filtros deseados y presiona "Buscar Transacciones" para ver tu historial.</p>
+              <p class="hint">Puedes filtrar por estado, tipo de transacción o rango de fechas.</p>
             </div>
 
             <!-- Estado de carga -->
@@ -350,9 +358,21 @@
               <p>Cargando historial...</p>
             </div>
 
+            <!-- Contador de resultados -->
+            <div id="history-count" class="history-count" style="display: none">
+              Mostrando <span id="history-showing">0</span> de <span id="history-total">0</span> transacciones
+            </div>
+
             <!-- Lista de transacciones del historial -->
             <div id="history-list" class="history-list transactions-list">
               <!-- Las transacciones se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Botón Cargar más -->
+            <div id="load-more-container" class="load-more-container" style="display: none">
+              <button id="load-more-btn" class="btn btn-secondary btn-load-more">
+                📥 Cargar más transacciones
+              </button>
             </div>
 
             <!-- Mensaje cuando no hay resultados -->
