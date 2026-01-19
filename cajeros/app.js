@@ -17,6 +17,7 @@ const APP_VERSION = "0.10.1"; // Alpha - Sistema de notificaciones push (fixes W
 class CajerosApp {
   constructor() {
     this.isInitialized = false;
+    this.isLoggingOut = false; // Flag para prevenir múltiples llamadas al logout
     this.processedTransactions = new Set(); // Para evitar duplicados
     this.version = APP_VERSION;
   }
@@ -550,6 +551,13 @@ class CajerosApp {
    * Manejar logout
    */
   handleLogout() {
+    // Prevenir múltiples llamadas al logout
+    if (this.isLoggingOut) {
+      console.log("⚠️ [LOGOUT] Ya hay un logout en progreso, ignorando...");
+      return;
+    }
+    this.isLoggingOut = true;
+
     // Emitir evento de logout al WebSocket para actualizar el estado en el backend
     if (window.cajeroWebSocket && window.cajeroWebSocket.isConnected && window.cajeroWebSocket.socket) {
       try {
@@ -561,17 +569,26 @@ class CajerosApp {
         if (socket.connected) {
           console.log("🚪 [LOGOUT] Emitiendo evento logout-cajero...");
           
+          // Flag para evitar doble llamada a finalizeLogout
+          let logoutFinalized = false;
+          
           // Emitir con callback para confirmar recepción
           socket.emit("logout-cajero", {}, (response) => {
+            if (logoutFinalized) return; // Prevenir doble ejecución
+            logoutFinalized = true;
+            
             if (response && response.success) {
               console.log("✅ [LOGOUT] Servidor confirmó recepción del logout");
             }
-            // Desconectar después de recibir confirmación o timeout
+            // Desconectar después de recibir confirmación
             this.finalizeLogout();
           });
           
           // Timeout de seguridad: desconectar después de 500ms aunque no haya confirmación
           setTimeout(() => {
+            if (logoutFinalized) return; // Prevenir doble ejecución
+            logoutFinalized = true;
+            
             console.log("⏱️ [LOGOUT] Timeout: desconectando después de 500ms");
             this.finalizeLogout();
           }, 500);
@@ -601,6 +618,9 @@ class CajerosApp {
     
     // Completar proceso de logout
     this.completeLogout();
+    
+    // Resetear flag de logout
+    this.isLoggingOut = false;
   }
 
   /**
