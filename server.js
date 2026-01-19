@@ -48,10 +48,6 @@ app.get("/configuracion", (req, res) => {
   res.sendFile(path.join(__dirname, "configuracion", "index.html"));
 });
 
-app.get("/cajeros", (req, res) => {
-  res.sendFile(path.join(__dirname, "cajeros", "index.html"));
-});
-
 // Ruta de salud
 app.get("/health", (req, res) => {
   res.json({
@@ -70,7 +66,6 @@ app.use((req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor de Mini Apps ejecutándose en puerto ${PORT}`);
   console.log(`📱 Mini App de Depósitos: http://localhost:${PORT}/depositos`);
-  console.log(`🏦 Portal de Cajeros: http://localhost:${PORT}/cajeros`);
   console.log(`🌐 Aplicación principal: http://localhost:${PORT}`);
   console.log(`💚 Salud del servidor: http://localhost:${PORT}/health`);
 });

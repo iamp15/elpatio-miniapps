@@ -23,15 +23,7 @@ elpatio-miniapps/
 ├── config.js              # Configuración compartida
 ├── vercel.json            # Configuración de Vercel
 ├── package.json           # Dependencias y scripts
-├── cajeros/               # Mini app de cajeros
-│   ├── app.js             # Aplicación principal (clase principal)
-│   ├── index.html         # HTML principal
-│   ├── styles.css         # Estilos CSS
-│   ├── sw.js              # Service Worker (notificaciones push)
-│   └── js/                # Módulos JavaScript
-│       ├── api.js         # Comunicación con backend (fetch)
-│       ├── auth.js        # Autenticación (JWT para cajeros)
-│       ├── config.js      # Configuración específica
+├── depositos/             # Mini app de depósitos
 │       ├── ui.js          # Gestión de interfaz de usuario
 │       ├── websocket.js   # Cliente WebSocket
 │       ├── transactions.js # Gestión de transacciones
@@ -362,13 +354,6 @@ window.appWebSocket = new AppWebSocket();
 - Trackear transacciones activas para sistema de recuperación
 
 ## 🔐 Autenticación
-
-### Autenticación de Cajeros (cajeros/js/auth.js)
-
-- Usar JWT tokens almacenados en localStorage
-- Verificar token al iniciar aplicación
-- Callbacks para eventos de autenticación
-- Limpiar sesión en logout
 
 ### Autenticación de Telegram (depositos/js/auth.js)
 
