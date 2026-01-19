@@ -68,6 +68,7 @@ export const APP_STATES = {
   DASHBOARD: "dashboard",
   LOADING: "loading",
   ERROR: "error",
+  HISTORIAL: "historial",
 };
 
 // Tipos de transacciones
@@ -86,11 +87,24 @@ export const TRANSACTION_TYPES = {
   },
 };
 
+// Estados finalizados para el historial
+export const FINALIZED_STATES = [
+  "completada",
+  "completada_con_ajuste",
+  "rechazada",
+  "cancelada",
+  "fallida",
+  "revertida",
+  "requiere_revision_admin",
+];
+
 // Configuración de elementos DOM
 export const DOM_SELECTORS = {
   // Pantallas
   LOGIN_SCREEN: "#login-screen",
   DASHBOARD_SCREEN: "#dashboard-screen",
+  HISTORIAL_SCREEN: "#historial-screen",
+  NOTIFICATIONS_SCREEN: "#notifications-screen",
 
   // Formulario de login
   LOGIN_FORM: "#login-form",
@@ -102,6 +116,8 @@ export const DOM_SELECTORS = {
   // Botones de acción
   LOGOUT_BTN: "#logout-btn",
   REFRESH_BTN: "#refresh-btn",
+  HISTORY_BTN: "#history-btn",
+  BACK_TO_DASHBOARD_FROM_HISTORY_BTN: "#back-to-dashboard-from-history-btn",
 
   // Información del cajero
   CAJERO_NAME: "#cajero-name",
@@ -114,4 +130,15 @@ export const DOM_SELECTORS = {
   LOADING_TRANSACTIONS: "#loading-transactions",
   TRANSACTIONS_LIST: "#transactions-list",
   NO_TRANSACTIONS: "#no-transactions",
+
+  // Historial
+  LOADING_HISTORY: "#loading-history",
+  HISTORY_LIST: "#history-list",
+  NO_HISTORY: "#no-history",
+  FILTER_ESTADO: "#filter-estado",
+  FILTER_TIPO: "#filter-tipo",
+  FILTER_FECHA_INICIO: "#filter-fecha-inicio",
+  FILTER_FECHA_FIN: "#filter-fecha-fin",
+  APPLY_FILTERS_BTN: "#apply-filters-btn",
+  CLEAR_FILTERS_BTN: "#clear-filters-btn",
 };

@@ -90,9 +90,14 @@
             <div class="transactions-section">
               <div class="section-header">
                 <h3>📋 Gestión de Solicitudes</h3>
-                <button id="refresh-btn" class="btn btn-small">
-                  🔄 Actualizar
-                </button>
+                <div class="header-actions">
+                  <button id="history-btn" class="btn btn-small btn-secondary">
+                    📜 Ver Historial
+                  </button>
+                  <button id="refresh-btn" class="btn btn-small">
+                    🔄 Actualizar
+                  </button>
+                </div>
               </div>
 
               <!-- Sistema de pestañas -->
@@ -122,15 +127,6 @@
                       <span
                         class="tab-indicator"
                         id="indicator-realizada"
-                      ></span>
-                    </span>
-                  </button>
-                  <button class="tab-btn" data-tab="completadas">
-                    <span class="tab-text">
-                      Completas
-                      <span
-                        class="tab-indicator"
-                        id="indicator-completadas"
                       ></span>
                     </span>
                   </button>
@@ -218,28 +214,6 @@
                       </p>
                     </div>
                   </div>
-
-                  <!-- Pestaña Completadas -->
-                  <div class="tab-panel" id="tab-completadas">
-                    <!-- Lista de transacciones completadas -->
-                    <div
-                      id="transactions-list-completadas"
-                      class="transactions-list"
-                    >
-                      <!-- Las transacciones se cargarán dinámicamente aquí -->
-                    </div>
-
-                    <!-- Mensaje cuando no hay transacciones completadas -->
-                    <div
-                      id="no-transactions-completadas"
-                      class="no-transactions"
-                      style="display: none"
-                    >
-                      <div class="no-data-icon">🎉</div>
-                      <h4>No hay transacciones completadas</h4>
-                      <p>Aún no has completado ninguna transacción.</p>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
@@ -305,6 +279,91 @@
               <div class="no-data-icon">🔕</div>
               <h4>No hay notificaciones</h4>
               <p>Cuando ocurran eventos importantes, aparecerán aquí.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pantalla de Historial -->
+      <div id="historial-screen" class="screen">
+        <div class="container">
+          <div class="header">
+            <button id="back-to-dashboard-from-history-btn" class="btn btn-back">
+              ← Volver
+            </button>
+            <h1>📜 Historial de Transacciones</h1>
+            <p>Transacciones finalizadas</p>
+          </div>
+
+          <div class="historial-content">
+            <!-- Filtros -->
+            <div class="filters-section">
+              <h3>🔍 Filtros</h3>
+              <div class="filters-grid">
+                <div class="filter-group">
+                  <label for="filter-estado">Estado:</label>
+                  <select id="filter-estado" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    <option value="completada">Completada</option>
+                    <option value="completada_con_ajuste">Completada con Ajuste</option>
+                    <option value="rechazada">Rechazada</option>
+                    <option value="cancelada">Cancelada</option>
+                    <option value="fallida">Fallida</option>
+                    <option value="revertida">Revertida</option>
+                    <option value="requiere_revision_admin">Requiere Revisión Admin</option>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <label for="filter-tipo">Tipo:</label>
+                  <select id="filter-tipo" class="filter-select">
+                    <option value="">Todos los tipos</option>
+                    <option value="deposito">Depósito</option>
+                    <option value="retiro">Retiro</option>
+                  </select>
+                </div>
+                <div class="filter-group">
+                  <label for="filter-fecha-inicio">Fecha Inicio:</label>
+                  <input type="date" id="filter-fecha-inicio" class="filter-input" />
+                </div>
+                <div class="filter-group">
+                  <label for="filter-fecha-fin">Fecha Fin:</label>
+                  <input type="date" id="filter-fecha-fin" class="filter-input" />
+                </div>
+              </div>
+              <div class="filters-actions">
+                <button id="apply-filters-btn" class="btn btn-primary">
+                  🔍 Aplicar Filtros
+                </button>
+                <button id="clear-filters-btn" class="btn btn-secondary">
+                  🗑️ Limpiar Filtros
+                </button>
+              </div>
+            </div>
+
+            <!-- Estado de carga -->
+            <div
+              id="loading-history"
+              class="loading-state"
+              style="display: none"
+            >
+              <div class="spinner"></div>
+              <p>Cargando historial...</p>
+            </div>
+
+            <!-- Lista de transacciones del historial -->
+            <div id="history-list" class="history-list transactions-list">
+              <!-- Las transacciones se cargarán dinámicamente aquí -->
+            </div>
+
+            <!-- Mensaje cuando no hay resultados -->
+            <div
+              id="no-history"
+              class="no-transactions"
+              style="display: none"
+            >
+              <div class="no-data-icon">📭</div>
+              <h4>No hay transacciones</h4>
+              <p>No se encontraron transacciones con los filtros aplicados.</p>
             </div>
           </div>
         </div>

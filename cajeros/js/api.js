@@ -85,6 +85,81 @@ class APIManager {
   }
 
   /**
+   * Obtener historial de transacciones (múltiples estados finalizados)
+   * @param {Array<string>} estados - Array de estados a consultar
+   * @param {string} token - Token de autenticación
+   * @param {Object} filtros - Filtros adicionales (tipo, fechaInicio, fechaFin)
+   * @returns {Promise<Array>} - Array combinado de todas las transacciones
+   */
+  async getHistorialTransacciones(estados, token, filtros = {}) {
+    if (!estados || estados.length === 0) {
+      return [];
+    }
+
+    try {
+      // Hacer llamadas paralelas para cada estado
+      const promesas = estados.map((estado) => {
+        let url = `${this.baseURL}/api/transacciones/cajero?estado=${estado}`;
+        
+        // Agregar filtro de tipo si existe
+        if (filtros.tipo) {
+          url += `&tipo=${filtros.tipo}`;
+        }
+
+        return this.authenticatedRequest(url, token, {
+          method: "GET",
+        });
+      });
+
+      const respuestas = await Promise.all(promesas);
+
+      // Combinar todas las transacciones
+      const todasTransacciones = [];
+      for (const respuesta of respuestas) {
+        if (respuesta.ok) {
+          const data = await respuesta.json();
+          if (data.transacciones && Array.isArray(data.transacciones)) {
+            // Filtrar por fechas si se proporcionaron
+            let transacciones = data.transacciones;
+            
+            if (filtros.fechaInicio || filtros.fechaFin) {
+              transacciones = transacciones.filter((trans) => {
+                const fechaTrans = new Date(trans.createdAt || trans.fechaCreacion);
+                const fechaInicio = filtros.fechaInicio ? new Date(filtros.fechaInicio) : null;
+                const fechaFin = filtros.fechaFin ? new Date(filtros.fechaFin) : null;
+                
+                // Ajustar fecha fin para incluir todo el día
+                if (fechaFin) {
+                  fechaFin.setHours(23, 59, 59, 999);
+                }
+
+                const cumpleInicio = !fechaInicio || fechaTrans >= fechaInicio;
+                const cumpleFin = !fechaFin || fechaTrans <= fechaFin;
+
+                return cumpleInicio && cumpleFin;
+              });
+            }
+
+            todasTransacciones.push(...transacciones);
+          }
+        }
+      }
+
+      // Ordenar por fecha de creación descendente (más recientes primero)
+      todasTransacciones.sort((a, b) => {
+        const fechaA = new Date(a.createdAt || a.fechaCreacion || 0);
+        const fechaB = new Date(b.createdAt || b.fechaCreacion || 0);
+        return fechaB - fechaA;
+      });
+
+      return todasTransacciones;
+    } catch (error) {
+      console.error("Error obteniendo historial:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Obtener transacciones pendientes (mantener compatibilidad)
    */
   async getTransaccionesPendientes(token) {

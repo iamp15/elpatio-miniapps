@@ -6,6 +6,7 @@
 import { Auth } from "./js/auth.js";
 import { UI } from "./js/ui.js";
 import { TransactionManager } from "./js/transactions.js";
+import { HistoryManager } from "./js/history.js";
 import { MESSAGES, API_CONFIG } from "./js/config.js";
 import "./js/notifications.js"; // Importar sistema de notificaciones toast
 import notificationListManager from "./js/notification-manager.js"; // Importar gestor de notificaciones persistentes
@@ -54,6 +55,10 @@ class CajerosApp {
         onLogout: this.handleLogout.bind(this),
         onRefresh: this.handleRefresh.bind(this),
         onTabSwitch: this.handleTabSwitch.bind(this),
+        onShowHistory: this.handleShowHistory.bind(this),
+        onBackFromHistory: this.handleBackFromHistory.bind(this),
+        onApplyHistoryFilters: this.handleApplyHistoryFilters.bind(this),
+        onClearHistoryFilters: this.handleClearHistoryFilters.bind(this),
       });
 
       // Inicializar autenticación
@@ -64,6 +69,7 @@ class CajerosApp {
 
       // Hacer disponibles las instancias globalmente para uso en HTML
       window.transactionManager = TransactionManager;
+      window.historyManager = HistoryManager;
       window.CajerosApp = this;
       window.API_CONFIG = API_CONFIG;
 
@@ -754,6 +760,46 @@ class CajerosApp {
    */
   getTransactionManager() {
     return TransactionManager;
+  }
+
+  /**
+   * Manejar mostrar historial
+   */
+  async handleShowHistory() {
+    UI.showHistoryScreen();
+    const token = this.getToken();
+    if (token) {
+      await HistoryManager.loadHistory(token);
+    }
+  }
+
+  /**
+   * Manejar volver desde historial
+   */
+  handleBackFromHistory() {
+    UI.hideHistoryScreen();
+    UI.showDashboard();
+  }
+
+  /**
+   * Manejar aplicar filtros del historial
+   */
+  async handleApplyHistoryFilters() {
+    const filters = UI.getHistoryFilters();
+    const token = this.getToken();
+    if (token) {
+      await HistoryManager.applyFilters(filters, token);
+    }
+  }
+
+  /**
+   * Manejar limpiar filtros del historial
+   */
+  async handleClearHistoryFilters() {
+    const token = this.getToken();
+    if (token) {
+      await HistoryManager.clearFilters(token);
+    }
   }
 }
 

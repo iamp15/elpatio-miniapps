@@ -13,7 +13,6 @@ class TransactionManager {
       pendientes: [],
       en_proceso: [],
       realizada: [],
-      completadas: [],
     };
     this.currentTab = "pendientes";
     this.callbacks = {
@@ -39,8 +38,8 @@ class TransactionManager {
       UI.showLoadingTransactions(true);
       UI.hideNoTransactions();
 
-      // Cargar transacciones de todos los estados
-      const estados = ["pendiente", "en_proceso", "realizada", "completada"];
+      // Cargar transacciones de los 3 estados activos
+      const estados = ["pendiente", "en_proceso", "realizada"];
       const promesas = estados.map((estado) =>
         API.getTransaccionesCajero(estado, token)
       );
@@ -83,7 +82,6 @@ class TransactionManager {
       pendientes: [],
       en_proceso: [],
       realizada: [],
-      completadas: [],
     };
 
     this.transactions.forEach((transaccion) => {
@@ -99,10 +97,6 @@ class TransactionManager {
         case "realizada":
           // Usuario ya reportó que hizo el pago, cajero debe verificar
           this.filteredTransactions.realizada.push(transaccion);
-          break;
-        case "completada":
-          // El backend ya filtra por cajero, solo agregar a la lista
-          this.filteredTransactions.completadas.push(transaccion);
           break;
         default:
           // Por defecto, considerar como pendiente
@@ -141,10 +135,6 @@ class TransactionManager {
       this.filteredTransactions.en_proceso.length
     );
     UI.updateTabCount("realizada", this.filteredTransactions.realizada.length);
-    UI.updateTabCount(
-      "completadas",
-      this.filteredTransactions.completadas.length
-    );
   }
 
   /**
@@ -256,6 +246,12 @@ class TransactionManager {
       realizada: "💳 Pago Realizado",
       confirmada: "✅ Confirmada",
       completada: "✅ Completada",
+      completada_con_ajuste: "✅ Completada (Ajuste)",
+      rechazada: "❌ Rechazada",
+      cancelada: "🚫 Cancelada",
+      fallida: "⚠️ Fallida",
+      revertida: "↩️ Revertida",
+      requiere_revision_admin: "🔍 Revisión Admin",
     };
     return estados[estado] || estado;
   }

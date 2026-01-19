@@ -71,6 +71,24 @@ class UIManager {
     // Pestañas
     this.elements.tabButtons = document.querySelectorAll(".tab-btn");
     this.elements.tabPanels = document.querySelectorAll(".tab-panel");
+
+    // Historial
+    this.elements.historialScreen = document.querySelector(
+      DOM_SELECTORS.HISTORIAL_SCREEN
+    );
+    this.elements.loadingHistory = document.querySelector(
+      DOM_SELECTORS.LOADING_HISTORY
+    );
+    this.elements.historyList = document.querySelector(DOM_SELECTORS.HISTORY_LIST);
+    this.elements.noHistory = document.querySelector(DOM_SELECTORS.NO_HISTORY);
+    this.elements.filterEstado = document.querySelector(DOM_SELECTORS.FILTER_ESTADO);
+    this.elements.filterTipo = document.querySelector(DOM_SELECTORS.FILTER_TIPO);
+    this.elements.filterFechaInicio = document.querySelector(
+      DOM_SELECTORS.FILTER_FECHA_INICIO
+    );
+    this.elements.filterFechaFin = document.querySelector(
+      DOM_SELECTORS.FILTER_FECHA_FIN
+    );
   }
 
   /**
@@ -94,6 +112,41 @@ class UIManager {
 
     // Event listeners para pestañas
     this.setupTabEventListeners(eventHandlers);
+
+    // Event listeners para historial
+    this.setupHistoryEventListeners(eventHandlers);
+  }
+
+  /**
+   * Configurar event listeners para historial
+   */
+  setupHistoryEventListeners(eventHandlers) {
+    const historyBtn = document.querySelector(DOM_SELECTORS.HISTORY_BTN);
+    const backFromHistoryBtn = document.querySelector(
+      DOM_SELECTORS.BACK_TO_DASHBOARD_FROM_HISTORY_BTN
+    );
+    const applyFiltersBtn = document.querySelector(
+      DOM_SELECTORS.APPLY_FILTERS_BTN
+    );
+    const clearFiltersBtn = document.querySelector(
+      DOM_SELECTORS.CLEAR_FILTERS_BTN
+    );
+
+    if (historyBtn && eventHandlers.onShowHistory) {
+      historyBtn.addEventListener("click", eventHandlers.onShowHistory);
+    }
+
+    if (backFromHistoryBtn && eventHandlers.onBackFromHistory) {
+      backFromHistoryBtn.addEventListener("click", eventHandlers.onBackFromHistory);
+    }
+
+    if (applyFiltersBtn && eventHandlers.onApplyHistoryFilters) {
+      applyFiltersBtn.addEventListener("click", eventHandlers.onApplyHistoryFilters);
+    }
+
+    if (clearFiltersBtn && eventHandlers.onClearHistoryFilters) {
+      clearFiltersBtn.addEventListener("click", eventHandlers.onClearHistoryFilters);
+    }
   }
 
   /**
@@ -1340,6 +1393,127 @@ class UIManager {
       this.showAlert('Error: No hay conexión disponible');
       this.processingPayment = null;
     }
+  }
+
+  /**
+   * ===== MÉTODOS DE HISTORIAL =====
+   */
+
+  /**
+   * Mostrar pantalla de historial
+   */
+  showHistoryScreen() {
+    if (this.elements.historialScreen) {
+      this.elements.historialScreen.classList.add("active");
+    }
+    if (this.elements.dashboardScreen) {
+      this.elements.dashboardScreen.classList.remove("active");
+    }
+    if (this.elements.loginScreen) {
+      this.elements.loginScreen.classList.remove("active");
+    }
+    this.currentState = APP_STATES.HISTORIAL;
+  }
+
+  /**
+   * Ocultar pantalla de historial
+   */
+  hideHistoryScreen() {
+    if (this.elements.historialScreen) {
+      this.elements.historialScreen.classList.remove("active");
+    }
+  }
+
+  /**
+   * Mostrar estado de carga del historial
+   */
+  showLoadingHistory(show) {
+    if (this.elements.loadingHistory) {
+      this.elements.loadingHistory.style.display = show ? "block" : "none";
+    }
+  }
+
+  /**
+   * Mostrar mensaje de no historial
+   */
+  showNoHistory() {
+    if (this.elements.noHistory) {
+      this.elements.noHistory.style.display = "block";
+    }
+    if (this.elements.historyList) {
+      this.elements.historyList.innerHTML = "";
+    }
+  }
+
+  /**
+   * Ocultar mensaje de no historial
+   */
+  hideNoHistory() {
+    if (this.elements.noHistory) {
+      this.elements.noHistory.style.display = "none";
+    }
+  }
+
+  /**
+   * Limpiar lista de historial
+   */
+  clearHistoryList() {
+    if (this.elements.historyList) {
+      this.elements.historyList.innerHTML = "";
+    }
+  }
+
+  /**
+   * Mostrar transacciones en el historial
+   */
+  displayHistoryTransactions(transacciones) {
+    this.clearHistoryList();
+    this.hideNoHistory();
+
+    if (!transacciones || transacciones.length === 0) {
+      this.showNoHistory();
+      return;
+    }
+
+    transacciones.forEach((transaccion) => {
+      if (window.historyManager) {
+        const transactionCard =
+          window.historyManager.formatHistoryTransaction(transaccion);
+        if (this.elements.historyList) {
+          this.elements.historyList.appendChild(transactionCard);
+        }
+      }
+    });
+  }
+
+  /**
+   * Limpiar filtros del historial en la UI
+   */
+  clearHistoryFilters() {
+    if (this.elements.filterEstado) {
+      this.elements.filterEstado.value = "";
+    }
+    if (this.elements.filterTipo) {
+      this.elements.filterTipo.value = "";
+    }
+    if (this.elements.filterFechaInicio) {
+      this.elements.filterFechaInicio.value = "";
+    }
+    if (this.elements.filterFechaFin) {
+      this.elements.filterFechaFin.value = "";
+    }
+  }
+
+  /**
+   * Obtener filtros actuales del historial desde la UI
+   */
+  getHistoryFilters() {
+    return {
+      estado: this.elements.filterEstado?.value || "",
+      tipo: this.elements.filterTipo?.value || "",
+      fechaInicio: this.elements.filterFechaInicio?.value || "",
+      fechaFin: this.elements.filterFechaFin?.value || "",
+    };
   }
 }
 
