@@ -22,6 +22,35 @@ class UIManager {
     this.elements.dashboardScreen = document.querySelector(
       DOM_SELECTORS.DASHBOARD_SCREEN
     );
+    this.elements.perfilScreen = document.querySelector(
+      DOM_SELECTORS.PERFIL_SCREEN
+    );
+
+    // Menú lateral
+    this.elements.sidebarOverlay = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_OVERLAY
+    );
+    this.elements.sidebarMenu = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_MENU
+    );
+    this.elements.menuToggleBtn = document.querySelector(
+      DOM_SELECTORS.MENU_TOGGLE_BTN
+    );
+    this.elements.sidebarCloseBtn = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_CLOSE_BTN
+    );
+    this.elements.sidebarNavItems = document.querySelectorAll(
+      DOM_SELECTORS.SIDEBAR_NAV_ITEMS
+    );
+    this.elements.sidebarLogoutBtn = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_LOGOUT_BTN
+    );
+    this.elements.sidebarUserName = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_USER_NAME
+    );
+    this.elements.sidebarUserEmail = document.querySelector(
+      DOM_SELECTORS.SIDEBAR_USER_EMAIL
+    );
 
     // Formulario de login
     this.elements.loginForm = document.querySelector(DOM_SELECTORS.LOGIN_FORM);
@@ -35,26 +64,36 @@ class UIManager {
     );
 
     // Botones de acción
-    this.elements.logoutBtn = document.querySelector(DOM_SELECTORS.LOGOUT_BTN);
     this.elements.refreshBtn = document.querySelector(
       DOM_SELECTORS.REFRESH_BTN
     );
 
-    // Información del cajero
+    // Información del cajero (dashboard)
     this.elements.cajeroName = document.querySelector(
       DOM_SELECTORS.CAJERO_NAME
     );
-    this.elements.cajeroEmailDisplay = document.querySelector(
-      DOM_SELECTORS.CAJERO_EMAIL_DISPLAY
+
+    // Perfil
+    this.elements.perfilNombre = document.querySelector(
+      DOM_SELECTORS.PERFIL_NOMBRE
     );
-    this.elements.cajeroBanco = document.querySelector(
-      DOM_SELECTORS.CAJERO_BANCO
+    this.elements.perfilEmail = document.querySelector(
+      DOM_SELECTORS.PERFIL_EMAIL
     );
-    this.elements.cajeroCedula = document.querySelector(
-      DOM_SELECTORS.CAJERO_CEDULA
+    this.elements.perfilTelefono = document.querySelector(
+      DOM_SELECTORS.PERFIL_TELEFONO
     );
-    this.elements.cajeroTelefonoPago = document.querySelector(
-      DOM_SELECTORS.CAJERO_TELEFONO_PAGO
+    this.elements.perfilBanco = document.querySelector(
+      DOM_SELECTORS.PERFIL_BANCO
+    );
+    this.elements.perfilCedula = document.querySelector(
+      DOM_SELECTORS.PERFIL_CEDULA
+    );
+    this.elements.perfilTelefonoPago = document.querySelector(
+      DOM_SELECTORS.PERFIL_TELEFONO_PAGO
+    );
+    this.elements.perfilWsStatus = document.querySelector(
+      DOM_SELECTORS.PERFIL_WS_STATUS
     );
 
     // Transacciones
@@ -109,10 +148,6 @@ class UIManager {
       this.elements.loginForm.addEventListener("submit", eventHandlers.onLogin);
     }
 
-    if (this.elements.logoutBtn && eventHandlers.onLogout) {
-      this.elements.logoutBtn.addEventListener("click", eventHandlers.onLogout);
-    }
-
     if (this.elements.refreshBtn && eventHandlers.onRefresh) {
       this.elements.refreshBtn.addEventListener(
         "click",
@@ -125,16 +160,59 @@ class UIManager {
 
     // Event listeners para historial
     this.setupHistoryEventListeners(eventHandlers);
+
+    // Event listeners para menú lateral
+    this.setupSidebarEventListeners(eventHandlers);
+  }
+
+  /**
+   * Configurar event listeners para el menú lateral
+   */
+  setupSidebarEventListeners(eventHandlers) {
+    // Botones para abrir el menú (pueden haber múltiples)
+    const menuToggleBtns = document.querySelectorAll(".menu-toggle-btn");
+    menuToggleBtns.forEach((btn) => {
+      btn.addEventListener("click", () => this.openSidebar());
+    });
+
+    // Botón para cerrar el menú
+    if (this.elements.sidebarCloseBtn) {
+      this.elements.sidebarCloseBtn.addEventListener("click", () =>
+        this.closeSidebar()
+      );
+    }
+
+    // Click en overlay para cerrar
+    if (this.elements.sidebarOverlay) {
+      this.elements.sidebarOverlay.addEventListener("click", () =>
+        this.closeSidebar()
+      );
+    }
+
+    // Navegación del sidebar
+    this.elements.sidebarNavItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        const screen = e.currentTarget.dataset.screen;
+        if (eventHandlers.onNavigate) {
+          eventHandlers.onNavigate(screen);
+        }
+        this.closeSidebar();
+      });
+    });
+
+    // Logout desde sidebar
+    if (this.elements.sidebarLogoutBtn && eventHandlers.onLogout) {
+      this.elements.sidebarLogoutBtn.addEventListener("click", () => {
+        this.closeSidebar();
+        eventHandlers.onLogout();
+      });
+    }
   }
 
   /**
    * Configurar event listeners para historial
    */
   setupHistoryEventListeners(eventHandlers) {
-    const historyBtn = document.querySelector(DOM_SELECTORS.HISTORY_BTN);
-    const backFromHistoryBtn = document.querySelector(
-      DOM_SELECTORS.BACK_TO_DASHBOARD_FROM_HISTORY_BTN
-    );
     const applyFiltersBtn = document.querySelector(
       DOM_SELECTORS.APPLY_FILTERS_BTN
     );
@@ -142,14 +220,6 @@ class UIManager {
       DOM_SELECTORS.CLEAR_FILTERS_BTN
     );
     const loadMoreBtn = document.querySelector(DOM_SELECTORS.LOAD_MORE_BTN);
-
-    if (historyBtn && eventHandlers.onShowHistory) {
-      historyBtn.addEventListener("click", eventHandlers.onShowHistory);
-    }
-
-    if (backFromHistoryBtn && eventHandlers.onBackFromHistory) {
-      backFromHistoryBtn.addEventListener("click", eventHandlers.onBackFromHistory);
-    }
 
     if (applyFiltersBtn && eventHandlers.onApplyHistoryFilters) {
       applyFiltersBtn.addEventListener("click", eventHandlers.onApplyHistoryFilters);
@@ -204,32 +274,135 @@ class UIManager {
   updateCajeroDisplay(cajeroInfo) {
     if (!cajeroInfo) return;
 
+    const nombreCompleto = cajeroInfo.nombreCompleto || "-";
+    const email = cajeroInfo.email || "-";
+    const telefono = cajeroInfo.telefonoContacto || "-";
+    const banco = cajeroInfo.datosPagoMovil?.banco || "-";
+    const cedula = cajeroInfo.datosPagoMovil?.cedula;
+    const cedulaFormateada = cedula && cedula.prefijo && cedula.numero
+      ? `${cedula.prefijo}-${cedula.numero}`
+      : "-";
+    const telefonoPago = cajeroInfo.datosPagoMovil?.telefono || "-";
+
+    // Dashboard
     if (this.elements.cajeroName) {
-      this.elements.cajeroName.textContent = cajeroInfo.nombreCompleto || "-";
+      this.elements.cajeroName.textContent = nombreCompleto;
     }
 
-    if (this.elements.cajeroEmailDisplay) {
-      this.elements.cajeroEmailDisplay.textContent = cajeroInfo.email || "-";
+    // Sidebar
+    if (this.elements.sidebarUserName) {
+      this.elements.sidebarUserName.textContent = nombreCompleto;
+    }
+    if (this.elements.sidebarUserEmail) {
+      this.elements.sidebarUserEmail.textContent = email;
     }
 
-    if (this.elements.cajeroBanco) {
-      this.elements.cajeroBanco.textContent =
-        cajeroInfo.datosPagoMovil?.banco || "-";
+    // Perfil
+    if (this.elements.perfilNombre) {
+      this.elements.perfilNombre.textContent = nombreCompleto;
     }
+    if (this.elements.perfilEmail) {
+      this.elements.perfilEmail.textContent = email;
+    }
+    if (this.elements.perfilTelefono) {
+      this.elements.perfilTelefono.textContent = telefono;
+    }
+    if (this.elements.perfilBanco) {
+      this.elements.perfilBanco.textContent = banco;
+    }
+    if (this.elements.perfilCedula) {
+      this.elements.perfilCedula.textContent = cedulaFormateada;
+    }
+    if (this.elements.perfilTelefonoPago) {
+      this.elements.perfilTelefonoPago.textContent = telefonoPago;
+    }
+  }
 
-    if (this.elements.cajeroCedula) {
-      const cedula = cajeroInfo.datosPagoMovil?.cedula;
-      if (cedula && cedula.prefijo && cedula.numero) {
-        this.elements.cajeroCedula.textContent = `${cedula.prefijo}-${cedula.numero}`;
+  /**
+   * Actualizar estado de conexión WebSocket en el perfil
+   */
+  updateConnectionStatus(connected) {
+    if (this.elements.perfilWsStatus) {
+      const statusText = this.elements.perfilWsStatus.querySelector(".status-text");
+      
+      if (connected) {
+        this.elements.perfilWsStatus.classList.add("connected");
+        this.elements.perfilWsStatus.classList.remove("disconnected");
+        if (statusText) statusText.textContent = "Conectado";
       } else {
-        this.elements.cajeroCedula.textContent = "-";
+        this.elements.perfilWsStatus.classList.remove("connected");
+        this.elements.perfilWsStatus.classList.add("disconnected");
+        if (statusText) statusText.textContent = "Desconectado";
       }
     }
+  }
 
-    if (this.elements.cajeroTelefonoPago) {
-      this.elements.cajeroTelefonoPago.textContent =
-        cajeroInfo.datosPagoMovil?.telefono || "-";
+  /**
+   * Abrir menú lateral
+   */
+  openSidebar() {
+    if (this.elements.sidebarMenu) {
+      this.elements.sidebarMenu.classList.add("active");
     }
+    if (this.elements.sidebarOverlay) {
+      this.elements.sidebarOverlay.classList.add("active");
+    }
+    document.body.style.overflow = "hidden";
+  }
+
+  /**
+   * Cerrar menú lateral
+   */
+  closeSidebar() {
+    if (this.elements.sidebarMenu) {
+      this.elements.sidebarMenu.classList.remove("active");
+    }
+    if (this.elements.sidebarOverlay) {
+      this.elements.sidebarOverlay.classList.remove("active");
+    }
+    document.body.style.overflow = "";
+  }
+
+  /**
+   * Actualizar item activo en el sidebar
+   */
+  updateSidebarActiveItem(screenName) {
+    this.elements.sidebarNavItems.forEach((item) => {
+      if (item.dataset.screen === screenName) {
+        item.classList.add("active");
+      } else {
+        item.classList.remove("active");
+      }
+    });
+  }
+
+  /**
+   * Navegar a una pantalla
+   */
+  navigateToScreen(screenName) {
+    // Ocultar todas las pantallas principales
+    this.elements.loginScreen?.classList.remove("active");
+    this.elements.dashboardScreen?.classList.remove("active");
+    this.elements.historialScreen?.classList.remove("active");
+    this.elements.perfilScreen?.classList.remove("active");
+
+    // Mostrar la pantalla correspondiente
+    switch (screenName) {
+      case "dashboard":
+        this.elements.dashboardScreen?.classList.add("active");
+        this.currentState = APP_STATES.DASHBOARD;
+        break;
+      case "historial":
+        this.elements.historialScreen?.classList.add("active");
+        this.currentState = APP_STATES.HISTORIAL;
+        break;
+      case "perfil":
+        this.elements.perfilScreen?.classList.add("active");
+        break;
+    }
+
+    // Actualizar item activo en sidebar
+    this.updateSidebarActiveItem(screenName);
   }
 
   /**

@@ -81,6 +81,341 @@ body {
   font-size: 14px;
 }
 
+/* Header con menú */
+.header-with-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+}
+
+.header-with-menu .header-content {
+  flex: 1;
+}
+
+.header-with-menu .header-content h1 {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+/* Botón de menú hamburguesa */
+.menu-toggle-btn {
+  width: 48px;
+  height: 48px;
+  border: none;
+  background: var(--patio-verde-pasto);
+  color: white;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.menu-toggle-btn:hover {
+  background: var(--patio-verde-pasto-oscuro);
+  transform: scale(1.05);
+}
+
+.menu-toggle-btn .menu-icon {
+  font-size: 24px;
+}
+
+/* ===== MENÚ LATERAL (SIDEBAR) ===== */
+
+/* Overlay oscuro detrás del menú */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1500;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Menú lateral */
+.sidebar-menu {
+  position: fixed;
+  top: 0;
+  right: -300px;
+  width: 280px;
+  max-width: 85vw;
+  height: 100%;
+  background: white;
+  z-index: 1600;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.sidebar-menu.active {
+  right: 0;
+}
+
+/* Header del sidebar */
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, var(--patio-verde-pasto), var(--patio-verde-pasto-oscuro));
+  color: white;
+}
+
+.sidebar-header h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.sidebar-close-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Info de usuario en sidebar */
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--patio-blanco-nube);
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  background: var(--patio-verde-suave);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+.user-details {
+  flex: 1;
+  overflow: hidden;
+}
+
+.user-name {
+  display: block;
+  font-weight: 600;
+  color: var(--patio-marron-madera);
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-email {
+  display: block;
+  font-size: 12px;
+  color: var(--patio-gris-piedra);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Navegación del sidebar */
+.sidebar-nav {
+  list-style: none;
+  padding: 16px 0;
+  flex: 1;
+}
+
+.sidebar-nav li {
+  margin: 0;
+}
+
+.sidebar-nav-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  border: none;
+  background: transparent;
+  color: var(--patio-marron-madera);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--patio-verde-suave);
+  color: var(--patio-verde-pasto);
+}
+
+.sidebar-nav-item.active {
+  background: var(--patio-verde-suave);
+  color: var(--patio-verde-pasto);
+  border-right: 4px solid var(--patio-verde-pasto);
+}
+
+.sidebar-nav-item .nav-icon {
+  font-size: 20px;
+  width: 24px;
+  text-align: center;
+}
+
+.sidebar-nav-item .nav-text {
+  flex: 1;
+}
+
+/* Footer del sidebar */
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.sidebar-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px;
+  border: none;
+  background: var(--patio-rojo-suave);
+  color: var(--patio-rojo-ladrillo-oscuro);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-logout-btn:hover {
+  background: var(--patio-rojo-ladrillo);
+  color: white;
+}
+
+.sidebar-logout-btn .nav-icon {
+  font-size: 20px;
+}
+
+/* ===== PANTALLA DE PERFIL ===== */
+
+.perfil-content {
+  padding-top: 10px;
+}
+
+.perfil-section {
+  margin-bottom: 24px;
+}
+
+.perfil-section h3 {
+  font-size: 16px;
+  color: var(--patio-marron-madera);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.perfil-info-card {
+  background: var(--patio-blanco-nube);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.perfil-info-card .info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.perfil-info-card .info-row:last-child {
+  border-bottom: none;
+}
+
+.perfil-info-card .info-label {
+  font-weight: 500;
+  color: var(--patio-gris-piedra);
+  font-size: 14px;
+}
+
+.perfil-info-card .info-value {
+  font-weight: 600;
+  color: var(--patio-marron-madera);
+  font-size: 14px;
+  text-align: right;
+}
+
+/* Estado de conexión */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connection-status .status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--patio-gris-piedra);
+}
+
+.connection-status.connected .status-dot {
+  background: var(--patio-verde-pasto);
+  box-shadow: 0 0 8px var(--patio-verde-pasto);
+}
+
+.connection-status.disconnected .status-dot {
+  background: var(--patio-rojo-ladrillo);
+}
+
+/* Responsive para menú lateral */
+@media (max-width: 768px) {
+  .sidebar-menu {
+    width: 280px;
+  }
+  
+  .header-with-menu .header-content h1 {
+    font-size: 20px;
+  }
+  
+  .menu-toggle-btn {
+    width: 44px;
+    height: 44px;
+  }
+  
+  .menu-toggle-btn .menu-icon {
+    font-size: 22px;
+  }
+}
+
 .form {
   margin-bottom: 20px;
 }

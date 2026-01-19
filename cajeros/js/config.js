@@ -104,7 +104,18 @@ export const DOM_SELECTORS = {
   LOGIN_SCREEN: "#login-screen",
   DASHBOARD_SCREEN: "#dashboard-screen",
   HISTORIAL_SCREEN: "#historial-screen",
+  PERFIL_SCREEN: "#perfil-screen",
   NOTIFICATIONS_SCREEN: "#notifications-screen",
+
+  // Menú lateral
+  SIDEBAR_OVERLAY: "#sidebar-overlay",
+  SIDEBAR_MENU: "#sidebar-menu",
+  MENU_TOGGLE_BTN: "#menu-toggle-btn",
+  SIDEBAR_CLOSE_BTN: "#sidebar-close-btn",
+  SIDEBAR_NAV_ITEMS: ".sidebar-nav-item",
+  SIDEBAR_LOGOUT_BTN: "#sidebar-logout-btn",
+  SIDEBAR_USER_NAME: "#sidebar-user-name",
+  SIDEBAR_USER_EMAIL: "#sidebar-user-email",
 
   // Formulario de login
   LOGIN_FORM: "#login-form",
@@ -114,17 +125,19 @@ export const DOM_SELECTORS = {
   ERROR_MESSAGE: "#error-message",
 
   // Botones de acción
-  LOGOUT_BTN: "#logout-btn",
   REFRESH_BTN: "#refresh-btn",
-  HISTORY_BTN: "#history-btn",
-  BACK_TO_DASHBOARD_FROM_HISTORY_BTN: "#back-to-dashboard-from-history-btn",
 
-  // Información del cajero
+  // Información del cajero (dashboard)
   CAJERO_NAME: "#cajero-name",
-  CAJERO_EMAIL_DISPLAY: "#cajero-email-display",
-  CAJERO_BANCO: "#cajero-banco",
-  CAJERO_CEDULA: "#cajero-cedula",
-  CAJERO_TELEFONO_PAGO: "#cajero-telefono-pago",
+
+  // Perfil
+  PERFIL_NOMBRE: "#perfil-nombre",
+  PERFIL_EMAIL: "#perfil-email",
+  PERFIL_TELEFONO: "#perfil-telefono",
+  PERFIL_BANCO: "#perfil-banco",
+  PERFIL_CEDULA: "#perfil-cedula",
+  PERFIL_TELEFONO_PAGO: "#perfil-telefono-pago",
+  PERFIL_WS_STATUS: "#perfil-ws-status",
 
   // Transacciones
   LOADING_TRANSACTIONS: "#loading-transactions",

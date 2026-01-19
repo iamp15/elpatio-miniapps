@@ -55,8 +55,7 @@ class CajerosApp {
         onLogout: this.handleLogout.bind(this),
         onRefresh: this.handleRefresh.bind(this),
         onTabSwitch: this.handleTabSwitch.bind(this),
-        onShowHistory: this.handleShowHistory.bind(this),
-        onBackFromHistory: this.handleBackFromHistory.bind(this),
+        onNavigate: this.handleNavigate.bind(this),
         onApplyHistoryFilters: this.handleApplyHistoryFilters.bind(this),
         onClearHistoryFilters: this.handleClearHistoryFilters.bind(this),
         onLoadMoreHistory: this.handleLoadMoreHistory.bind(this),
@@ -764,22 +763,35 @@ class CajerosApp {
   }
 
   /**
-   * Manejar mostrar historial
+   * Manejar navegación desde el menú lateral
    */
-  handleShowHistory() {
-    UI.showHistoryScreen();
-    // Mostrar estado inicial sin cargar transacciones automáticamente
-    HistoryManager.showInitialState();
+  handleNavigate(screen) {
+    UI.navigateToScreen(screen);
+
+    // Acciones específicas por pantalla
+    switch (screen) {
+      case "dashboard":
+        // Recargar transacciones al volver al dashboard
+        this.loadTransactions();
+        break;
+      case "historial":
+        // Mostrar estado inicial del historial
+        HistoryManager.showInitialState();
+        break;
+      case "perfil":
+        // Actualizar estado de conexión
+        this.updateConnectionStatus();
+        break;
+    }
   }
 
   /**
-   * Manejar volver desde historial
+   * Actualizar estado de conexión WebSocket en el perfil
    */
-  handleBackFromHistory() {
-    UI.hideHistoryScreen();
-    UI.showDashboard();
-    // Limpiar historial al salir
-    HistoryManager.clearHistory();
+  updateConnectionStatus() {
+    const connected = window.cajeroWebSocket?.isConnected && 
+                      window.cajeroWebSocket?.isAuthenticated;
+    UI.updateConnectionStatus(connected);
   }
 
   /**

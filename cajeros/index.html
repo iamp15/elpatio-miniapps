@@ -59,41 +59,22 @@
       <!-- Dashboard de Transacciones -->
       <div id="dashboard-screen" class="screen">
         <div class="container">
-          <div class="header">
-            <h1>🏦 Portal de Cajeros</h1>
-            <p>Bienvenido, <span id="cajero-name">-</span></p>
+          <div class="header header-with-menu">
+            <div class="header-content">
+              <h1>🏦 Portal de Cajeros</h1>
+              <p>Bienvenido, <span id="cajero-name">-</span></p>
+            </div>
+            <button id="menu-toggle-btn" class="menu-toggle-btn" title="Menú">
+              <span class="menu-icon">☰</span>
+            </button>
           </div>
 
           <div class="dashboard-content">
-            <!-- Información del cajero -->
-            <div class="cajero-info-card">
-              <h3>👤 Información del Cajero</h3>
-              <div class="info-grid">
-                <div>
-                  <strong>Email:</strong>
-                  <span id="cajero-email-display">-</span>
-                </div>
-                <div>
-                  <strong>Banco:</strong> <span id="cajero-banco">-</span>
-                </div>
-                <div>
-                  <strong>Cédula:</strong> <span id="cajero-cedula">-</span>
-                </div>
-                <div>
-                  <strong>Teléfono Pago Móvil:</strong>
-                  <span id="cajero-telefono-pago">-</span>
-                </div>
-              </div>
-            </div>
-
             <!-- Sección de transacciones con pestañas -->
             <div class="transactions-section">
               <div class="section-header">
                 <h3>📋 Gestión de Solicitudes</h3>
                 <div class="header-actions">
-                  <button id="history-btn" class="btn btn-small btn-secondary">
-                    📜 Ver Historial
-                  </button>
                   <button id="refresh-btn" class="btn btn-small">
                     🔄 Actualizar
                   </button>
@@ -218,12 +199,6 @@
               </div>
             </div>
 
-            <!-- Botones de acción -->
-            <div class="action-buttons">
-              <button id="logout-btn" class="btn btn-secondary">
-                🚪 Cerrar Sesión
-              </button>
-            </div>
           </div>
         </div>
 
@@ -241,6 +216,117 @@
             >0</span
           >
         </button>
+      </div>
+
+      <!-- Menú Lateral -->
+      <div id="sidebar-overlay" class="sidebar-overlay"></div>
+      <nav id="sidebar-menu" class="sidebar-menu">
+        <div class="sidebar-header">
+          <h2>🏦 Menú</h2>
+          <button id="sidebar-close-btn" class="sidebar-close-btn">&times;</button>
+        </div>
+        <div class="sidebar-user-info">
+          <div class="user-avatar">👤</div>
+          <div class="user-details">
+            <span class="user-name" id="sidebar-user-name">-</span>
+            <span class="user-email" id="sidebar-user-email">-</span>
+          </div>
+        </div>
+        <ul class="sidebar-nav">
+          <li>
+            <button class="sidebar-nav-item active" data-screen="dashboard">
+              <span class="nav-icon">📋</span>
+              <span class="nav-text">Transacciones</span>
+            </button>
+          </li>
+          <li>
+            <button class="sidebar-nav-item" data-screen="historial">
+              <span class="nav-icon">📜</span>
+              <span class="nav-text">Historial</span>
+            </button>
+          </li>
+          <li>
+            <button class="sidebar-nav-item" data-screen="perfil">
+              <span class="nav-icon">👤</span>
+              <span class="nav-text">Mi Perfil</span>
+            </button>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <button id="sidebar-logout-btn" class="sidebar-logout-btn">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Cerrar Sesión</span>
+          </button>
+        </div>
+      </nav>
+
+      <!-- Pantalla de Perfil -->
+      <div id="perfil-screen" class="screen">
+        <div class="container">
+          <div class="header header-with-menu">
+            <div class="header-content">
+              <h1>👤 Mi Perfil</h1>
+              <p>Información del cajero</p>
+            </div>
+            <button class="menu-toggle-btn" title="Menú">
+              <span class="menu-icon">☰</span>
+            </button>
+          </div>
+
+          <div class="perfil-content">
+            <!-- Información personal -->
+            <div class="perfil-section">
+              <h3>📋 Información Personal</h3>
+              <div class="perfil-info-card">
+                <div class="info-row">
+                  <span class="info-label">Nombre:</span>
+                  <span class="info-value" id="perfil-nombre">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Email:</span>
+                  <span class="info-value" id="perfil-email">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Teléfono:</span>
+                  <span class="info-value" id="perfil-telefono">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Datos de Pago Móvil -->
+            <div class="perfil-section">
+              <h3>💳 Datos de Pago Móvil</h3>
+              <div class="perfil-info-card">
+                <div class="info-row">
+                  <span class="info-label">Banco:</span>
+                  <span class="info-value" id="perfil-banco">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Cédula:</span>
+                  <span class="info-value" id="perfil-cedula">-</span>
+                </div>
+                <div class="info-row">
+                  <span class="info-label">Teléfono Pago Móvil:</span>
+                  <span class="info-value" id="perfil-telefono-pago">-</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Estado de conexión -->
+            <div class="perfil-section">
+              <h3>🔌 Estado de Conexión</h3>
+              <div class="perfil-info-card">
+                <div class="info-row">
+                  <span class="info-label">WebSocket:</span>
+                  <span class="info-value connection-status" id="perfil-ws-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Desconectado</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Pantalla de Notificaciones -->
@@ -287,12 +373,14 @@
       <!-- Pantalla de Historial -->
       <div id="historial-screen" class="screen">
         <div class="container">
-          <div class="header">
-            <button id="back-to-dashboard-from-history-btn" class="btn btn-back">
-              ← Volver
+          <div class="header header-with-menu">
+            <div class="header-content">
+              <h1>📜 Historial</h1>
+              <p>Transacciones finalizadas</p>
+            </div>
+            <button class="menu-toggle-btn" title="Menú">
+              <span class="menu-icon">☰</span>
             </button>
-            <h1>📜 Historial de Transacciones</h1>
-            <p>Transacciones finalizadas</p>
           </div>
 
           <div class="historial-content">
