@@ -67,6 +67,7 @@ export const APP_STATES = {
 export const TRANSACTION_STATES = {
   PENDIENTE: "pendiente",
   REQUIERE_REVISION_ADMIN: "requiere_revision_admin",
+  RETIRO_PENDIENTE_ASIGNACION: "retiro_pendiente_asignacion",
   EN_PROCESO: "en_proceso",
   COMPLETADA: "completada",
   CANCELADA: "cancelada",

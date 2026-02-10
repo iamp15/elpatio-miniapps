@@ -38,7 +38,11 @@ class RetiroTransactionManager {
   }
 
   getEstadoVisibleParaUsuario(estado) {
-    if (estado === TRANSACTION_STATES.REQUIERE_REVISION_ADMIN) {
+    // Estados internos que deben mostrarse como "pendiente" al usuario
+    if (
+      estado === TRANSACTION_STATES.REQUIERE_REVISION_ADMIN ||
+      estado === TRANSACTION_STATES.RETIRO_PENDIENTE_ASIGNACION
+    ) {
       return TRANSACTION_STATES.PENDIENTE;
     }
     return estado;
