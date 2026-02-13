@@ -139,6 +139,26 @@ class RetiroWebSocket {
       }
     });
 
+    this.socket.on("transaction-already-finished", (data) => {
+      this.clearActiveTransaction();
+      if (data.target === "jugador" && (data.estado === "completada" || data.estado === "completada_con_ajuste")) {
+        if (window.visualLogger) {
+          window.visualLogger.success("Retiro completado (reconexión)");
+        }
+        if (this.callbacks.onRetiroCompletado) {
+          this.callbacks.onRetiroCompletado({
+            transaccionId: data.transaccionId,
+            monto: data.monto,
+            saldoNuevo: data.saldoNuevo,
+            saldoAnterior: data.saldoAnterior,
+            mensaje: data.mensaje || "¡Retiro completado exitosamente!",
+          });
+        }
+      } else if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+        this.callbacks.onTransaccionCanceladaPorTimeout({ mensaje: data.mensaje });
+      }
+    });
+
     this.socket.on("error", (error) => {
       if (window.visualLogger) {
         window.visualLogger.error(`Error: ${error.message || error}`);
