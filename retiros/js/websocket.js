@@ -206,6 +206,21 @@ class RetiroWebSocket {
     this.socket.emit("solicitar-retiro", datos);
   }
 
+  /**
+   * Notificar al backend el tipo de desconexión antes de desconectarse
+   * @param {string} tipo - "window_closed" o "background"
+   */
+  notificarTipoDesconexion(tipo) {
+    if (!this.socket || !this.isConnected) return;
+    
+    if (window.visualLogger) {
+      window.visualLogger.websocket(`Notificando tipo de desconexión: ${tipo}`);
+    }
+    
+    // Enviar evento al backend antes de desconectarse
+    this.socket.emit("disconnection-type", { tipo });
+  }
+
   disconnect() {
     if (this.socket) {
       this.socket.disconnect();

@@ -67,6 +67,9 @@ class RetiroApp {
       await this.cargarConfiguracion();
       await TelegramAuth.init();
 
+      // Configurar detección de tipo de desconexión
+      this.setupDisconnectionDetection();
+
       this.isInitialized = true;
       if (window.visualLogger) {
         window.visualLogger.success("Aplicación inicializada");
@@ -287,6 +290,119 @@ class RetiroApp {
 
   handleCloseError() {
     UI.showMainScreen();
+  }
+
+  /**
+   * Configurar detección de tipo de desconexión
+   * Detecta si el usuario cerró la ventana o solo apagó la pantalla/cambió de app
+   */
+  setupDisconnectionDetection() {
+    let isWindowClosing = false;
+    let wasHidden = false;
+
+    // Detectar cuando el usuario cierra la ventana/pestaña
+    window.addEventListener("beforeunload", () => {
+      isWindowClosing = true;
+      if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+        window.retiroWebSocket.notificarTipoDesconexion("window_closed");
+      }
+    });
+
+    // Detectar cuando la página pasa a oculta/visible (pantalla apagada, cambio de app, cambio de pestaña)
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        // Página oculta: pantalla apagada o cambio de app
+        wasHidden = true;
+        if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+          window.retiroWebSocket.notificarTipoDesconexion("background");
+        }
+      } else {
+        // Página visible de nuevo: usuario volvió
+        if (wasHidden && window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+          // Verificar si hay transacciones activas y actualizar UI
+          this.checkAndUpdateActiveTransaction();
+          wasHidden = false;
+        }
+      }
+    });
+
+    // También usar pagehide como respaldo (más confiable en móviles)
+    window.addEventListener("pagehide", (event) => {
+      // Si es persistente, significa que la página se está ocultando pero puede volver
+      if (event.persisted) {
+        // Es un cambio de app/pantalla apagada, no cierre completo
+        if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+          window.retiroWebSocket.notificarTipoDesconexion("background");
+        }
+      } else if (!isWindowClosing) {
+        // No es cierre de ventana pero tampoco es persistente
+        // Podría ser cambio de app
+        if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+          window.retiroWebSocket.notificarTipoDesconexion("background");
+        }
+      }
+    });
+
+    // Cuando vuelve a ser visible, verificar transacciones
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) {
+        // La página fue restaurada desde cache
+        if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
+          this.checkAndUpdateActiveTransaction();
+        }
+      }
+    });
+  }
+
+  /**
+   * Verificar y actualizar transacción activa cuando el usuario vuelve
+   */
+  async checkAndUpdateActiveTransaction() {
+    const currentTransaction = TransactionManager.getCurrentTransaction();
+    if (!currentTransaction?._id) return;
+
+    try {
+      // Verificar estado actual de la transacción
+      const response = await API.verificarEstadoTransaccion(currentTransaction._id);
+      if (response.ok) {
+        const data = await response.json();
+        const transaction = data.transaccion;
+
+        // Actualizar UI según el estado actual
+        if (transaction.estado === "completada" || transaction.estado === "completada_con_ajuste") {
+          this.handleRetiroCompletado({
+            transaccionId: transaction._id,
+            monto: transaction.monto,
+            saldoNuevo: transaction.saldoNuevo,
+            saldoAnterior: transaction.saldoAnterior,
+            mensaje: "¡Retiro completado exitosamente!",
+          });
+        } else if (transaction.estado === "en_proceso" && transaction.cajeroId) {
+          // Si está en proceso y tiene cajero, mostrar pantalla de proceso
+          this.handleSolicitudAceptada({
+            cajero: {
+              id: transaction.cajeroId._id,
+              nombre: transaction.cajeroId.nombreCompleto,
+              telefono: transaction.cajeroId.datosPagoMovil?.telefono,
+              datosPago: transaction.cajeroId.datosPagoMovil,
+            },
+          });
+        } else if (transaction.estado === "pendiente") {
+          // Mantener pantalla de espera
+          this.handleSolicitudCreada({
+            transaccionId: transaction._id,
+            monto: transaction.monto,
+            estado: transaction.estado,
+          });
+        } else if (transaction.estado === "cancelada" || transaction.estado === "rechazada") {
+          this.handleTimeout({
+            mensaje: "La transacción fue cancelada o rechazada",
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error verificando estado de transacción:", error);
+    }
   }
 }
 

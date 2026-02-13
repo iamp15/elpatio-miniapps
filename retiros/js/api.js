@@ -61,6 +61,13 @@ class APIManager {
     });
   }
 
+  async verificarEstadoTransaccion(transaccionId) {
+    const url = `${this.baseURL}${this.endpoints.TRANSACCIONES}/${transaccionId}`;
+    return this.telegramRequest(url, {
+      method: "GET",
+    });
+  }
+
   extractErrorData(response) {
     try {
       return response.json();
