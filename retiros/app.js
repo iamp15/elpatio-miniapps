@@ -20,6 +20,8 @@ class RetiroApp {
     this.currentBalance = 0;
     this.montoMinimo = 1;
     this.pendingRetiroData = null;
+    /** True mientras se muestra pantalla "Tiempo agotado" / cancelada; evita que auth-result al reconectar la reemplace */
+    this.showingTimeoutOrRejectionScreen = false;
   }
 
   async init() {
@@ -116,7 +118,7 @@ class RetiroApp {
   }
 
   handleAuthResult(result) {
-    if (result.success && !window.retiroWebSocket.activeTransactionId) {
+    if (result.success && !window.retiroWebSocket.activeTransactionId && !this.showingTimeoutOrRejectionScreen) {
       UI.showMainScreen();
     }
   }
@@ -210,11 +212,9 @@ class RetiroApp {
     this.currentTransaction = null;
     TransactionManager.clearCurrentTransaction();
     window.retiroWebSocket.clearActiveTransaction();
+    this.showingTimeoutOrRejectionScreen = true;
     UI.showErrorScreen("Tiempo Agotado", data.mensaje || "La solicitud fue cancelada por inactividad.");
-    setTimeout(() => {
-      UI.showMainScreen();
-      this.loadUserBalance();
-    }, 4000);
+    // La pantalla persiste hasta que el usuario pulse "Cerrar" (handleCloseError)
   }
 
   handleWebSocketError(error) {
@@ -289,7 +289,9 @@ class RetiroApp {
   }
 
   handleCloseError() {
+    this.showingTimeoutOrRejectionScreen = false;
     UI.showMainScreen();
+    this.loadUserBalance();
   }
 
   /**
