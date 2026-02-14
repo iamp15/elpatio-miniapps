@@ -377,43 +377,44 @@ class RetiroApp {
     if (!currentTransaction?._id) return;
 
     try {
-      // Verificar estado actual de la transacción
-      const response = await API.verificarEstadoTransaccion(currentTransaction._id);
+      // Usar telegramId en memoria (TelegramAuth) para evitar 401 al volver de background
+      const telegramId = TelegramAuth.getTelegramId();
+      const response = await API.verificarEstadoTransaccion(currentTransaction._id, telegramId);
       // #region agent log
       const data = await response.json().catch(() => ({}));
-      if (window.visualLogger) window.visualLogger.debug("[H2/H3] API estado", { ok: response.ok, status: response.status, estado: data?.transaccion?.estado });
-      fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'after API',data:{ok:response.ok,status:response.status,estado:data?.transaccion?.estado},hypothesisId:'H2_H3',timestamp:Date.now()})}).catch(()=>{});
+      if (window.visualLogger) window.visualLogger.debug("[H2/H3] API estado", { ok: response.ok, status: response.status, estado: data?.estado });
+      fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'after API',data:{ok:response.ok,status:response.status,estado:data?.estado},hypothesisId:'H2_H3',timestamp:Date.now()})}).catch(()=>{});
       // #endregion
       if (response.ok) {
-        const transaction = data.transaccion;
+        // Respuesta de GET /transacciones/:id/estado (estado, monto, cajero, saldoNuevo, saldoAnterior)
+        const estado = data.estado;
+        const monto = data.monto;
+        const cajero = data.cajero;
 
-        // Actualizar UI según el estado actual
-        if (transaction.estado === "completada" || transaction.estado === "completada_con_ajuste") {
+        if (estado === "completada" || estado === "completada_con_ajuste") {
           this.handleRetiroCompletado({
-            transaccionId: transaction._id,
-            monto: transaction.monto,
-            saldoNuevo: transaction.saldoNuevo,
-            saldoAnterior: transaction.saldoAnterior,
+            transaccionId: currentTransaction._id,
+            monto,
+            saldoNuevo: data.saldoNuevo,
+            saldoAnterior: data.saldoAnterior,
             mensaje: "¡Retiro completado exitosamente!",
           });
-        } else if (transaction.estado === "en_proceso" && transaction.cajeroId) {
-          // Si está en proceso y tiene cajero, mostrar pantalla de proceso
+        } else if (estado === "en_proceso" && cajero) {
           this.handleSolicitudAceptada({
             cajero: {
-              id: transaction.cajeroId._id,
-              nombre: transaction.cajeroId.nombreCompleto,
-              telefono: transaction.cajeroId.datosPagoMovil?.telefono,
-              datosPago: transaction.cajeroId.datosPagoMovil,
+              id: cajero._id,
+              nombre: cajero.nombre,
+              telefono: cajero.telefono,
+              datosPago: cajero.datosPago,
             },
           });
-        } else if (transaction.estado === "pendiente") {
-          // Mantener pantalla de espera
+        } else if (estado === "pendiente") {
           this.handleSolicitudCreada({
-            transaccionId: transaction._id,
-            monto: transaction.monto,
-            estado: transaction.estado,
+            transaccionId: currentTransaction._id,
+            monto,
+            estado,
           });
-        } else if (transaction.estado === "cancelada" || transaction.estado === "rechazada") {
+        } else if (estado === "cancelada" || estado === "rechazada") {
           // #region agent log
           if (window.visualLogger) window.visualLogger.success("[H3] Estado cancelada/rechazada → llamando handleTimeout");
           // #endregion

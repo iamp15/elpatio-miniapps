@@ -61,10 +61,16 @@ class APIManager {
     });
   }
 
-  async verificarEstadoTransaccion(transaccionId) {
-    const url = `${this.baseURL}${this.endpoints.TRANSACCIONES}/${transaccionId}`;
+  /**
+   * Verificar estado de transacción (usa GET /estado que acepta X-Telegram-Id, no JWT).
+   * @param {string} transaccionId
+   * @param {string} [telegramId] - Si se pasa, se usa en la cabecera (recomendado al volver de background).
+   */
+  async verificarEstadoTransaccion(transaccionId, telegramId = null) {
+    const url = `${this.baseURL}${this.endpoints.TRANSACCIONES}/${transaccionId}/estado`;
     return this.telegramRequest(url, {
       method: "GET",
+      ...(telegramId != null && { telegramId: telegramId.toString() }),
     });
   }
 
