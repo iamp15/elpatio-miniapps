@@ -320,8 +320,11 @@ class RetiroApp {
         // Página visible de nuevo: usuario volvió
         // #region agent log
         const currentTx = TransactionManager.getCurrentTransaction();
-        const willCallCheck = !!(wasHidden && window.retiroWebSocket?.isConnected && window.retiroWebSocket?.isAuthenticated);
-        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:visibilitychange',message:'visible',data:{wasHidden,isConnected:!!window.retiroWebSocket?.isConnected,isAuthenticated:!!window.retiroWebSocket?.isAuthenticated,currentTransactionId:currentTx?._id,willCallCheck},hypothesisId:'H1_H4',timestamp:Date.now()})}).catch(()=>{});
+        const isConn = !!window.retiroWebSocket?.isConnected;
+        const isAuth = !!window.retiroWebSocket?.isAuthenticated;
+        const willCallCheck = !!(wasHidden && isConn && isAuth);
+        if (window.visualLogger) window.visualLogger.debug("[H1/H4] visibility visible", { wasHidden, isConnected: isConn, isAuthenticated: isAuth, txId: currentTx?._id, willCallCheck });
+        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:visibilitychange',message:'visible',data:{wasHidden,isConnected:isConn,isAuthenticated:isAuth,currentTransactionId:currentTx?._id,willCallCheck},hypothesisId:'H1_H4',timestamp:Date.now()})}).catch(()=>{});
         // #endregion
         if (wasHidden && window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
           // Verificar si hay transacciones activas y actualizar UI
@@ -354,6 +357,7 @@ class RetiroApp {
         // #region agent log
         const currentTx = TransactionManager.getCurrentTransaction();
         const willCallCheck = !!(window.retiroWebSocket?.isConnected && window.retiroWebSocket?.isAuthenticated);
+        if (window.visualLogger) window.visualLogger.debug("[H4] pageshow persisted", { isConnected: !!window.retiroWebSocket?.isConnected, txId: currentTx?._id, willCallCheck });
         fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:pageshow',message:'persisted',data:{persisted:event.persisted,isConnected:!!window.retiroWebSocket?.isConnected,currentTransactionId:currentTx?._id,willCallCheck},hypothesisId:'H4',timestamp:Date.now()})}).catch(()=>{});
         // #endregion
         // La página fue restaurada desde cache
@@ -370,6 +374,7 @@ class RetiroApp {
   async checkAndUpdateActiveTransaction() {
     const currentTransaction = TransactionManager.getCurrentTransaction();
     // #region agent log
+    if (window.visualLogger) window.visualLogger.debug("[H5] checkAndUpdate entry", { txId: currentTransaction?._id });
     fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'entry',data:{currentTransactionId:currentTransaction?._id},hypothesisId:'H5',timestamp:Date.now()})}).catch(()=>{});
     // #endregion
     if (!currentTransaction?._id) return;
@@ -379,6 +384,7 @@ class RetiroApp {
       const response = await API.verificarEstadoTransaccion(currentTransaction._id);
       // #region agent log
       const data = await response.json().catch(() => ({}));
+      if (window.visualLogger) window.visualLogger.debug("[H2/H3] API estado", { ok: response.ok, status: response.status, estado: data?.transaccion?.estado });
       fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'after API',data:{ok:response.ok,status:response.status,estado:data?.transaccion?.estado},hypothesisId:'H2_H3',timestamp:Date.now()})}).catch(()=>{});
       // #endregion
       if (response.ok) {
@@ -411,6 +417,9 @@ class RetiroApp {
             estado: transaction.estado,
           });
         } else if (transaction.estado === "cancelada" || transaction.estado === "rechazada") {
+          // #region agent log
+          if (window.visualLogger) window.visualLogger.success("[H3] Estado cancelada/rechazada → llamando handleTimeout");
+          // #endregion
           this.handleTimeout({
             mensaje: "La transacción fue cancelada o rechazada",
           });
