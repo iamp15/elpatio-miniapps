@@ -318,6 +318,11 @@ class RetiroApp {
         }
       } else {
         // Página visible de nuevo: usuario volvió
+        // #region agent log
+        const currentTx = TransactionManager.getCurrentTransaction();
+        const willCallCheck = !!(wasHidden && window.retiroWebSocket?.isConnected && window.retiroWebSocket?.isAuthenticated);
+        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:visibilitychange',message:'visible',data:{wasHidden,isConnected:!!window.retiroWebSocket?.isConnected,isAuthenticated:!!window.retiroWebSocket?.isAuthenticated,currentTransactionId:currentTx?._id,willCallCheck},hypothesisId:'H1_H4',timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         if (wasHidden && window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
           // Verificar si hay transacciones activas y actualizar UI
           this.checkAndUpdateActiveTransaction();
@@ -346,6 +351,11 @@ class RetiroApp {
     // Cuando vuelve a ser visible, verificar transacciones
     window.addEventListener("pageshow", (event) => {
       if (event.persisted) {
+        // #region agent log
+        const currentTx = TransactionManager.getCurrentTransaction();
+        const willCallCheck = !!(window.retiroWebSocket?.isConnected && window.retiroWebSocket?.isAuthenticated);
+        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:pageshow',message:'persisted',data:{persisted:event.persisted,isConnected:!!window.retiroWebSocket?.isConnected,currentTransactionId:currentTx?._id,willCallCheck},hypothesisId:'H4',timestamp:Date.now()})}).catch(()=>{});
+        // #endregion
         // La página fue restaurada desde cache
         if (window.retiroWebSocket.isConnected && window.retiroWebSocket.isAuthenticated) {
           this.checkAndUpdateActiveTransaction();
@@ -359,13 +369,19 @@ class RetiroApp {
    */
   async checkAndUpdateActiveTransaction() {
     const currentTransaction = TransactionManager.getCurrentTransaction();
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'entry',data:{currentTransactionId:currentTransaction?._id},hypothesisId:'H5',timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     if (!currentTransaction?._id) return;
 
     try {
       // Verificar estado actual de la transacción
       const response = await API.verificarEstadoTransaccion(currentTransaction._id);
+      // #region agent log
+      const data = await response.json().catch(() => ({}));
+      fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'after API',data:{ok:response.ok,status:response.status,estado:data?.transaccion?.estado},hypothesisId:'H2_H3',timestamp:Date.now()})}).catch(()=>{});
+      // #endregion
       if (response.ok) {
-        const data = await response.json();
         const transaction = data.transaccion;
 
         // Actualizar UI según el estado actual
