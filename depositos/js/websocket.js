@@ -446,11 +446,19 @@ class DepositoWebSocket {
         window.visualLogger.info("No se recupera, limpiando estado local");
       }
 
-      // Limpiar estado local
       this.clearActiveTransaction();
 
-      // Mostrar pantalla principal
-      if (window.UI && window.UI.showMainScreen) {
+      // Si está cancelada o rechazada, mostrar misma pantalla que timeout (persiste hasta que el usuario cierre)
+      if (
+        data.estado === "cancelada" ||
+        data.estado === "rechazada"
+      ) {
+        if (this.callbacks.onTransaccionCanceladaPorTimeout) {
+          this.callbacks.onTransaccionCanceladaPorTimeout({
+            mensaje: data.mensaje || "La transacción ya ha finalizado.",
+          });
+        }
+      } else if (window.UI && window.UI.showMainScreen) {
         window.UI.showMainScreen();
       }
     });

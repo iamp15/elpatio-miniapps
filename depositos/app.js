@@ -79,6 +79,8 @@ class DepositApp {
     this.pendingDepositoCompletadoData = null; // Guardar datos de depósito completado si hay ajuste pendiente
     this.isReconnecting = false; // Estado de reconexión en progreso
     this.reconnectAttempts = 0; // Contador de intentos de reconexión
+    /** True mientras se muestra pantalla "Solicitud cancelada" por timeout; evita que auth/reconexión la reemplace */
+    this.showingTimeoutOrRejectionScreen = false;
   }
 
   /**
@@ -241,13 +243,12 @@ class DepositApp {
           if (!hasRecovery) {
             // Esperar un momento para ver si llega alguna transacción para recuperar
             setTimeout(() => {
-              // Si después de 1 segundo no hay transacción activa, mostrar pantalla principal
               const hasActiveTransaction =
                 window.depositoWebSocket.activeTransactionId ||
                 TransactionManager.getCurrentTransaction() ||
                 this.currentTransaction;
 
-              if (!hasActiveTransaction) {
+              if (!hasActiveTransaction && !this.showingTimeoutOrRejectionScreen) {
                 this.isReconnecting = false;
                 this.reconnectAttempts = 0;
                 window.visualLogger.success(
@@ -265,7 +266,7 @@ class DepositApp {
             TransactionManager.getCurrentTransaction() ||
             this.currentTransaction;
 
-          if (!hasActiveTransaction) {
+          if (!hasActiveTransaction && !this.showingTimeoutOrRejectionScreen) {
             UI.showMainScreen();
           }
         }
@@ -291,6 +292,108 @@ class DepositApp {
     // Conectar WebSocket
     window.visualLogger.info("🔌 Iniciando conexión WebSocket...");
     window.depositoWebSocket.connect();
+
+    // Detección de vuelta desde background: verificar estado de transacción sin exigir WebSocket
+    this.setupDisconnectionDetection();
+  }
+
+  /**
+   * Configurar detección de vuelta a la app (pantalla encendida, pestaña visible)
+   * para verificar estado de la transacción activa y actualizar la UI.
+   */
+  setupDisconnectionDetection() {
+    let wasHidden = false;
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) {
+        wasHidden = true;
+      } else {
+        if (wasHidden) {
+          this.checkAndUpdateActiveTransaction();
+          wasHidden = false;
+        }
+      }
+    });
+
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) {
+        this.checkAndUpdateActiveTransaction();
+      }
+    });
+  }
+
+  /**
+   * Verificar y actualizar transacción activa cuando el usuario vuelve a la app.
+   * Usa GET /estado (X-Telegram-Id) para no depender del WebSocket.
+   */
+  async checkAndUpdateActiveTransaction() {
+    const currentTransaction = TransactionManager.getCurrentTransaction();
+    if (!currentTransaction?._id) return;
+
+    try {
+      const telegramId = TelegramAuth.getTelegramId();
+      const response = await API.verificarEstadoTransaccion(
+        currentTransaction._id,
+        telegramId
+      );
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return;
+
+      const estado = data.estado;
+      const monto = data.monto;
+      const cajero = data.cajero;
+
+      if (estado === "completada" || estado === "completada_con_ajuste") {
+        window.depositoWebSocket.clearActiveTransaction();
+        this.currentTransaction = null;
+        TransactionManager.clearCurrentTransaction();
+        this.loadUserBalance();
+        UI.updateFinalInfo({
+          monto,
+          saldoNuevo: data.saldoNuevo,
+          saldoAnterior: data.saldoAnterior,
+          infoPago: {},
+        });
+        UI.showCashierVerifiedScreen();
+      } else if (estado === "rechazada") {
+        this.handleDepositoRechazado({
+          transaccionId: currentTransaction._id,
+          motivo: data.mensaje || "Depósito rechazado",
+        });
+      } else if (estado === "cancelada") {
+        this.handleTransaccionCanceladaPorTimeout({
+          mensaje: data.mensaje || "Tu solicitud fue cancelada por inactividad.",
+        });
+      } else if (estado === "en_proceso" && cajero) {
+        this.currentTransaction = {
+          ...currentTransaction,
+          cajero: {
+            _id: cajero._id,
+            datosPago: cajero.datosPago,
+          },
+          estado: "en_proceso",
+        };
+        TransactionManager.setCurrentTransaction(this.currentTransaction);
+        UI.updateBankInfo({
+          banco: cajero.datosPago?.banco,
+          telefono: cajero.datosPago?.telefono || cajero.telefono,
+          cedula: cajero.datosPago?.cedula
+            ? `${cajero.datosPago.cedula.prefijo}-${cajero.datosPago.cedula.numero}`
+            : "",
+          monto,
+        });
+        UI.showBankInfoScreen();
+      } else if (estado === "pendiente") {
+        UI.updateWaitingTransaction({
+          _id: currentTransaction._id,
+          monto,
+          estado: "pendiente",
+        });
+        UI.showWaitingScreen();
+      }
+    } catch (error) {
+      console.error("Error verificando estado de transacción:", error);
+    }
   }
 
   /**
@@ -756,7 +859,7 @@ class DepositApp {
         `${motivoCajero}<br><br>` +
         `Si consideras que hubo un error, puedes contactar a un administrador para revisar tu caso.`;
 
-      // Mostrar pantalla de error sin imagen (las imágenes son solo para admin)
+      this.showingTimeoutOrRejectionScreen = true;
       UI.showErrorScreenWithContactAdmin(titulo, mensaje, data.transaccionId);
 
       // No redirigir automáticamente - dejar que el usuario decida cuándo continuar
@@ -1245,7 +1348,9 @@ class DepositApp {
    * Manejar cierre de error
    */
   handleCloseError() {
+    this.showingTimeoutOrRejectionScreen = false;
     UI.showMainScreen();
+    this.loadUserBalance();
   }
 
   /**
@@ -1507,10 +1612,11 @@ class DepositApp {
    */
   handleTransaccionCanceladaPorTimeout(data) {
     try {
-      window.visualLogger.warning(
-        `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
-      );
-
+      if (data.tiempoTranscurrido != null) {
+        window.visualLogger.warning(
+          `⏱️ Transacción cancelada por inactividad (${data.tiempoTranscurrido} min)`
+        );
+      }
       if (data.mensaje) {
         window.visualLogger.info(data.mensaje);
       }
@@ -1520,17 +1626,12 @@ class DepositApp {
       TransactionManager.clearCurrentTransaction();
       window.depositoWebSocket.clearActiveTransaction();
 
-      // Mostrar pantalla de error con el mensaje
+      this.showingTimeoutOrRejectionScreen = true;
       UI.showErrorScreen(
         "⏱️ Solicitud Cancelada",
         data.mensaje || "Tu solicitud fue cancelada por inactividad."
       );
-
-      // Volver a la pantalla principal después de 4 segundos
-      setTimeout(() => {
-        UI.showMainScreen();
-        this.loadUserBalance();
-      }, 4000);
+      // La pantalla persiste hasta que el usuario pulse "Cerrar" (handleCloseError)
     } catch (error) {
       console.error("Error manejando cancelación por timeout:", error);
       window.visualLogger.error(

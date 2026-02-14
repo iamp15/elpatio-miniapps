@@ -82,12 +82,15 @@ class APIManager {
   }
 
   /**
-   * Verificar estado de transacción
+   * Verificar estado de transacción (GET /estado acepta X-Telegram-Id).
+   * @param {string} transaccionId
+   * @param {string} [telegramId] - Si se pasa, se usa en la cabecera (recomendado al volver de background).
    */
-  async verificarEstadoTransaccion(transaccionId) {
+  async verificarEstadoTransaccion(transaccionId, telegramId = null) {
     const url = `${this.baseURL}${this.endpoints.VERIFICAR_ESTADO}/${transaccionId}/estado`;
     return this.telegramRequest(url, {
       method: "GET",
+      ...(telegramId != null && { telegramId: telegramId.toString() }),
     });
   }
 

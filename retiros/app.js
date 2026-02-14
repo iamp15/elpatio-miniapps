@@ -321,15 +321,7 @@ class RetiroApp {
       } else {
         // Página visible de nuevo: usuario volvió → verificar estado siempre que hubo ocultación
         // No exigir WebSocket conectado: al volver el socket suele estar aún desconectado; la verificación es por API HTTP.
-        // #region agent log
-        const currentTx = TransactionManager.getCurrentTransaction();
-        const isConn = !!window.retiroWebSocket?.isConnected;
-        const isAuth = !!window.retiroWebSocket?.isAuthenticated;
-        if (window.visualLogger) window.visualLogger.debug("[H1/H4] visibility visible", { wasHidden, isConnected: isConn, isAuthenticated: isAuth, txId: currentTx?._id });
-        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:visibilitychange',message:'visible',data:{wasHidden,isConnected:isConn,isAuthenticated:isAuth,currentTransactionId:currentTx?._id},hypothesisId:'H1_H4',timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         if (wasHidden) {
-          if (window.visualLogger) window.visualLogger.info("Verificando transacción al volver (sin exigir socket)");
           this.checkAndUpdateActiveTransaction();
           wasHidden = false;
         }
@@ -356,11 +348,6 @@ class RetiroApp {
     // Cuando vuelve a ser visible, verificar transacciones
     window.addEventListener("pageshow", (event) => {
       if (event.persisted) {
-        // #region agent log
-        const currentTx = TransactionManager.getCurrentTransaction();
-        if (window.visualLogger) window.visualLogger.debug("[H4] pageshow persisted", { isConnected: !!window.retiroWebSocket?.isConnected, txId: currentTx?._id });
-        fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:pageshow',message:'persisted',data:{persisted:event.persisted,isConnected:!!window.retiroWebSocket?.isConnected,currentTransactionId:currentTx?._id},hypothesisId:'H4',timestamp:Date.now()})}).catch(()=>{});
-        // #endregion
         // La página fue restaurada desde cache; verificar estado sin exigir WebSocket
         this.checkAndUpdateActiveTransaction();
       }
@@ -372,21 +359,13 @@ class RetiroApp {
    */
   async checkAndUpdateActiveTransaction() {
     const currentTransaction = TransactionManager.getCurrentTransaction();
-    // #region agent log
-    if (window.visualLogger) window.visualLogger.debug("[H5] checkAndUpdate entry", { txId: currentTransaction?._id });
-    fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'entry',data:{currentTransactionId:currentTransaction?._id},hypothesisId:'H5',timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
     if (!currentTransaction?._id) return;
 
     try {
       // Usar telegramId en memoria (TelegramAuth) para evitar 401 al volver de background
       const telegramId = TelegramAuth.getTelegramId();
       const response = await API.verificarEstadoTransaccion(currentTransaction._id, telegramId);
-      // #region agent log
       const data = await response.json().catch(() => ({}));
-      if (window.visualLogger) window.visualLogger.debug("[H2/H3] API estado", { ok: response.ok, status: response.status, estado: data?.estado });
-      fetch('http://127.0.0.1:7242/ingest/f3b59fe8-69cb-46e6-af73-3fe5cc9d0ba8',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'retiros/app.js:checkAndUpdateActiveTransaction',message:'after API',data:{ok:response.ok,status:response.status,estado:data?.estado},hypothesisId:'H2_H3',timestamp:Date.now()})}).catch(()=>{});
-      // #endregion
       if (response.ok) {
         // Respuesta de GET /transacciones/:id/estado (estado, monto, cajero, saldoNuevo, saldoAnterior)
         const estado = data.estado;
@@ -417,9 +396,6 @@ class RetiroApp {
             estado,
           });
         } else if (estado === "cancelada" || estado === "rechazada") {
-          // #region agent log
-          if (window.visualLogger) window.visualLogger.success("[H3] Estado cancelada/rechazada → llamando handleTimeout");
-          // #endregion
           this.handleTimeout({
             mensaje: "La transacción fue cancelada o rechazada",
           });
